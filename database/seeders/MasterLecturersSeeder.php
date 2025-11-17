@@ -13,19 +13,22 @@ class MasterLecturersSeeder extends Seeder // <-- Nama Kelas YANG BENAR
      */
     public function run(): void
     {
-        // Hapus data lama (jika ada) saat seeding
-
-        // Buat data dosen contoh
         MasterLecturer::create([
             'nip' => '198503102010011001',
             'full_name' => 'Dr. Budi Santoso, M.Kom.',
-            'email' => 'budi.santoso@kampus.ac.id'
+            'email' => 'budi.santoso@ulm.ac.id'
         ]);
 
         MasterLecturer::create([
             'nip' => '199005202015032002',
             'full_name' => 'Rina Wijaya, S.T., M.T.',
-            'email' => 'rina.wijaya@kampus.ac.id'
+            'email' => 'rina.wijaya@ulm.ac.id'
+        ]);
+
+        MasterLecturer::create([
+            'nip' => '200006192025062016',
+            'full_name' => 'Erika Maulidiya, S.Kom., M.Kom',
+            'email' => 'erikamaulidiya@ulml.ac.id'
         ]);
     }
 }

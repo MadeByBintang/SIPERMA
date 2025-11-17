@@ -41,14 +41,14 @@ class Lecturer extends Model
     /**
      * RELASI: Satu Lecturer bisa punya BANYAK expertise
      */
-    public function expertise()
+    public function skills()
     {
-        return $this->hasMany(LecturerExpertise::class, 'lecturer_id', 'lecturer_id');
+        return $this->belongsToMany(Skill::class)
+                    ->withPivot('level')
+                    ->withTimestamps();
     }
 
-    /**
-     * RELASI: Satu Lecturer bisa punya BANYAK supervisions
-     */
+
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'lecturer_id', 'lecturer_id');

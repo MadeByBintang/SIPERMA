@@ -38,12 +38,12 @@ class Student extends Model
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    /**
-     * RELASI: Satu Student bisa punya BANYAK interests
-     */
-    public function interests()
+
+    public function skills()
     {
-        return $this->hasMany(StudentInterest::class, 'student_id', 'student_id');
+        return $this->belongsToMany(Skill::class)
+                    ->withPivot('level')
+                    ->withTimestamps();
     }
 
     /**

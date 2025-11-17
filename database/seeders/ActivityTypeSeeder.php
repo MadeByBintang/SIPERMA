@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ActivityType; // <-- Import Model
+use App\Models\ActivityType;
 
 class ActivityTypeSeeder extends Seeder
 {
@@ -12,11 +12,9 @@ class ActivityTypeSeeder extends Seeder
      */
     public function run(): void
     {
-
-        ActivityType::create(['activity_type_name' => 'MBKM']);
         ActivityType::create(['activity_type_name' => 'Tugas Akhir']);
-        ActivityType::create(['activity_type_name' => 'PKM']);
-        ActivityType::create(['activity_type_name' => 'Lomba/Kompetisi']);
-        ActivityType::create(['activity_type_name' => 'Proyek Independen']);
+        ActivityType::create(['activity_type_name' => 'PKL']);
+        ActivityType::create(['activity_type_name' => 'Lomba']);
+        ActivityType::create(['activity_type_name' => 'Penelitian']);
     }
 }

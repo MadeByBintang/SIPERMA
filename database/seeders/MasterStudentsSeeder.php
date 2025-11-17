@@ -13,19 +13,22 @@ class MasterStudentsSeeder extends Seeder
      */
     public function run(): void
     {
-        // (Kita sudah hapus truncate() sebelumnya, itu sudah benar)
-
-        // Buat data mahasiswa contoh
         MasterStudent::create([
-            'nim' => '2210010001',
-            'full_name' => 'Ahmad Fauzan',
-            'email' => 'ahmad.fauzan@mahasiswa.kampus.ac.id' // <-- INI YANG HILANG
+            'nim' => '2310817310009',
+            'full_name' => 'Muhammad Fauzan Ahsani',
+            'email' => '2310817310009@ulm.ac.id'
         ]);
 
         MasterStudent::create([
-            'nim' => '2210010002',
-            'full_name' => 'Siti Nurhaliza',
-            'email' => 'siti.nurhaliza@mahasiswa.kampus.ac.id' // <-- INI YANG HILANG
+            'nim' => '2310817310012',
+            'full_name' => 'Muhammad Rizki Saputra',
+            'email' => '2310817310012@ulm.ac.id'
+        ]);
+
+        MasterStudent::create([
+            'nim' => '9910817119999',
+            'full_name' => 'Erika Maulidiya',
+            'email' => '9910817119999@ulm.ac.id'
         ]);
     }
 }
