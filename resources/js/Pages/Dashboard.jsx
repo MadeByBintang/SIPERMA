@@ -111,7 +111,7 @@ export default function Dashboard({ auth }) {
                 </Card>
 
                 {/* Role-Specific Sections */}
-                {userRole === "student" && (
+                {userRole === "mahasiswa" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
@@ -144,7 +144,7 @@ export default function Dashboard({ auth }) {
                     </div>
                 )}
 
-                {userRole === "lecturer" && (
+                {userRole === "dosen" && (
                     <Card>
                         <CardHeader>
                             <CardTitle>My Supervised Students</CardTitle>

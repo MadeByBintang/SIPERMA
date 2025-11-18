@@ -10,19 +10,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/Components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
 
 export default function LoginPage({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         username: "",
         password: "",
-        role: "student", // hanya UI tambahan
     });
 
     const handleSubmit = (e) => {
@@ -41,9 +33,7 @@ export default function LoginPage({ status, canResetPassword }) {
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center space-y-2">
                         <div className="mx-auto w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4">
-                            <span className="text-white text-2xl">
-                                S
-                            </span>
+                            <span className="text-white text-2xl">S</span>
                         </div>
                         <CardTitle>SIPERMA</CardTitle>
                         <CardDescription>
@@ -59,14 +49,13 @@ export default function LoginPage({ status, canResetPassword }) {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* NIM / NIP */}
                             <div className="space-y-2">
                                 <Label htmlFor="username">NIM / NIP</Label>
                                 <Input
                                     id="username"
                                     type="text"
-                                    placeholder="Masukkan NIM atau NIP"
                                     value={data.username}
+                                    placeholder="Masukkan NIM atau NIP"
                                     onChange={(e) =>
                                         setData("username", e.target.value)
                                     }
@@ -79,14 +68,13 @@ export default function LoginPage({ status, canResetPassword }) {
                                 )}
                             </div>
 
-                            {/* Password */}
                             <div className="space-y-2">
                                 <Label htmlFor="password">Password</Label>
                                 <Input
                                     id="password"
                                     type="password"
-                                    placeholder="Masukkan password"
                                     value={data.password}
+                                    placeholder="Masukkan password"
                                     onChange={(e) =>
                                         setData("password", e.target.value)
                                     }
@@ -99,33 +87,6 @@ export default function LoginPage({ status, canResetPassword }) {
                                 )}
                             </div>
 
-                            {/* Role (UI tambahan) */}
-                            <div className="space-y-2">
-                                <Label htmlFor="role">User Role</Label>
-                                <Select
-                                    value={data.role}
-                                    onValueChange={(value) =>
-                                        setData("role", value)
-                                    }
-                                >
-                                    <SelectTrigger id="role">
-                                        <SelectValue placeholder="Pilih role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="student">
-                                            Mahasiswa
-                                        </SelectItem>
-                                        <SelectItem value="lecturer">
-                                            Dosen
-                                        </SelectItem>
-                                        <SelectItem value="admin">
-                                            Admin
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Tombol Login */}
                             <Button
                                 type="submit"
                                 className="w-full"
@@ -133,18 +94,6 @@ export default function LoginPage({ status, canResetPassword }) {
                             >
                                 {processing ? "Logging in..." : "Login"}
                             </Button>
-
-                            {/* Lupa Password */}
-                            {canResetPassword && (
-                                <div className="text-center">
-                                    <Link
-                                        href={route("password.request")}
-                                        className="text-sm text-primary hover:underline"
-                                    >
-                                        Lupa Password?
-                                    </Link>
-                                </div>
-                            )}
                         </form>
                     </CardContent>
                 </Card>
