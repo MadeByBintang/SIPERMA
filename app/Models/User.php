@@ -32,10 +32,11 @@ class User extends Authenticatable
         ];
     }
 
-    public function getAuthIdentifierName()
+    public function username()
     {
         return 'username';
     }
+
 
     // Relasi ke tabel roles
     public function role()
