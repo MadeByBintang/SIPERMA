@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Lecturer;         // <-- Import Lecturer
 use App\Models\Student;          // <-- Import Student
 use App\Models\MasterLecturer;   // <-- Import MasterLecturer
@@ -25,7 +24,7 @@ class UserSeeder extends Seeder
                 'email'     => $lecturer -> email,
                 'username'  => $lecturer -> nip,
                 'password'  => Hash::make('password'),
-                'role_id'   => 3
+                'role_id'   => 2
             ]);
 
             Lecturer::firstOrCreate([
@@ -41,7 +40,7 @@ class UserSeeder extends Seeder
                 'email'     => $student -> email,
                 'username'  => $student -> nim,
                 'password'  => Hash::make('password'),
-                'role_id'   => 2
+                'role_id'   => 3
             ]);
 
             Student::firstOrCreate([
