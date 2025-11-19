@@ -19,8 +19,10 @@ export default function Sidebar({ setMobileMenuOpen }) {
     const url = usePage().url ?? "";
 
     const userRole = auth?.user?.role_name || "student";
-    const userName = auth?.user?.name || "User";
-    const userId = auth?.user?.id || "-";
+
+    const full_name = auth?.user?.profile?.full_name || "fulan";
+    const id_number = auth?.user?.profile?.id_number || '67';
+
 
     const studentMenu = [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -114,13 +116,19 @@ export default function Sidebar({ setMobileMenuOpen }) {
                 <div className="flex items-center gap-3">
                     <Avatar>
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                            {userName.substring(0, 2).toUpperCase()}
+                            {
+                                full_name
+                                    .split(" ")
+                                    .map(w => w[0])
+                                    .join("")
+                                    .toUpperCase()
+                            }
                         </AvatarFallback>
                     </Avatar>
                     <div>
-                        <p className="text-sm">{userName}</p>
+                        <p className="text-sm">{full_name}</p>
                         <p className="text-xs text-muted-foreground">
-                            {userId}
+                            {id_number}
                         </p>
                     </div>
                 </div>

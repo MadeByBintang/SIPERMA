@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Lecturer extends Model
 {
     use HasFactory;
@@ -43,7 +44,7 @@ class Lecturer extends Model
      */
     public function skills()
     {
-        return $this->belongsToMany(Skill::class)
+        return $this->belongsToMany(Skills::class)
                     ->withPivot('level')
                     ->withTimestamps();
     }

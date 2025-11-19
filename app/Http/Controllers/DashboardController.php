@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -12,6 +13,8 @@ class DashboardController extends Controller
         if ($request->user()->role_name === 'admin') {
             return redirect()->route('admin.dashboard');
         }
+
+        // $user = $request -> user();
 
         return inertia('Dashboard');
     }

@@ -1,5 +1,6 @@
 // resources/js/Layouts/MainLayout.jsx
 import { useState } from "react";
+import { usePage } from "@inertiajs/react";
 import { Sheet, SheetContent } from "../Components/ui/sheet";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
