@@ -45,8 +45,16 @@ export default function Dashboard({ auth }) {
             text: "Supervisor assigned: Dr. Sarah → Budi Santoso",
             time: "5 hours ago",
         },
-        { id: 3, text: "Profile updated: Prof. Ahmad", time: "1 day ago" },
-        { id: 4, text: "New match request submitted", time: "2 days ago" },
+        {
+            id: 3,
+            text: "Profile updated: Prof. Ahmad",
+            time: "1 day ago",
+        },
+        {
+            id: 4,
+            text: "New match request submitted",
+            time: "2 days ago",
+        },
         {
             id: 5,
             text: "Report generated: Monthly Summary",
@@ -58,7 +66,7 @@ export default function Dashboard({ auth }) {
         <MainLayout>
             <Head title="Dashboard" />
 
-            <div className="space-y-8 p-6">
+            <div className="space-y-8">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {stats.map((stat) => {
@@ -110,7 +118,7 @@ export default function Dashboard({ auth }) {
                     </CardContent>
                 </Card>
 
-                {/* Role-Specific Sections */}
+                {/* Quick Stats */}
                 {userRole === "mahasiswa" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
@@ -151,26 +159,39 @@ export default function Dashboard({ auth }) {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {[
-                                    { name: "Ahmad Rizki", nim: "2021001" },
-                                    { name: "Siti Nurhaliza", nim: "2021023" },
-                                    { name: "Budi Santoso", nim: "2021045" },
-                                ].map((student) => (
-                                    <div
-                                        key={student.nim}
-                                        className="flex justify-between items-center pb-3 border-b border-border last:border-0"
-                                    >
-                                        <div>
-                                            <p>{student.name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                NIM: {student.nim}
-                                            </p>
-                                        </div>
-                                        <span className="text-xs text-muted-foreground">
-                                            Active
-                                        </span>
+                                <div className="flex justify-between items-center pb-3 border-b border-border">
+                                    <div>
+                                        <p>Ahmad Rizki</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            NIM: 2021001
+                                        </p>
                                     </div>
-                                ))}
+                                    <span className="text-xs text-muted-foreground">
+                                        Active
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center pb-3 border-b border-border">
+                                    <div>
+                                        <p>Siti Nurhaliza</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            NIM: 2021023
+                                        </p>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        Active
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p>Budi Santoso</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            NIM: 2021045
+                                        </p>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        Active
+                                    </span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
