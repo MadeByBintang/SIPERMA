@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Head } from "@inertiajs/react";
-import MainLayout from "@/Layouts/MainLayout"; // tambahkan MainLayout
+import { Link } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
@@ -10,15 +11,6 @@ import {
 } from "../Components/ui/card";
 import { Badge } from "../Components/ui/badge";
 import { Button } from "../Components/ui/button";
-import { Separator } from "../Components/ui/separator";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "../Components/ui/dialog";
 import {
     Users,
     UserCheck,
@@ -30,8 +22,39 @@ import {
     FileText,
     Bell,
 } from "lucide-react";
+import { Separator } from "../Components/ui/separator";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "../Components/ui/dialog";
 
-export default function AdminDashboardPage() {
+const Notification = [
+    {
+        id: "number",
+        type: "string",
+        title: "string",
+        description: "string",
+        timestamp: "string",
+        status: "string",
+        details: {
+            studentName: "string",
+            studentNim: "string",
+            lecturerName: "string",
+            lecturerNip: "string",
+            activityType: "string",
+            projectTitle: "string",
+            teamName: "string",
+            teamMembers: "string",
+            requestDate: "string",
+        },
+    },
+];
+
+export default function AdminDashboardPage({ onNavigate }) {
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     // Mock data for system overview
@@ -185,6 +208,7 @@ export default function AdminDashboardPage() {
 
     return (
         <MainLayout>
+            <Head title="Admin Dashboard" />
             <div className="space-y-6">
                 {/* Header */}
                 <div>
@@ -589,38 +613,54 @@ export default function AdminDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                            <Button
-                                variant="outline"
-                                className="gap-2 justify-start"
-                                onClick={() => handleQuickAction("users")}
+                            <Link href="/admin/users" className="block w-full">
+                                <Button
+                                    variant="outline"
+                                    className="gap-2 justify-start w-full"
+                                >
+                                    <Users className="w-4 h-4" />
+                                    Manage Users
+                                </Button>
+                            </Link>
+
+                            <Link
+                                href="/admin/projects"
+                                className="block w-full"
                             >
-                                <Users className="w-4 h-4" />
-                                Manage Users
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="gap-2 justify-start"
-                                onClick={() => handleQuickAction("projects")}
+                                <Button
+                                    variant="outline"
+                                    className="gap-2 justify-start w-full"
+                                >
+                                    <Briefcase className="w-4 h-4" />
+                                    View All Projects
+                                </Button>
+                            </Link>
+
+                            <Link
+                                href="/admin/relations"
+                                className="block w-full"
                             >
-                                <Briefcase className="w-4 h-4" />
-                                View All Projects
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="gap-2 justify-start"
-                                onClick={() => handleQuickAction("approvals")}
+                                <Button
+                                    variant="outline"
+                                    className="gap-2 justify-start w-full"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Review Relations
+                                </Button>
+                            </Link>
+
+                            <Link
+                                href="/admin/reports"
+                                className="block w-full"
                             >
-                                <CheckCircle2 className="w-4 h-4" />
-                                Review Relations
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="gap-2 justify-start"
-                                onClick={() => handleQuickAction("reports")}
-                            >
-                                <TrendingUp className="w-4 h-4" />
-                                System Reports
-                            </Button>
+                                <Button
+                                    variant="outline"
+                                    className="gap-2 justify-start w-full"
+                                >
+                                    <TrendingUp className="w-4 h-4" />
+                                    System Reports
+                                </Button>
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>

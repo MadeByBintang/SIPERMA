@@ -1,28 +1,29 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Head } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
+} from "../Components/ui/card";
+import { Button } from "../Components/ui/button";
+import { Input } from "../Components/ui/input";
+import { Label } from "../Components/ui/label";
+import { Textarea } from "../Components/ui/textarea";
+import { Avatar, AvatarFallback } from "../Components/ui/avatar";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../components/ui/select";
+} from "../Components/ui/select";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "../components/ui/popover";
+} from "../Components/ui/popover";
 import {
     Command,
     CommandEmpty,
@@ -30,9 +31,9 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "../components/ui/command";
-import { Badge } from "../components/ui/badge";
-import { Switch } from "../components/ui/switch";
+} from "../Components/ui/command";
+import { Badge } from "../Components/ui/badge";
+import { Switch } from "../Components/ui/switch";
 import { Edit2, Save, Check, X } from "lucide-react";
 
 const expertiseOptions = [
@@ -68,7 +69,7 @@ const academicTitleOptions = [
     "Prof.",
 ];
 
-export default function LecturerProfilePage({ auth }) {
+export default function LecturerProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [open, setOpen] = useState(false);
     const [selectedExpertise, setSelectedExpertise] = useState([
@@ -109,19 +110,26 @@ export default function LecturerProfilePage({ auth }) {
     });
 
     const handleEdit = () => {
-        setOriginalFormData({ ...formData });
+        // Store current data as original before editing
+        setOriginalFormData({
+            ...formData,
+            academicTitles: [...formData.academicTitles],
+        });
         setOriginalExpertise([...selectedExpertise]);
         setIsEditing(true);
     };
 
     const handleSave = () => {
         setIsEditing(false);
-        // TODO: post ke Laravel pakai Inertia form
-        // Inertia.post('/lecturer/profile/update', formData);
+        // Save logic would go here
     };
 
     const handleCancel = () => {
-        setFormData({ ...originalFormData });
+        // Restore original data
+        setFormData({
+            ...originalFormData,
+            academicTitles: [...originalFormData.academicTitles],
+        });
         setSelectedExpertise([...originalExpertise]);
         setIsEditing(false);
     };
@@ -201,10 +209,9 @@ export default function LecturerProfilePage({ auth }) {
     ];
 
     return (
-        <>
+        <MainLayout>
             <Head title="Lecturer Profile" />
-
-            <div className="space-y-6 p-6">
+            <div className="space-y-6">
                 {/* Profile Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
@@ -235,16 +242,14 @@ export default function LecturerProfilePage({ auth }) {
                             </div>
                         )}
                     </CardHeader>
-
                     <CardContent className="space-y-6">
-                        {/* Basic Info */}
+                        {/* Profile Picture and Basic Info */}
                         <div className="flex items-start gap-6">
                             <Avatar className="w-24 h-24">
                                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                                     SW
                                 </AvatarFallback>
                             </Avatar>
-
                             <div className="flex-1 space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -272,7 +277,6 @@ export default function LecturerProfilePage({ auth }) {
                                     </div>
                                 </div>
 
-                                {/* Academic Titles */}
                                 <div className="space-y-2">
                                     <Label>Academic Titles</Label>
                                     {isEditing ? (
@@ -287,7 +291,7 @@ export default function LecturerProfilePage({ auth }) {
                                                         >
                                                             {title}
                                                             <button
-                                                                onClick={() =>
+                                                                onClick={() => {
                                                                     setFormData(
                                                                         {
                                                                             ...formData,
@@ -300,8 +304,8 @@ export default function LecturerProfilePage({ auth }) {
                                                                                         title
                                                                                 ),
                                                                         }
-                                                                    )
-                                                                }
+                                                                    );
+                                                                }}
                                                                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full"
                                                             >
                                                                 <X className="w-3 h-3" />
@@ -363,7 +367,6 @@ export default function LecturerProfilePage({ auth }) {
                                     </p>
                                 </div>
 
-                                {/* Contact Info */}
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email</Label>
                                     <Input
@@ -415,7 +418,6 @@ export default function LecturerProfilePage({ auth }) {
                                     </div>
                                 </div>
 
-                                {/* Description */}
                                 <div className="space-y-2">
                                     <Label htmlFor="description">
                                         About / Description
@@ -431,12 +433,13 @@ export default function LecturerProfilePage({ auth }) {
                                         }
                                         disabled={!isEditing}
                                         rows={3}
+                                        placeholder="Write a brief description about your research interests and expertise..."
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Expertise Section */}
+                        {/* Areas of Expertise Section */}
                         <div className="space-y-3 pt-4 border-t border-border">
                             <Label>Areas of Expertise</Label>
                             {isEditing ? (
@@ -466,7 +469,7 @@ export default function LecturerProfilePage({ auth }) {
                                         <PopoverTrigger asChild>
                                             <button
                                                 type="button"
-                                                className="flex h-10 w-full items-center justify-start rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent"
+                                                className="flex h-10 w-full items-center justify-start rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
                                                 + Add Expertise Area
                                             </button>
@@ -488,11 +491,11 @@ export default function LecturerProfilePage({ auth }) {
                                                                     key={
                                                                         expertise
                                                                     }
-                                                                    onSelect={() =>
+                                                                    onSelect={() => {
                                                                         toggleExpertise(
                                                                             expertise
-                                                                        )
-                                                                    }
+                                                                        );
+                                                                    }}
                                                                 >
                                                                     <div className="flex items-center gap-2 w-full">
                                                                         <div
@@ -539,7 +542,7 @@ export default function LecturerProfilePage({ auth }) {
                             )}
                         </div>
 
-                        {/* Supervision Section */}
+                        {/* Supervision Settings */}
                         <div className="space-y-4 pt-4 border-t border-border">
                             <h4>Supervision Settings</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -587,13 +590,18 @@ export default function LecturerProfilePage({ auth }) {
                                                 : "Not Available"}
                                         </span>
                                     </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formData.available
+                                            ? "You are accepting new supervision requests"
+                                            : "You are not accepting new supervision requests"}
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Supervised Students */}
+                {/* Currently Supervised Students Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Currently Supervised Students</CardTitle>
@@ -603,7 +611,7 @@ export default function LecturerProfilePage({ auth }) {
                             {supervisedStudents.map((student) => (
                                 <div
                                     key={student.id}
-                                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50"
+                                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                                 >
                                     <div className="flex items-center gap-4">
                                         <Avatar>
@@ -647,10 +655,28 @@ export default function LecturerProfilePage({ auth }) {
                                     </div>
                                 </div>
                             ))}
+                            {supervisedStudents.length === 0 && (
+                                <p className="text-center text-muted-foreground py-8">
+                                    No students currently supervised
+                                </p>
+                            )}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-border">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    Supervising {supervisedStudents.length} of{" "}
+                                    {formData.quota} students
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    Available slots:{" "}
+                                    {parseInt(formData.quota) -
+                                        supervisedStudents.length}
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-        </>
+        </MainLayout>
     );
 }

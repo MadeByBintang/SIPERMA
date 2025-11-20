@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Badge } from "../ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+} from "../Components/ui/card";
+import { Button } from "../Components/ui/button";
+import { Input } from "../Components/ui/input";
+import { Label } from "../Components/ui/label";
+import { Badge } from "../Components/ui/badge";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "../Components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -19,7 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../ui/table";
+} from "../Components/ui/table";
 import {
     Dialog,
     DialogContent,
@@ -27,14 +33,14 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "../ui/dialog";
+} from "../Components/ui/dialog";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../ui/select";
+} from "../Components/ui/select";
 import {
     Search,
     Eye,
@@ -51,8 +57,9 @@ import {
     Clock,
     XCircle,
     AlertCircle,
+    Link as LinkIcon,
 } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -62,11 +69,52 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { useIsMobile } from "../ui/use-mobile";
+} from "../Components/ui/AlertDialog";
+import { useIsMobile } from "../Components/ui/UseMobile";
+
+const RelationType = "student-lecturer" | "student-student";
+const ActivityType = "pkl" | "thesis" | "competition" | "all";
+const RelationStatus = "active" | "pending" | "completed" | "terminated";
+
+const StudentLecturerRelation = [
+    {
+        id: "string",
+        studentId: "string",
+        studentName: "string",
+        studentNim: "string",
+        lecturerId: "string",
+        lecturerName: "string",
+        lecturerNip: "string",
+        activityType: "pkl" | "thesis" | "competition",
+        activityTitle: "string",
+        status: "RelationStatus",
+        startDate: "string",
+        endDate: "string",
+        department: "string",
+    },
+];
+
+const StudentStudentRelation = [
+    {
+        id: "string",
+        student1Id: "string",
+        student1Name: "string",
+        student1Nim: "string",
+        student2Id: "string",
+        student2Name: "string",
+        student2Nim: "string",
+        activityType: "pkl" | "thesis" | "competition",
+        activityTitle: "string",
+        status: "RelationStatus",
+        startDate: "string",
+        endDate: "string",
+        department: "string",
+        role1: "string",
+        role2: "string",
+    },
+];
 
 export default function AdminRelationsPage() {
-    const { props } = usePage();
     const isMobile = useIsMobile();
     const [relationType, setRelationType] = useState("student-lecturer");
     const [searchQuery, setSearchQuery] = useState("");
@@ -609,23 +657,25 @@ export default function AdminRelationsPage() {
     const handleSave = () => {
         if (relationType === "student-lecturer") {
             if (isAddDialogOpen) {
-                const newRelation = {
-                    id: String(studentLecturerRelations.length + 1),
-                    studentId: formData.studentId || "",
-                    studentName: formData.studentName || "",
-                    studentNim: formData.studentNim || "",
-                    lecturerId: formData.lecturerId || "",
-                    lecturerName: formData.lecturerName || "",
-                    lecturerNip: formData.lecturerNip || "",
-                    activityType: formData.activityType || "pkl",
-                    activityTitle: formData.activityTitle || "",
-                    status: formData.status || "pending",
-                    startDate:
-                        formData.startDate ||
-                        new Date().toISOString().split("T")[0],
-                    endDate: formData.endDate || undefined,
-                    department: formData.department || "",
-                };
+                const newRelation = [
+                    {
+                        id: String(studentLecturerRelations.length + 1),
+                        studentId: formData.studentId || "",
+                        studentName: formData.studentName || "",
+                        studentNim: formData.studentNim || "",
+                        lecturerId: formData.lecturerId || "",
+                        lecturerName: formData.lecturerName || "",
+                        lecturerNip: formData.lecturerNip || "",
+                        activityType: formData.activityType || "pkl",
+                        activityTitle: formData.activityTitle || "",
+                        status: formData.status || "pending",
+                        startDate:
+                            formData.startDate ||
+                            new Date().toISOString().split("T")[0],
+                        endDate: formData.endDate || undefined,
+                        department: formData.department || "",
+                    },
+                ];
                 setStudentLecturerRelations([
                     ...studentLecturerRelations,
                     newRelation,
@@ -641,25 +691,27 @@ export default function AdminRelationsPage() {
             }
         } else {
             if (isAddDialogOpen) {
-                const newRelation = {
-                    id: "ss" + String(studentStudentRelations.length + 1),
-                    student1Id: formData.student1Id || "",
-                    student1Name: formData.student1Name || "",
-                    student1Nim: formData.student1Nim || "",
-                    student2Id: formData.student2Id || "",
-                    student2Name: formData.student2Name || "",
-                    student2Nim: formData.student2Nim || "",
-                    activityType: formData.activityType || "pkl",
-                    activityTitle: formData.activityTitle || "",
-                    status: formData.status || "pending",
-                    startDate:
-                        formData.startDate ||
-                        new Date().toISOString().split("T")[0],
-                    endDate: formData.endDate || undefined,
-                    department: formData.department || "",
-                    role1: formData.role1 || "",
-                    role2: formData.role2 || "",
-                };
+                const newRelation = [
+                    {
+                        id: "ss" + String(studentStudentRelations.length + 1),
+                        student1Id: formData.student1Id || "",
+                        student1Name: formData.student1Name || "",
+                        student1Nim: formData.student1Nim || "",
+                        student2Id: formData.student2Id || "",
+                        student2Name: formData.student2Name || "",
+                        student2Nim: formData.student2Nim || "",
+                        activityType: formData.activityType || "pkl",
+                        activityTitle: formData.activityTitle || "",
+                        status: formData.status || "pending",
+                        startDate:
+                            formData.startDate ||
+                            new Date().toISOString().split("T")[0],
+                        endDate: formData.endDate || undefined,
+                        department: formData.department || "",
+                        role1: formData.role1 || "",
+                        role2: formData.role2 || "",
+                    },
+                ];
                 setStudentStudentRelations([
                     ...studentStudentRelations,
                     newRelation,
@@ -952,7 +1004,7 @@ export default function AdminRelationsPage() {
                     <Label htmlFor="student1Name">Student 1 Name</Label>
                     <Input
                         id="student1Name"
-                        placeholder="Enter first student name"
+                        placeholder="Enter student name"
                         value={formData.student1Name || ""}
                         onChange={(e) =>
                             setFormData({
@@ -985,7 +1037,7 @@ export default function AdminRelationsPage() {
                     <Label htmlFor="student2Name">Student 2 Name</Label>
                     <Input
                         id="student2Name"
-                        placeholder="Enter second student name"
+                        placeholder="Enter student name"
                         value={formData.student2Name || ""}
                         onChange={(e) =>
                             setFormData({
@@ -1015,7 +1067,7 @@ export default function AdminRelationsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="role1">Role 1 (Optional)</Label>
+                    <Label htmlFor="role1">Student 1 Role</Label>
                     <Input
                         id="role1"
                         placeholder="e.g., Team Lead"
@@ -1026,7 +1078,7 @@ export default function AdminRelationsPage() {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="role2">Role 2 (Optional)</Label>
+                    <Label htmlFor="role2">Student 2 Role</Label>
                     <Input
                         id="role2"
                         placeholder="e.g., Developer"
@@ -1160,474 +1212,642 @@ export default function AdminRelationsPage() {
     );
 
     return (
-        <>
+        <MainLayout>
             <Head title="Relations Management" />
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
+                <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+                    <div className="flex-1">
                         <h1>Relations Management</h1>
                         <p className="text-sm text-muted-foreground">
-                            Manage all student-lecturer and student-student
-                            relationships
+                            Student-lecturer supervision and student
+                            collaboration mapping
                         </p>
                     </div>
-                    <Button onClick={handleAddRelation} className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Relation
-                    </Button>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="flex-1 md:flex-initial md:w-[280px]">
+                            <Select
+                                value={relationType}
+                                onValueChange={(value) =>
+                                    setRelationType(value)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="student-lecturer">
+                                        <div className="flex items-center gap-2">
+                                            <UserCheck className="w-4 h-4" />
+                                            <span>
+                                                Student-Lecturer Relations
+                                            </span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="student-student">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-4 h-4" />
+                                            <span>
+                                                Student-Student Relations
+                                            </span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button
+                            onClick={handleAddRelation}
+                            className="gap-2 shrink-0"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden sm:inline">
+                                Add Relation
+                            </span>
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Relation Type Selector */}
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button
-                                variant={
-                                    relationType === "student-lecturer"
-                                        ? "default"
-                                        : "outline"
-                                }
-                                onClick={() =>
-                                    setRelationType("student-lecturer")
-                                }
-                                className="flex-1 gap-2"
-                            >
-                                <UserCheck className="w-4 h-4" />
-                                Student-Lecturer Relations
-                            </Button>
-                            <Button
-                                variant={
-                                    relationType === "student-student"
-                                        ? "default"
-                                        : "outline"
-                                }
-                                onClick={() =>
-                                    setRelationType("student-student")
-                                }
-                                className="flex-1 gap-2"
-                            >
-                                <Users className="w-4 h-4" />
-                                Student-Student Relations
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
                                 Total Relations
                             </CardTitle>
+                            <GitBranch className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl">{stats.total}</div>
-                            <p className="text-xs text-muted-foreground">
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {stats.total}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {relationType === "student-lecturer"
+                                        ? "Active mappings"
+                                        : "Team collaborations"}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
                                 {relationType === "student-lecturer"
-                                    ? "Supervision relations"
-                                    : "Team collaborations"}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Active</CardTitle>
+                                    ? "Active Supervisors"
+                                    : "Active Teams"}
+                            </CardTitle>
+                            {relationType === "student-lecturer" ? (
+                                <UserCheck className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                                <Users className="w-4 h-4 text-muted-foreground" />
+                            )}
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl">{stats.active}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Currently active
-                            </p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {relationType === "student-lecturer"
+                                            ? stats.uniqueLecturers
+                                            : stats.uniqueTeams}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {relationType === "student-lecturer"
+                                        ? "Lecturers involved"
+                                        : "Total teams"}
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Pending</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Active Relations
+                            </CardTitle>
+                            <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl">{stats.pending}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Awaiting approval
-                            </p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {stats.active}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Currently ongoing
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">Completed</CardTitle>
+                            <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl">{stats.completed}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Successfully finished
-                            </p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {stats.completed}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Finished projects
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Search and Filter */}
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search by name, NIM, NIP, or title..."
-                                    value={searchQuery}
-                                    onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                    }
-                                    className="pl-10"
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Relations Table */}
+                {/* Relations List */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            {relationType === "student-lecturer"
-                                ? "Student-Lecturer Relations"
-                                : "Student-Student Relations"}
-                        </CardTitle>
-                        <CardDescription>
-                            View and manage all{" "}
-                            {relationType === "student-lecturer"
-                                ? "supervision"
-                                : "team collaboration"}{" "}
-                            relationships
-                        </CardDescription>
+                        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+                            <div>
+                                <CardTitle>
+                                    {relationType === "student-lecturer"
+                                        ? "Student-Lecturer Relations"
+                                        : "Student-Student Relations"}
+                                </CardTitle>
+                                <CardDescription>
+                                    {relationType === "student-lecturer"
+                                        ? "View and manage supervision relationships"
+                                        : "View and manage student team collaborations"}
+                                </CardDescription>
+                            </div>
+                            <div className="w-full md:w-auto">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search relations..."
+                                        value={searchQuery}
+                                        onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                        }
+                                        className="pl-9 w-full md:w-[300px]"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-                            <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="all">
-                                    All ({stats.total})
-                                </TabsTrigger>
-                                <TabsTrigger value="pkl">
-                                    PKL ({stats.pkl})
-                                </TabsTrigger>
-                                <TabsTrigger value="thesis">
-                                    Thesis ({stats.thesis})
-                                </TabsTrigger>
-                                <TabsTrigger value="competition">
-                                    Competition ({stats.competition})
-                                </TabsTrigger>
-                            </TabsList>
-
-                            <div className="mt-4">
-                                {relationType === "student-lecturer" ? (
-                                    <div className="rounded-md border">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        Student
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Lecturer
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Activity
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Status
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Period
-                                                    </TableHead>
-                                                    <TableHead className="text-right">
-                                                        Actions
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {filteredSLRelations.length >
-                                                0 ? (
-                                                    filteredSLRelations.map(
-                                                        (relation) => (
-                                                            <TableRow
-                                                                key={
-                                                                    relation.id
-                                                                }
-                                                            >
-                                                                <TableCell>
-                                                                    <div>
-                                                                        <p className="font-medium">
-                                                                            {
-                                                                                relation.studentName
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            {
-                                                                                relation.studentNim
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div>
-                                                                        <p className="font-medium">
-                                                                            {
-                                                                                relation.lecturerName
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            {
-                                                                                relation.lecturerNip
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="space-y-1">
-                                                                        {getActivityBadge(
-                                                                            relation.activityType
-                                                                        )}
-                                                                        <p className="text-sm line-clamp-1">
-                                                                            {
-                                                                                relation.activityTitle
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {getStatusBadge(
-                                                                        relation.status
-                                                                    )}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <p className="text-sm">
-                                                                        {
-                                                                            relation.startDate
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        to{" "}
-                                                                        {relation.endDate ||
-                                                                            "Ongoing"}
-                                                                    </p>
-                                                                </TableCell>
-                                                                <TableCell className="text-right">
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleViewDetails(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Eye className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleEdit(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Edit className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleDelete(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        )
-                                                    )
-                                                ) : (
-                                                    <TableRow>
-                                                        <TableCell
-                                                            colSpan={6}
-                                                            className="text-center py-8 text-muted-foreground"
-                                                        >
-                                                            No relations found
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                ) : (
-                                    <div className="rounded-md border">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        Student 1
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Student 2
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Activity
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Status
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Period
-                                                    </TableHead>
-                                                    <TableHead className="text-right">
-                                                        Actions
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {filteredSSRelations.length >
-                                                0 ? (
-                                                    filteredSSRelations.map(
-                                                        (relation) => (
-                                                            <TableRow
-                                                                key={
-                                                                    relation.id
-                                                                }
-                                                            >
-                                                                <TableCell>
-                                                                    <div>
-                                                                        <p className="font-medium">
-                                                                            {
-                                                                                relation.student1Name
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            {
-                                                                                relation.student1Nim
-                                                                            }
-                                                                        </p>
-                                                                        {relation.role1 && (
-                                                                            <p className="text-xs text-muted-foreground italic">
-                                                                                {
-                                                                                    relation.role1
-                                                                                }
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div>
-                                                                        <p className="font-medium">
-                                                                            {
-                                                                                relation.student2Name
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            {
-                                                                                relation.student2Nim
-                                                                            }
-                                                                        </p>
-                                                                        {relation.role2 && (
-                                                                            <p className="text-xs text-muted-foreground italic">
-                                                                                {
-                                                                                    relation.role2
-                                                                                }
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="space-y-1">
-                                                                        {getActivityBadge(
-                                                                            relation.activityType
-                                                                        )}
-                                                                        <p className="text-sm line-clamp-1">
-                                                                            {
-                                                                                relation.activityTitle
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {getStatusBadge(
-                                                                        relation.status
-                                                                    )}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <p className="text-sm">
-                                                                        {
-                                                                            relation.startDate
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        to{" "}
-                                                                        {relation.endDate ||
-                                                                            "Ongoing"}
-                                                                    </p>
-                                                                </TableCell>
-                                                                <TableCell className="text-right">
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleViewDetails(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Eye className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleEdit(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Edit className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() =>
-                                                                                handleDelete(
-                                                                                    relation
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        )
-                                                    )
-                                                ) : (
-                                                    <TableRow>
-                                                        <TableCell
-                                                            colSpan={6}
-                                                            className="text-center py-8 text-muted-foreground"
-                                                        >
-                                                            No relations found
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                )}
+                        {/* Mobile: Dropdown */}
+                        {isMobile && (
+                            <div className="mb-6">
+                                <Select
+                                    value={currentTab}
+                                    onValueChange={(value) =>
+                                        setCurrentTab(value)
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            <div className="flex items-center gap-2">
+                                                <LinkIcon className="w-4 h-4" />
+                                                <span>All ({stats.total})</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="pkl">
+                                            <div className="flex items-center gap-2">
+                                                <Briefcase className="w-4 h-4" />
+                                                <span>PKL ({stats.pkl})</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="thesis">
+                                            <div className="flex items-center gap-2">
+                                                <GraduationCap className="w-4 h-4" />
+                                                <span>
+                                                    Thesis ({stats.thesis})
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="competition">
+                                            <div className="flex items-center gap-2">
+                                                <Award className="w-4 h-4" />
+                                                <span>
+                                                    Competition (
+                                                    {stats.competition})
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
+                        )}
+
+                        {/* Desktop: Tabs */}
+                        <Tabs
+                            value={currentTab}
+                            onValueChange={(value) => setCurrentTab(value)}
+                            className="w-full"
+                        >
+                            {!isMobile && (
+                                <TabsList className="grid w-full grid-cols-4 mb-6">
+                                    <TabsTrigger value="all" className="gap-2">
+                                        <LinkIcon className="w-4 h-4" />
+                                        All ({stats.total})
+                                    </TabsTrigger>
+                                    <TabsTrigger value="pkl" className="gap-2">
+                                        <Briefcase className="w-4 h-4" />
+                                        PKL ({stats.pkl})
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="thesis"
+                                        className="gap-2"
+                                    >
+                                        <GraduationCap className="w-4 h-4" />
+                                        Thesis ({stats.thesis})
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="competition"
+                                        className="gap-2"
+                                    >
+                                        <Award className="w-4 h-4" />
+                                        Competition ({stats.competition})
+                                    </TabsTrigger>
+                                </TabsList>
+                            )}
+
+                            <TabsContent
+                                value={currentTab}
+                                className="space-y-4"
+                            >
+                                <div className="border rounded-lg overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        {relationType === "student-lecturer" ? (
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>
+                                                            Student
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Lecturer
+                                                        </TableHead>
+                                                        <TableHead className="min-w-[250px]">
+                                                            Activity
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Department
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Status
+                                                        </TableHead>
+                                                        <TableHead className="text-right">
+                                                            Actions
+                                                        </TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {filteredSLRelations.length >
+                                                    0 ? (
+                                                        filteredSLRelations.map(
+                                                            (relation) => (
+                                                                <TableRow
+                                                                    key={
+                                                                        relation.id
+                                                                    }
+                                                                >
+                                                                    <TableCell>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                <span className="text-xs text-primary">
+                                                                                    {relation.studentName
+                                                                                        .split(
+                                                                                            " "
+                                                                                        )
+                                                                                        .map(
+                                                                                            (
+                                                                                                n
+                                                                                            ) =>
+                                                                                                n[0]
+                                                                                        )
+                                                                                        .join(
+                                                                                            ""
+                                                                                        )
+                                                                                        .substring(
+                                                                                            0,
+                                                                                            2
+                                                                                        )}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="line-clamp-1">
+                                                                                    {
+                                                                                        relation.studentName
+                                                                                    }
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        relation.studentNim
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <UserCheck className="w-4 h-4 text-muted-foreground shrink-0" />
+                                                                            <div>
+                                                                                <p className="line-clamp-1">
+                                                                                    {
+                                                                                        relation.lecturerName
+                                                                                    }
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        relation.lecturerNip
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="space-y-1">
+                                                                            {getActivityBadge(
+                                                                                relation.activityType
+                                                                            )}
+                                                                            <p className="text-sm line-clamp-2">
+                                                                                {
+                                                                                    relation.activityTitle
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {
+                                                                            relation.department
+                                                                        }
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {getStatusBadge(
+                                                                            relation.status
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center justify-end gap-2">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleViewDetails(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Eye className="w-4 h-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleEdit(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Edit className="w-4 h-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleDelete(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                                className="text-destructive hover:text-destructive"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <TableRow>
+                                                            <TableCell
+                                                                colSpan={6}
+                                                                className="text-center py-8 text-muted-foreground"
+                                                            >
+                                                                No relations
+                                                                found
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                        ) : (
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>
+                                                            Student 1
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Student 2
+                                                        </TableHead>
+                                                        <TableHead className="min-w-[250px]">
+                                                            Activity
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Department
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Status
+                                                        </TableHead>
+                                                        <TableHead className="text-right">
+                                                            Actions
+                                                        </TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {filteredSSRelations.length >
+                                                    0 ? (
+                                                        filteredSSRelations.map(
+                                                            (relation) => (
+                                                                <TableRow
+                                                                    key={
+                                                                        relation.id
+                                                                    }
+                                                                >
+                                                                    <TableCell>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                <span className="text-xs text-primary">
+                                                                                    {relation.student1Name
+                                                                                        .split(
+                                                                                            " "
+                                                                                        )
+                                                                                        .map(
+                                                                                            (
+                                                                                                n
+                                                                                            ) =>
+                                                                                                n[0]
+                                                                                        )
+                                                                                        .join(
+                                                                                            ""
+                                                                                        )
+                                                                                        .substring(
+                                                                                            0,
+                                                                                            2
+                                                                                        )}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="line-clamp-1">
+                                                                                    {
+                                                                                        relation.student1Name
+                                                                                    }
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        relation.student1Nim
+                                                                                    }
+                                                                                </p>
+                                                                                {relation.role1 && (
+                                                                                    <p className="text-xs text-blue-600">
+                                                                                        {
+                                                                                            relation.role1
+                                                                                        }
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                <span className="text-xs text-primary">
+                                                                                    {relation.student2Name
+                                                                                        .split(
+                                                                                            " "
+                                                                                        )
+                                                                                        .map(
+                                                                                            (
+                                                                                                n
+                                                                                            ) =>
+                                                                                                n[0]
+                                                                                        )
+                                                                                        .join(
+                                                                                            ""
+                                                                                        )
+                                                                                        .substring(
+                                                                                            0,
+                                                                                            2
+                                                                                        )}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="line-clamp-1">
+                                                                                    {
+                                                                                        relation.student2Name
+                                                                                    }
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        relation.student2Nim
+                                                                                    }
+                                                                                </p>
+                                                                                {relation.role2 && (
+                                                                                    <p className="text-xs text-blue-600">
+                                                                                        {
+                                                                                            relation.role2
+                                                                                        }
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="space-y-1">
+                                                                            {getActivityBadge(
+                                                                                relation.activityType
+                                                                            )}
+                                                                            <p className="text-sm line-clamp-2">
+                                                                                {
+                                                                                    relation.activityTitle
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {
+                                                                            relation.department
+                                                                        }
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {getStatusBadge(
+                                                                            relation.status
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center justify-end gap-2">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleViewDetails(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Eye className="w-4 h-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleEdit(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Edit className="w-4 h-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleDelete(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                                className="text-destructive hover:text-destructive"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <TableRow>
+                                                            <TableCell
+                                                                colSpan={6}
+                                                                className="text-center py-8 text-muted-foreground"
+                                                            >
+                                                                No relations
+                                                                found
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                        )}
+                                    </div>
+                                </div>
+                            </TabsContent>
                         </Tabs>
                     </CardContent>
                 </Card>
@@ -1666,7 +1886,20 @@ export default function AdminRelationsPage() {
                                                     Student
                                                 </Label>
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <GraduationCap className="w-5 h-5 text-muted-foreground" />
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <span className="text-sm text-primary">
+                                                            {selectedSLRelation.studentName
+                                                                .split(" ")
+                                                                .map(
+                                                                    (n) => n[0]
+                                                                )
+                                                                .join("")
+                                                                .substring(
+                                                                    0,
+                                                                    2
+                                                                )}
+                                                        </span>
+                                                    </div>
                                                     <div>
                                                         <p>
                                                             {
@@ -1684,7 +1917,7 @@ export default function AdminRelationsPage() {
 
                                             <div>
                                                 <Label className="text-muted-foreground">
-                                                    Lecturer / Supervisor
+                                                    Supervisor
                                                 </Label>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <UserCheck className="w-5 h-5 text-muted-foreground" />
@@ -1780,7 +2013,20 @@ export default function AdminRelationsPage() {
                                                     Student 1
                                                 </Label>
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <GraduationCap className="w-5 h-5 text-muted-foreground" />
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <span className="text-sm text-primary">
+                                                            {selectedSSRelation.student1Name
+                                                                .split(" ")
+                                                                .map(
+                                                                    (n) => n[0]
+                                                                )
+                                                                .join("")
+                                                                .substring(
+                                                                    0,
+                                                                    2
+                                                                )}
+                                                        </span>
+                                                    </div>
                                                     <div>
                                                         <p>
                                                             {
@@ -1793,7 +2039,7 @@ export default function AdminRelationsPage() {
                                                             }
                                                         </p>
                                                         {selectedSSRelation.role1 && (
-                                                            <p className="text-xs text-muted-foreground italic">
+                                                            <p className="text-sm text-blue-600">
                                                                 {
                                                                     selectedSSRelation.role1
                                                                 }
@@ -1805,10 +2051,36 @@ export default function AdminRelationsPage() {
 
                                             <div>
                                                 <Label className="text-muted-foreground">
+                                                    Department
+                                                </Label>
+                                                <p className="mt-1">
+                                                    {
+                                                        selectedSSRelation.department
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label className="text-muted-foreground">
                                                     Student 2
                                                 </Label>
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <GraduationCap className="w-5 h-5 text-muted-foreground" />
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <span className="text-sm text-primary">
+                                                            {selectedSSRelation.student2Name
+                                                                .split(" ")
+                                                                .map(
+                                                                    (n) => n[0]
+                                                                )
+                                                                .join("")
+                                                                .substring(
+                                                                    0,
+                                                                    2
+                                                                )}
+                                                        </span>
+                                                    </div>
                                                     <div>
                                                         <p>
                                                             {
@@ -1821,7 +2093,7 @@ export default function AdminRelationsPage() {
                                                             }
                                                         </p>
                                                         {selectedSSRelation.role2 && (
-                                                            <p className="text-xs text-muted-foreground italic">
+                                                            <p className="text-sm text-blue-600">
                                                                 {
                                                                     selectedSSRelation.role2
                                                                 }
@@ -1829,19 +2101,6 @@ export default function AdminRelationsPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <Label className="text-muted-foreground">
-                                                    Department
-                                                </Label>
-                                                <p className="mt-1">
-                                                    {
-                                                        selectedSSRelation.department
-                                                    }
-                                                </p>
                                             </div>
 
                                             <div>
@@ -1959,6 +2218,6 @@ export default function AdminRelationsPage() {
                     </AlertDialogContent>
                 </AlertDialog>
             </div>
-        </>
+        </MainLayout>
     );
 }

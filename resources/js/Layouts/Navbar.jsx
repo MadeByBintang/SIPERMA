@@ -1,13 +1,17 @@
-// resources/js/Layouts/Navbar.jsx
 import { Button } from "../Components/ui/button";
 import { LogOut, Menu } from "lucide-react";
 import { usePage, router } from "@inertiajs/react";
 
+// Tambahan: fungsi normalizeUrl
+function normalizeUrl(url) {
+    return url.split("?")[0].replace(/\/$/, "");
+}
+
 export default function Navbar({ setMobileMenuOpen }) {
     const { auth } = usePage().props;
     const url = usePage().url ?? "";
+    const normalizedUrl = normalizeUrl(url); // gunakan normalizeUrl di sini
 
-    const currentPage = url.split("/").pop() || "dashboard";
     const role = auth?.user?.role_name;
 
     const portalName =
@@ -19,9 +23,54 @@ export default function Navbar({ setMobileMenuOpen }) {
 
     const logout = () => router.post("/logout");
 
+    // Semua menu sama seperti Sidebar
+    const studentMenu = [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/profile/student", label: "Profile" },
+        { href: "/registration", label: "Registration" },
+        { href: "/application-status", label: "Application Status" },
+        { href: "/matching", label: "Matching" },
+        { href: "/timeline", label: "Timeline" },
+        { href: "/relations", label: "Relations" },
+        { href: "/reports", label: "Reports" },
+    ];
+
+    const lecturerMenu = [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/profile/lecturer", label: "Profile" },
+        { href: "/approval", label: "Approval" },
+        { href: "/matching", label: "Matching" },
+        { href: "/timeline", label: "Timeline" },
+        { href: "/relations", label: "Relations" },
+        { href: "/reports", label: "Reports" },
+    ];
+
+    const adminMenu = [
+        { href: "/admin/dashboard", label: "Dashboard" },
+        { href: "/admin/users", label: "Users" },
+        { href: "/admin/projects", label: "Project" },
+        { href: "/admin/relations", label: "Relations" },
+        { href: "/admin/reports", label: "Reports" },
+        { href: "/admin/settings", label: "Settings" },
+        { href: "/profile/admin", label: "Profile" },
+    ];
+
+    const menuItems =
+        role === "mahasiswa"
+            ? studentMenu
+            : role === "dosen"
+            ? lecturerMenu
+            : adminMenu;
+
+    // Cari label berdasarkan URL sekarang
+    const currentPageItem =
+        menuItems.find((item) => url.startsWith(item.href)) || {};
+    const currentPage = currentPageItem.label || "Dashboard";
+
     return (
-        <header className="fixed top-0 left-64 right-0 z-50 h-14 md:h-16 bg-card border-b border-border px-4 md:px-8 flex items-center justify-between">
+        <header className="h-14 md:h-16 bg-card border-b border-border px-4 md:px-8 flex items-center justify-between">
             <div className="flex items-center gap-3">
+                {/* Mobile Menu Button */}
                 <Button
                     variant="ghost"
                     size="sm"
@@ -32,8 +81,8 @@ export default function Navbar({ setMobileMenuOpen }) {
                 </Button>
 
                 <div>
-                    <h1 className="text-lg md:text-2xl capitalize">
-                        {currentPage.replace("-", " ")}
+                    <h1 className="text-foreground capitalize text-lg md:text-2xl">
+                        {currentPage}
                     </h1>
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {portalName}
@@ -43,12 +92,12 @@ export default function Navbar({ setMobileMenuOpen }) {
 
             <Button
                 variant="outline"
-                size="sm"
                 onClick={logout}
+                size="sm"
                 className="gap-2"
             >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:block">Logout</span>
+                <span className="hidden sm:inline">Logout</span>
             </Button>
         </header>
     );

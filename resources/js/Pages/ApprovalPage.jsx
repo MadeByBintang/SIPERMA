@@ -1,27 +1,28 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Head } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+} from "../Components/ui/card";
+import { Button } from "../Components/ui/button";
+import { Badge } from "../Components/ui/badge";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "../components/ui/tabs";
+} from "../Components/ui/tabs";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../components/ui/select";
+} from "../Components/ui/select";
 import {
     Table,
     TableBody,
@@ -29,7 +30,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../components/ui/table";
+} from "../Components/ui/table";
 import {
     Dialog,
     DialogContent,
@@ -37,9 +38,9 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-} from "../components/ui/dialog";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from "../components/ui/label";
+} from "../Components/ui/dialog";
+import { Textarea } from "../Components/ui/textarea";
+import { Label } from "../Components/ui/label";
 import {
     CheckCircle2,
     XCircle,
@@ -53,12 +54,36 @@ import {
     AlertCircle,
     Eye,
 } from "lucide-react";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Separator } from "../components/ui/separator";
+import { Alert, AlertDescription } from "../Components/ui/alert";
+import { Separator } from "../Components/ui/separator";
 
-// Komponen ini bisa langsung dipanggil dari Laravel route seperti:
-// return Inertia::render('ApprovalPage', ['user' => Auth::user()]);
-export default function ApprovalPage({ auth }) {
+const ActivityType = "PKL" | "Thesis" | "Competition";
+const RequestStatus = "pending" | "approved" | "rejected";
+const RequestType = "supervision" | "team-invitation";
+
+const ApprovalRequest = [
+    {
+        id: "number",
+        studentName: "string",
+        studentNIM: "string",
+        studentEmail: "string",
+        activityType: "ActivityType",
+        activityName: "string",
+        requestType: "RequestType",
+        submittedDate: "string",
+        status: "RequestStatus",
+        description: "string",
+        studentGPA: "number",
+        studentInterest: "string",
+        companyName: "string",
+        teamLeader: "string",
+        teamMembers: "string",
+        proposalDocument: "string",
+        notes: "string",
+    },
+];
+
+export default function ApprovalPage() {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
@@ -198,12 +223,18 @@ export default function ApprovalPage({ auth }) {
         },
     ];
 
-    const getStatusColor = (status) =>
-        ({
-            approved: "bg-green-100 text-green-700",
-            rejected: "bg-red-100 text-red-700",
-            pending: "bg-yellow-100 text-yellow-700",
-        }[status] || "bg-gray-100 text-gray-700");
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "approved":
+                return "bg-green-100 text-green-700";
+            case "rejected":
+                return "bg-red-100 text-red-700";
+            case "pending":
+                return "bg-yellow-100 text-yellow-700";
+            default:
+                return "bg-gray-100 text-gray-700";
+        }
+    };
 
     const getActivityIcon = (type) => {
         switch (type) {
@@ -266,6 +297,7 @@ export default function ApprovalPage({ auth }) {
         (r) => r.status === "rejected"
     );
 
+    // Determine which requests to show based on active tab
     const getFilteredRequests = () => {
         switch (activeTab) {
             case "pending":
@@ -274,12 +306,13 @@ export default function ApprovalPage({ auth }) {
                 return { requests: approvedRequests, showActions: false };
             case "rejected":
                 return { requests: rejectedRequests, showActions: false };
+            case "all":
             default:
                 return { requests: approvalRequests, showActions: false };
         }
     };
 
-    const renderRequestsTable = (requests, showActions = false) => {
+    const renderRequestsTable = (requests, showActions) => {
         if (requests.length === 0) {
             return (
                 <div className="text-center py-12 text-muted-foreground">
@@ -308,15 +341,21 @@ export default function ApprovalPage({ auth }) {
                         {requests.map((request) => (
                             <TableRow key={request.id}>
                                 <TableCell>
-                                    <p>{request.studentName}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {request.studentNIM}
-                                    </p>
+                                    <div>
+                                        <p>{request.studentName}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {request.studentNIM}
+                                        </p>
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-start gap-2">
-                                        {getActivityIcon(request.activityType)}
-                                        <div>
+                                        <div className="mt-1">
+                                            {getActivityIcon(
+                                                request.activityType
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
                                             <p className="line-clamp-1">
                                                 {request.activityName}
                                             </p>
@@ -338,7 +377,11 @@ export default function ApprovalPage({ auth }) {
                                         <Calendar className="w-3 h-3" />
                                         {new Date(
                                             request.submittedDate
-                                        ).toLocaleDateString("en-US")}
+                                        ).toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
                                     </div>
                                 </TableCell>
                                 <TableCell>
@@ -355,39 +398,52 @@ export default function ApprovalPage({ auth }) {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            handleViewDetails(request)
-                                        }
-                                    >
-                                        <Eye className="w-3 h-3 mr-1" /> View
-                                    </Button>
-                                    {showActions && (
-                                        <>
-                                            <Button
-                                                variant="default"
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleApproveClick(request)
-                                                }
-                                            >
-                                                <CheckCircle2 className="w-3 h-3 mr-1" />{" "}
-                                                Approve
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleRejectClick(request)
-                                                }
-                                            >
-                                                <XCircle className="w-3 h-3 mr-1" />{" "}
-                                                Reject
-                                            </Button>
-                                        </>
-                                    )}
+                                    <div className="flex items-center justify-end gap-1 md:gap-2 flex-wrap">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewDetails(request)
+                                            }
+                                        >
+                                            <Eye className="w-3 h-3 md:mr-1" />
+                                            <span className="hidden md:inline">
+                                                View
+                                            </span>
+                                        </Button>
+                                        {showActions && (
+                                            <>
+                                                <Button
+                                                    variant="default"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleApproveClick(
+                                                            request
+                                                        )
+                                                    }
+                                                >
+                                                    <CheckCircle2 className="w-3 h-3 md:mr-1" />
+                                                    <span className="hidden md:inline">
+                                                        Approve
+                                                    </span>
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleRejectClick(
+                                                            request
+                                                        )
+                                                    }
+                                                >
+                                                    <XCircle className="w-3 h-3 md:mr-1" />
+                                                    <span className="hidden md:inline">
+                                                        Reject
+                                                    </span>
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -398,18 +454,15 @@ export default function ApprovalPage({ auth }) {
     };
 
     return (
-        <>
-            <Head title="Approval Page" />
-
-            <div className="space-y-6 p-6">
+        <MainLayout>
+            <Head title="Approval Center" />
+            <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold">
-                            Approval Center
-                        </h1>
+                        <h1>Approval Center</h1>
                         <p className="text-sm text-muted-foreground">
-                            Review and manage student supervision and team
-                            requests
+                            Review and manage student requests for supervision
+                            and team participation
                         </p>
                     </div>
                 </div>
@@ -923,6 +976,6 @@ export default function ApprovalPage({ auth }) {
                     </DialogContent>
                 </Dialog>
             </div>
-        </>
+        </MainLayout>
     );
 }

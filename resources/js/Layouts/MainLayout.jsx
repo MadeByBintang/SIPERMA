@@ -1,7 +1,11 @@
 // resources/js/Layouts/MainLayout.jsx
 import { useState } from "react";
-import { usePage } from "@inertiajs/react";
-import { Sheet, SheetContent } from "../Components/ui/sheet";
+import {
+    Sheet,
+    SheetContent,
+    SheetTitle,
+    SheetDescription,
+} from "../Components/ui/sheet";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 import Sidebar from "./Sidebar";
@@ -11,29 +15,32 @@ export default function MainLayout({ children }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="flex h-screen bg-background">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 border-r bg-card">
+            <aside className="hidden lg:flex w-64 bg-card border-r border-border flex-col">
                 <Sidebar setMobileMenuOpen={setMobileMenuOpen} />
             </aside>
 
             {/* Mobile Sidebar */}
-            <div className="lg:hidden">
-                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                    <SheetContent side="left" className="p-0 w-64">
-                        <VisuallyHidden.Root>
-                            <span>Menu</span>
-                        </VisuallyHidden.Root>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetContent side="left" className="p-0 w-64">
+                    <VisuallyHidden.Root>
+                        <SheetTitle>Navigation Menu</SheetTitle>
+                        <SheetDescription>
+                            Access all pages and features
+                        </SheetDescription>{" "}
+                    </VisuallyHidden.Root>
+                    <div className="flex flex-col h-full bg-card">
                         <Sidebar setMobileMenuOpen={setMobileMenuOpen} />
-                    </SheetContent>
-                </Sheet>
-            </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
 
             {/* Main Area */}
-            <div className="flex-1 flex flex-col ml-64">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <Navbar setMobileMenuOpen={setMobileMenuOpen} />
 
-                <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 mt-14 md:mt-16">
+                <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
                     {children}
                 </main>
             </div>
