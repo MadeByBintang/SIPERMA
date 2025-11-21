@@ -14,10 +14,10 @@ class DatabaseSeeder extends Seeder
             MasterLecturersSeeder::class,
             MasterStudentsSeeder::class,
             ActivityTypeSeeder::class,
+            AdminSeeder::class,
 
             // 2. Akun User (yang menghubungkan data)
             UserSeeder::class,
-            AdminSeeder::class,
 
             // 3. Data Alur Kerja (Workflow)
             ActivitySeeder::class,     // <-- TAMBAHKAN INI

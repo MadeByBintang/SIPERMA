@@ -2,13 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Lecturer;         // <-- Import Lecturer
-use App\Models\Student;          // <-- Import Student
-use App\Models\MasterLecturer;   // <-- Import MasterLecturer
-use App\Models\MasterStudent;    // <-- Import MasterStudent
+use App\Models\Admin;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Student;          // <-- Import Student
+use App\Models\Lecturer;         // <-- Import Lecturer
+use App\Models\MasterStudent;    // <-- Import MasterStudent
+use App\Models\MasterLecturer;   // <-- Import MasterLecturer
 
 class UserSeeder extends Seeder
 {
@@ -21,7 +22,6 @@ class UserSeeder extends Seeder
 
         foreach($lecturers as $lecturer){
             $user = User::firstOrCreate([
-                'email'     => $lecturer -> email,
                 'username'  => $lecturer -> nip,
                 'password'  => Hash::make('password'),
                 'role_id'   => 2
@@ -37,7 +37,6 @@ class UserSeeder extends Seeder
 
         foreach($students as $student){
             $user = User::firstOrCreate([
-                'email'     => $student -> email,
                 'username'  => $student -> nim,
                 'password'  => Hash::make('password'),
                 'role_id'   => 3
@@ -48,6 +47,27 @@ class UserSeeder extends Seeder
                 'user_id'           => $user -> user_id
             ]);
         };
+
+        $admin_accounts = [
+            ['0012345678', 'admin_king123'],
+            ['admin', 'admin']
+        ];
+
+        foreach ($admin_accounts as $i => $acc) {
+            $i++;
+            $user = User::firstOrCreate(
+                ['username' => $acc[0]],
+                [
+                    'password' => Hash::make($acc[1]),
+                    'role_id'  => 1
+                ]
+            );
+
+            Admin::where('admin_id', $i)
+                ->update([
+                    'user_id' => $user -> user_id
+                ]);
+        }
 
         User::where('username', '9910817119999')
             ->update(['password' => Hash::make('student_king123')]);

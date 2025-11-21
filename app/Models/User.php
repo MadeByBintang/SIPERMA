@@ -61,20 +61,29 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id', 'user_id');
     }
 
+    public function admin(){
+        return $this -> hasOne(Admin::class, 'user_id', 'user_id');
+    }
+
     public function profile(){
         return [
             'full_name' =>
-            $this -> role_name === 'mahasiswa'
-                ? $this->student?->masterStudent?->full_name
-            : ($this->role_name === 'dosen'
-                ? $this->lecturer?->masterLecturer?->full_name
-            : 'Hanni bi Fullan'),
+                $this->role_name === 'mahasiswa'
+                    ? $this->student?->masterStudent?->full_name
+                : ($this->role_name === 'dosen'
+                    ? $this->lecturer?->masterLecturer?->full_name
+                : ($this->role_name === 'admin'
+                    ? $this->admin?->full_name
+                : 'Hanni bi Fullan')),
+
 
             'id_number' => $this->role_name === 'mahasiswa'
-                ? $this->student?->masterStudent?->nim
+                    ? $this->student?->masterStudent?->nim
                 : ($this->role_name === 'dosen'
-                ? $this->lecturer?->masterLecturer?->nip
-                : '-'),
+                    ? $this->lecturer?->masterLecturer?->nip
+                : ($this->role_name === 'admin'
+                    ? 'admin'
+                : '-')),
         ];
     }
 }

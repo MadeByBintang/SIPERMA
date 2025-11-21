@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Admin;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -15,18 +15,17 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate([
-            'email' => 'admin1@siperma.com',
-            'username' => '0012345678',
-            'password' => Hash::make('admin_king123'),
-            'role_id' => 1,
+        Admin::firstOrCreate([
+            'full_name' => 'Erika Maulidiya',
+            'email'     => 'admin.luar.biasa@siperma.com',
+
         ]);
 
-        User::firstOrCreate([
-            'email' => 'admin2@siperma.com',
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-            'role_id' => 1,
+        Admin::firstOrCreate([
+            'full_name' => 'Siti Ratna Dwinta Sari',
+            'email'     => 'admin.biasa.aja@siperma.com'
         ]);
+
+        
     }
 }

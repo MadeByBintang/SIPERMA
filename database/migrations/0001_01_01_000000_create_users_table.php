@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id('user_id'); // Sesuai ERD
             $table->unsignedBigInteger('role_id'); // Sesuai ERD
             $table->string('username', 100)->unique(); // Sesuai ERD
-            $table->string('email', 100)->unique(); // Sesuai ERD
+            // $table->string('email', 100)->unique(); // Sesuai ERD
             $table->string('password', 255); // Sesuai ERD
             $table->timestamps(); // created_at, updated_at (Sesuai ERD)
             $table->softDeletes(); // deleted_at (Sesuai ERD)
