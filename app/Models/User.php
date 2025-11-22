@@ -38,19 +38,17 @@ class User extends Authenticatable
     }
 
 
-    // Relasi ke tabel roles
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
     }
 
-    // Accessor agar bisa dipanggil sebagai $user->role_name
     public function getRoleNameAttribute()
     {
         return $this->role->role_name ?? null;
     }
 
-    // Relasi jika nanti dipakai
+
     public function lecturer()
     {
         return $this->hasOne(Lecturer::class, 'user_id', 'user_id');

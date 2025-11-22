@@ -14,10 +14,10 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
-        'master_student_id',
+        'master_student_id', // Kunci ke data master
         'nim',
-        'name',   // Pastikan kolom ini ada di tabel students
-        'phone',  // Pastikan kolom ini ada di tabel students
+        'name',  
+        'phone', 
         'major',
         'year',
         'gpa',
@@ -26,34 +26,37 @@ class Student extends Model
         'interest_field',
     ];
 
-    // ... relasi masterStudent tetap sama
+    // Relasi ke Master Data
+    public function masterStudent()
+    {
+        return $this->belongsTo(MasterStudent::class, 'master_student_id', 'master_student_id');
+    }
 
-    /**
-     * Relasi ke User (Akun Login)
-     */
+    // Helper Accessor: Ambil Nama dari Master
+    public function getNameAttribute()
+    {
+        // Ambil dari master, jika null ambil dari kolom lokal (jika ada)
+        
+        return $this->masterStudent->full_name ?? $this->attributes['name'] ?? '-';
+    }
+
+    // Helper Accessor: Ambil Email dari Master
+    public function getEmailAttribute()
+    {
+        return $this->masterStudent->email ?? '-';
+    }
+
+    // ... relasi lain (user, skills, dll) tetap sama
     public function user()
     {
-        // Param 2: FK di tabel students (user_id)
-        // Param 3: PK di tabel users (user_id)
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
-
-    /**
-     * Relasi Many-to-Many ke Skill
-     */
+    
     public function skills()
     {
-        return $this->belongsToMany(Skill::class, 'student_skills', 'student_id', 'skill_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(Skill::class, 'student_skills', 'student_id', 'skill_id')->withTimestamps();
     }
 
-    public function teamMembers()
-    {
-        return $this->hasMany(TeamMember::class, 'student_id', 'student_id');
-    }
-
-    public function supervisions()
-    {
-        return $this->hasMany(Supervision::class, 'student_id', 'student_id');
-    }
+    public function teamMembers() { return $this->hasMany(TeamMember::class, 'student_id', 'student_id'); }
+    public function supervisions() { return $this->hasMany(Supervision::class, 'student_id', 'student_id'); }
 }

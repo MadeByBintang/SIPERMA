@@ -23,12 +23,12 @@ class Supervision extends Model
         'activity_id',
         'supervision_status',
         'assigned_date',
-        'academic_year',
+        // 'academic_year', // Sudah dihapus
         'notes',
     ];
 
     /**
-     * RELASI: Supervisi ini milik satu Mahasiswa (bisa jadi nullable)
+     * RELASI: Supervisi ini milik satu Mahasiswa
      */
     public function student()
     {
@@ -44,7 +44,7 @@ class Supervision extends Model
     }
 
     /**
-     * RELASI: Supervisi ini milik satu Tim (bisa jadi nullable)
+     * RELASI: Supervisi ini milik satu Tim
      */
     public function team()
     {
@@ -59,11 +59,5 @@ class Supervision extends Model
         return $this->belongsTo(Activity::class, 'activity_id', 'activity_id');
     }
 
-    /**
-     * RELASI: Satu Supervisi bisa memiliki BANYAK Log Aktivitas
-     */
-    public function activityLogs()
-    {
-        return $this->hasMany(ActivityLog::class, 'supervision_id', 'supervision_id');
-    }
+    // --- FUNGSI activityLogs() DIHAPUS KARENA KOLOMNYA SUDAH TIDAK ADA ---
 }

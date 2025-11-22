@@ -34,7 +34,7 @@ class SupervisionSeeder extends Seeder
                     'activity_id' => $activity->activity_id,
                     'supervision_status' => 'Aktif',
                     'assigned_date' => now(),
-                    'academic_year' => '2025/2026',
+                    //'academic_year' => '2025/2026',
                 ]);
             }
         }

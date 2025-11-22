@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('activity_id');
             $table->string('supervision_status', 50);
             $table->dateTime('assigned_date');
-            $table->string('academic_year', 20);
+            //$table->string('academic_year', 20);
             $table->text('notes')->nullable();
 
             $table->foreign('student_id')->references('student_id')->on('students');

@@ -13,12 +13,11 @@ class ActivityLog extends Model
     protected $primaryKey = 'log_id';
 
     // Tabel ini tidak punya timestamps (created_at/updated_at)
-    // Dia punya log_date sendiri
     public $timestamps = false;
 
     // Kolom yang boleh diisi
     protected $fillable = [
-        'supervision_id',
+        'activity_id', // <--- PERUBAHAN 1: Ganti supervision_id jadi activity_id
         'user_id',
         'log_date',
         'progress_note',
@@ -26,11 +25,14 @@ class ActivityLog extends Model
     ];
 
     /**
-     * RELASI: Log ini milik satu Supervisi
+     * RELASI: Log ini milik satu Activity
+     * PERUBAHAN 2: Ubah nama fungsi dan target Model
      */
-    public function supervision()
+    public function activity()
     {
-        return $this->belongsTo(Supervision::class, 'supervision_id', 'supervision_id');
+        // Parameter: (Model Tujuan, Foreign Key di sini, Primary Key di sana)
+        // Asumsi PK di tabel activities adalah 'activity_id' (sesuai pola Anda)
+        return $this->belongsTo(Activity::class, 'activity_id', 'activity_id');
     }
 
     /**
