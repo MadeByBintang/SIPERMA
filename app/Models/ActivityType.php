@@ -9,20 +9,22 @@ class ActivityType extends Model
 {
     use HasFactory;
 
-    // Tentukan Primary Key
-    protected $primaryKey = 'activity_type_id';
+    // Sesuaikan dengan nama tabel di database
+    protected $table = 'activity_types';
 
-    // Tabel ini tidak punya timestamps
-    public $timestamps = false;
+    // Primary Key kustom sesuai migrasi
+    protected $primaryKey = 'activity_type_id'; 
+    
+    // Matikan timestamps karena di migrasi Anda kolom timestamps() dikomentari
+    public $timestamps = false; 
 
-    // Kolom yang boleh diisi
     protected $fillable = [
-        'activity_type_name',
+        'type_name', 
+        'description'
     ];
 
-    /**
-     * RELASI: Satu Tipe Aktivitas bisa memiliki BANYAK Aktivitas
-     */
+    // Relasi ke Activity (One to Many)
+    // Satu Tipe (misal PKL) bisa punya banyak Activity
     public function activities()
     {
         return $this->hasMany(Activity::class, 'activity_type_id', 'activity_type_id');

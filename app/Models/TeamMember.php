@@ -9,30 +9,22 @@ class TeamMember extends Model
 {
     use HasFactory;
 
-    // Tentukan Primary Key
-    protected $primaryKey = 'team_member_id';
+    protected $primaryKey = 'id'; 
 
-    // Tabel ini tidak punya timestamps
-    public $timestamps = false;
-
-    // Kolom yang boleh diisi
+    public $timestamps = true; 
+    
     protected $fillable = [
         'team_id',
         'student_id',
         'role_in_team',
+        'status', 
     ];
-
-    /**
-     * RELASI: Satu anggota tim adalah milik satu Tim
-     */
+    
     public function team()
     {
-        return $this->belongsTo(Team::class, 'team_id', 'team_id');
+        return $this->belongsTo(Team::class, 'team_id', 'id'); 
     }
 
-    /**
-     * RELASI: Satu anggota tim adalah milik satu Mahasiswa
-     */
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id', 'student_id');

@@ -9,54 +9,49 @@ class Student extends Model
 {
     use HasFactory;
 
-    // Tentukan Primary Key
     protected $primaryKey = 'student_id';
-
-    // Tabel ini tidak punya timestamps
     public $timestamps = false;
 
-    // Kolom yang boleh diisi
     protected $fillable = [
-        'master_student_id',
         'user_id',
+        'master_student_id',
+        'nim',
+        'name',   // Pastikan kolom ini ada di tabel students
+        'phone',  // Pastikan kolom ini ada di tabel students
+        'major',
+        'year',
+        'gpa',
+        'status',
+        'enrollment_date',
         'interest_field',
     ];
 
-    /**
-     * RELASI: Satu Student adalah milik satu MasterStudent (biodata)
-     */
-    public function masterStudent()
-    {
-        return $this->belongsTo(MasterStudent::class, 'master_student_id', 'master_student_id');
-    }
+    // ... relasi masterStudent tetap sama
 
     /**
-     * RELASI: Satu Student adalah milik satu User (akun login)
+     * Relasi ke User (Akun Login)
      */
     public function user()
     {
+        // Param 2: FK di tabel students (user_id)
+        // Param 3: PK di tabel users (user_id)
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-
+    /**
+     * Relasi Many-to-Many ke Skill
+     */
     public function skills()
     {
-        return $this->belongsToMany(Skill::class)
-                    ->withPivot('level')
+        return $this->belongsToMany(Skill::class, 'student_skills', 'student_id', 'skill_id')
                     ->withTimestamps();
     }
 
-    /**
-     * RELASI: Satu Student bisa tergabung di BANYAK team members
-     */
     public function teamMembers()
     {
         return $this->hasMany(TeamMember::class, 'student_id', 'student_id');
     }
 
-    /**
-     * RELASI: Satu Student bisa punya BANYAK supervisions
-     */
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'student_id', 'student_id');

@@ -5,53 +5,64 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
 class Lecturer extends Model
 {
     use HasFactory;
 
-    // Tentukan Primary Key
-    protected $primaryKey = 'lecturer_id';
+    protected $primaryKey = 'lecturer_id'; // Sesuaikan dengan DB
+    public $timestamps = false; // Sesuaikan dengan DB
 
-    // Tabel ini tidak punya timestamps
-    public $timestamps = false;
-
-    // Kolom yang boleh diisi
     protected $fillable = [
-        'master_lecturer_id',
         'user_id',
-        'supervision_quota',
+        'master_lecturer_id',
+        'nip',
+        'name',
+        'phone',
+        'description',
+        'academic_titles',
+        'expertise',
+        'office_location',
+        'quota',
+        'is_available'
     ];
 
-    /**
-     * RELASI: Satu Lecturer adalah milik satu MasterLecturer (biodata)
-     */
+    protected $casts = [
+        'academic_titles' => 'array',
+        'expertise' => 'array',
+        'is_available' => 'boolean',
+    ];
+
+    public function user()
+    {
+        // Param 2: FK di tabel lecturers (user_id)
+        // Param 3: PK di tabel users (user_id)
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+    
     public function masterLecturer()
     {
         return $this->belongsTo(MasterLecturer::class, 'master_lecturer_id', 'master_lecturer_id');
     }
 
-    /**
-     * RELASI: Satu Lecturer adalah milik satu User (akun login)
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
-
-    /**
-     * RELASI: Satu Lecturer bisa punya BANYAK expertise
-     */
-    public function skills()
-    {
-        return $this->belongsToMany(Skills::class)
-                    ->withPivot('level')
-                    ->withTimestamps();
-    }
-
-
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'lecturer_id', 'lecturer_id');
+    }
+
+    /**
+     * Relasi Many-to-Many ke Skill.
+     * DEFINISIKAN NAMA TABEL PIVOT 'lecturer_skills' SECARA EKSPLISIT (JAMAK)
+     */
+    public function skills()
+    {
+        // Parameter:
+        // 1. Model Tujuan (Skill::class)
+        // 2. Nama Tabel Pivot ('lecturer_skills') <-- INI YANG DIPERBAIKI (JAMAK)
+        // 3. Foreign Key model ini di pivot ('lecturer_id')
+        // 4. Foreign Key model tujuan di pivot ('skill_id')
+
+        return $this->belongsToMany(Skill::class, 'lecturer_skills', 'lecturer_id', 'skill_id')
+                    ->withPivot('level')
+                    ->withTimestamps();
     }
 }
