@@ -65,6 +65,9 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
     Route::get('/profile/student', [StudentProfileController::class, 'index'])
         ->name('profile.student');
 
+    Route::post('/profile/student/update', [StudentProfileController::class, 'update'])
+        ->name('profile.student.update');
+
 });
 
 Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {

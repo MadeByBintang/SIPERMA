@@ -17,13 +17,18 @@ class StudentProfileController extends Controller
         // Eager load data student dan skills
         $student = $user->student()->with(['skills', 'supervisions.lecturer.user'])->first();
 
+        $all_skills = Skill::select('skill_id as id', 'name')->get();
+
         $studentData = $student ? [
             'id' => $student->student_id,
             'name' => $student->name,
             'nim' => $student->nim,
             'studyProgram' => 'Teknologi Informasi',
             'email' => $student->email,
-            'interests' => $student->skills->pluck('name')->toArray(),
+            'skills' => $student->skills->map(fn($s) => [
+                'id' => $s->skill_id,
+                'name' => $s->name
+            ])->toArray(),
         ] : null;
 
         $supervisors = $student ? $student->supervisions->map(function($sup) {
@@ -39,44 +44,25 @@ class StudentProfileController extends Controller
         return Inertia::render('StudentProfilePage', [
             'student' => $studentData,
             'supervisors' => $supervisors,
-            'allSkills' => Skill::pluck('name')->toArray(),
+            'allSkills' => $all_skills
         ]);
     }
 
     public function update(Request $request)
     {
-        // --- PERBAIKAN DI SINI ---
-        // Baris ini memberitahu editor bahwa $user adalah Model User, bukan sekadar interface Auth
-        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $student = $user->student;
+        $student = $user -> student;
 
-        $validated = $request->validate([
-            //'phone' => 'nullable|string|max:20',
-            'description' => 'nullable|string|max:500',
-            'interests' => 'array',
-        ]);
+        $skillIds = $request->input('skills', []);
 
-        // 1. Update User (Phone)
-        // Pastikan 'phone' sudah ditambahkan ke $fillable di App\Models\User.php
-        $user->update(['phone' => $validated['phone']]);
-
-        // 2. Update Student (Jika ada field description di tabel students)
-        // if ($student) {
-        //    $student->update(['description' => $validated['description']]);
-        // }
-
-        // 3. Sync Skills (Interests)
-        if ($student && isset($validated['interests'])) {
-            $skillIds = [];
-            foreach ($validated['interests'] as $skillName) {
-                $skill = Skill::firstOrCreate(['name' => $skillName]);
-                $skillIds[] = $skill->skill_id; // Menggunakan 'skill_id' sesuai model Skill Anda
-            }
-            $student->skills()->sync($skillIds);
+        $syncData = [];
+        foreach ($skillIds as $id) {
+            $syncData[$id] = ['level' => 3];
         }
 
-        return redirect()->back()->with('success', 'Profile updated successfully');
+        $student->skills()->sync($syncData);
+
+        return redirect()->route('profile.student') -> with('success', 'Profile updated successfully');
     }
 }

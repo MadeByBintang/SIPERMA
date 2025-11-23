@@ -5,20 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StudentInterest extends Model
+class StudentSkill extends Model
 {
     use HasFactory;
 
-    // Tentukan Primary Key
-    protected $primaryKey = 'interest_id';
+    protected $table = 'student_skills';
 
-    // Tabel ini tidak punya timestamps
-    public $timestamps = false;
+    public $timestamps = true;
 
-    // Kolom yang boleh diisi
     protected $fillable = [
         'student_id',
-        'interest_name',
+        'skill_id',
+        'level'
     ];
 
     /**

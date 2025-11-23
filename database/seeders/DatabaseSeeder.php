@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // 1. Data Master Utama
             RolesSeeder::class,
+            SkillSeeder::class,
             MasterLecturersSeeder::class,
             MasterStudentsSeeder::class,
             ActivityTypeSeeder::class,

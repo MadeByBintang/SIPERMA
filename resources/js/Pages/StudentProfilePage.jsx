@@ -38,23 +38,12 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         nim: student?.nim || "-",
         studyProgram: student?.studyProgram || "-",
         email: student?.email || "-",
-        interests: Array.isArray(student?.interests) ? student.interests : [],
+        skills: Array.isArray(student?.skills) ? student.skills : [],
     };
 
     // 2. SETUP FORM INERTIA
     const { data, setData, post, processing, reset, errors } = useForm({
-        //phone: initialData.phone,
-        description: initialData.description,
-        interests: initialData.interests,
-
-        // Field Read-Only (disimpan di state form hanya untuk display, tidak dikirim ke server via update)
-        // Atau jika ingin dikirim untuk validasi, pastikan backend handle-nya (biasanya ignored)
-        _name: initialData.name,
-        _nim: initialData.nim,
-        _studyProgram: initialData.studyProgram,
-        _email: initialData.email,
-        _gpa: initialData.gpa,
-        _semester: initialData.semester,
+        skills: initialData.skills,
     });
 
     // Handlers
@@ -69,10 +58,8 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         // Gunakan POST ke route update (karena HTML form method spoofing)
         // Pastikan route 'profile.student.update' ada di web.php
         router.post(route('profile.student.update'), {
-            _method: 'put', // Method spoofing untuk PUT
-            //phone: data.phone,
-            description: data.description,
-            interests: data.interests,
+            _method: 'post',
+            skills: data.skills.map(s => s.id)
         }, {
             onSuccess: () => {
                 toast.success("Profile updated successfully");
@@ -85,25 +72,28 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         });
     };
 
-    const toggleInterest = (interest) => {
-        const current = data.interests;
-        const updated = current.includes(interest)
-            ? current.filter((i) => i !== interest)
-            : [...current, interest];
-        setData('interests', updated);
+
+    const toggleSkill = (skill) => {
+        const exists = data.skills.find(i => i.id === skill.id);
+        if (exists) {
+            setData('skills', data.skills.filter(i => i.id !== skill.id));
+        } else {
+            setData('skills', [...data.skills, skill]);
+        }
     };
 
-    const removeInterest = (interest) => {
-        setData('interests', data.interests.filter((i) => i !== interest));
+
+    const removeSkill = (id) => {
+        setData('skills', data.skills.filter(i => i.id !== id));
     };
 
-    // Helper untuk Avatar Initial
+
     const getInitials = (name) => {
         return name ? name
                         .split(" ")
                         .map((w) => w[0])
                         .join("")
-                        .toUpperCase() : "ST";
+                        .toUpperCase() : "-";
     };
 
     return (
@@ -163,42 +153,20 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         <Label>Email</Label>
                                         <Input value={initialData.email} disabled className="bg-muted" />
                                     </div>
-
-                                    {/* Editable Field: Phone */}
-                                    {/*<div className="space-y-2">
-                                        <Label>Phone Number</Label>
-                                        <Input
-                                            value={data.phone}
-                                            onChange={e => setData('phone', e.target.value)}
-                                            disabled={!isEditing}
-                                            placeholder="+62..."
-                                        />
-                                        {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
-                                    </div>*/}
                                 </div>
 
-                                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>GPA</Label>
-                                        <Input value={initialData.gpa} disabled className="bg-muted" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Semester</Label>
-                                        <Input value={initialData.semester} disabled className="bg-muted" />
-                                    </div>
-                                </div> */}
 
-                                {/* Editable Field: Interest Areas */}
+                                {/* Editable Field: skill Areas */}
                                 <div className="space-y-2">
-                                    <Label>Interest Areas</Label>
+                                    <Label>Skill Areas</Label>
                                     <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
-                                        {data.interests.length > 0 ? (
-                                            data.interests.map((interest) => (
-                                                <Badge key={interest} variant="secondary" className="gap-1">
-                                                    {interest}
+                                        {data.skills.length > 0 ? (
+                                            data.skills.map((skill) => (
+                                                <Badge key={skill.id} variant="secondary" className="gap-1">
+                                                    {skill.name}
                                                     {isEditing && (
                                                         <button
-                                                            onClick={() => removeInterest(interest)}
+                                                            onClick={() => removeSkill(skill.id)}
                                                             className="ml-1 hover:text-red-500"
                                                             type="button"
                                                         >
@@ -208,7 +176,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                                 </Badge>
                                             ))
                                         ) : (
-                                            <span className="text-sm text-muted-foreground self-center">No interests selected</span>
+                                            <span className="text-sm text-muted-foreground self-center">No skills selected</span>
                                         )}
                                     </div>
 
@@ -216,24 +184,34 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         <div className="mt-2">
                                             <Popover open={open} onOpenChange={setOpen}>
                                                 <PopoverTrigger asChild>
-                                                    <Button variant="outline" className="w-full justify-between font-normal">
-                                                        Select interests...
-                                                    </Button>
+                                                    <button
+                                                        type="button"
+                                                        role="combobox"
+                                                        aria-expanded={open}
+                                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        Select skills...
+                                                    </button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-[300px] p-0" align="start">
                                                     <Command>
-                                                        <CommandInput placeholder="Search interests..." />
+                                                        <CommandInput placeholder="Search skills..." />
                                                         <CommandList>
-                                                            <CommandEmpty>No interest found.</CommandEmpty>
+                                                            <CommandEmpty>No skill found.</CommandEmpty>
                                                             <CommandGroup>
-                                                                {allSkills.map((skill) => (
-                                                                    <CommandItem key={skill} onSelect={() => toggleInterest(skill)}>
-                                                                        <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.interests.includes(skill) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
-                                                                            {data.interests.includes(skill) && <Check className="h-3 w-3" />}
+                                                                {allSkills.map((skill) => {
+                                                                    const isSelected = data.skills.some(i => i.id === skill.id);
+                                                                    return (
+                                                                    <CommandItem
+                                                                        key={skill.id}
+                                                                        onSelect={() => toggleSkill(skill)}
+                                                                    >
+                                                                        <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${isSelected ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
+                                                                            {isSelected && <Check className="h-3 w-3" />}
                                                                         </div>
-                                                                        {skill}
+                                                                        {skill.name}
                                                                     </CommandItem>
-                                                                ))}
+                                                                )})}
                                                             </CommandGroup>
                                                         </CommandList>
                                                     </Command>
@@ -242,19 +220,6 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Editable Field: Description */}
-                                {/* <div className="space-y-2">
-                                    <Label>About / Description</Label>
-                                    <Textarea
-                                        value={data.description}
-                                        onChange={e => setData('description', e.target.value)}
-                                        disabled={!isEditing}
-                                        rows={3}
-                                        placeholder="Describe your academic interests..."
-                                    />
-                                    {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
-                                </div> */}
                             </div>
                         </div>
                     </CardContent>

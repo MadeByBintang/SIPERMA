@@ -53,7 +53,13 @@ class Student extends Model
 
     public function skills()
     {
-        return $this->belongsToMany(Skill::class, 'student_skills', 'student_id', 'skill_id')->withTimestamps();
+        return $this->belongsToMany(
+            Skill::class,
+            'student_skills',
+            'student_id',
+            'skill_id'
+            )->withPivot('level')
+            ->withTimestamps();
     }
 
     public function teamMembers() { return $this->hasMany(TeamMember::class, 'student_id', 'student_id'); }
