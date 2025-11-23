@@ -1,29 +1,29 @@
 import { useState } from "react";
-import { Head } from "@inertiajs/react";
+import { Head, usePage, useForm } from "@inertiajs/react"; // Tambahkan useForm
 import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Textarea } from "../Components/ui/textarea";
-import { Avatar, AvatarFallback } from "../Components/ui/avatar";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "../Components/ui/popover";
+} from "@/Components/ui/popover";
 import {
     Command,
     CommandEmpty,
@@ -31,182 +31,106 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "../Components/ui/command";
-import { Badge } from "../Components/ui/badge";
-import { Switch } from "../Components/ui/switch";
+} from "@/Components/ui/command";
+import { Badge } from "@/Components/ui/badge";
+import { Switch } from "@/Components/ui/switch";
 import { Edit2, Save, Check, X } from "lucide-react";
+import { toast } from "sonner";
 
 const expertiseOptions = [
-    "Machine Learning",
-    "Data Science",
-    "Artificial Intelligence",
-    "Web Development",
-    "Mobile Development",
-    "Cybersecurity",
-    "Software Engineering",
-    "Cloud Computing",
-    "Internet of Things",
-    "Blockchain",
-    "Computer Vision",
-    "Natural Language Processing",
-    "Database Systems",
-    "Network Security",
-    "Game Development",
-    "Computer Graphics",
-    "Human-Computer Interaction",
-    "Information Systems",
-    "Distributed Systems",
-    "Big Data Analytics",
+    "Machine Learning", "Data Science", "Artificial Intelligence", "Web Development",
+    "Mobile Development", "Cybersecurity", "Software Engineering", "Cloud Computing",
+    "Internet of Things", "Blockchain", "Computer Vision", "Natural Language Processing"
 ];
 
 const academicTitleOptions = [
-    "S.Kom",
-    "M.Kom",
-    "M.T",
-    "M.Sc",
-    "Ph.D",
-    "Dr.",
-    "Prof.",
+    "S.Kom", "M.Kom", "M.T", "M.Sc", "Ph.D", "Dr.", "Prof."
 ];
 
-export default function LecturerProfilePage() {
-    const [isEditing, setIsEditing] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [selectedExpertise, setSelectedExpertise] = useState([
-        "Machine Learning",
-        "Artificial Intelligence",
-        "Data Science",
-    ]);
-    const [originalExpertise, setOriginalExpertise] = useState([
-        "Machine Learning",
-        "Artificial Intelligence",
-        "Data Science",
-    ]);
-    const [formData, setFormData] = useState({
-        name: "Sarah Wijaya",
-        nip: "198512312010122001",
-        academicTitles: ["Dr.", "M.Kom"],
-        description:
-            "Specializes in deep learning and neural networks with 10+ years of research experience in AI applications. Passionate about mentoring students in cutting-edge AI research and applications.",
-        email: "sarah.wijaya@university.edu",
-        phone: "+62 812-3456-7890",
-        office: "Building A, Room 301",
-        quota: "8",
-        currentStudents: "6",
-        available: true,
-    });
-    const [originalFormData, setOriginalFormData] = useState({
-        name: "Sarah Wijaya",
-        nip: "198512312010122001",
-        academicTitles: ["Dr.", "M.Kom"],
-        description:
-            "Specializes in deep learning and neural networks with 10+ years of research experience in AI applications. Passionate about mentoring students in cutting-edge AI research and applications.",
-        email: "sarah.wijaya@university.edu",
-        phone: "+62 812-3456-7890",
-        office: "Building A, Room 301",
-        quota: "8",
-        currentStudents: "6",
-        available: true,
+export default function LecturerProfilePage({ supervisedStudents, stats }) {
+    const { auth } = usePage().props;
+    const user = auth.user;
+    const lecturerData = auth.lecturer || {};
+
+    // Parse JSON data dari database (karena disimpan sebagai string JSON)
+    const parseJson = (data) => {
+        try {
+            return typeof data === 'string' ? JSON.parse(data) : (data || []);
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const initialTitles = parseJson(lecturerData.academic_titles);
+    const initialExpertise = parseJson(lecturerData.expertise);
+
+    const { data, setData, put, processing, errors, reset } = useForm({
+        name: user.name || "",
+        nip: lecturerData.nip || user.username || "-", // NIP biasanya username dosen
+        email: user.email || "",
+        //phone: user.phone || "",
+        academicTitles: initialTitles,
+        expertise: initialExpertise,
+        description: lecturerData.description || "",
+        office_location: lecturerData.office_location || "",
+        quota: lecturerData.quota || 10,
+        is_available: Boolean(lecturerData.is_available),
     });
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [open, setOpen] = useState(false); // Popover state
+
+    // Handle Actions
     const handleEdit = () => {
-        // Store current data as original before editing
-        setOriginalFormData({
-            ...formData,
-            academicTitles: [...formData.academicTitles],
-        });
-        setOriginalExpertise([...selectedExpertise]);
         setIsEditing(true);
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
-        // Save logic would go here
-    };
-
     const handleCancel = () => {
-        // Restore original data
-        setFormData({
-            ...originalFormData,
-            academicTitles: [...originalFormData.academicTitles],
-        });
-        setSelectedExpertise([...originalExpertise]);
+        reset(); // Kembalikan ke data awal dari props
         setIsEditing(false);
     };
 
-    const toggleExpertise = (expertise) => {
-        setSelectedExpertise((prev) =>
-            prev.includes(expertise)
-                ? prev.filter((e) => e !== expertise)
-                : [...prev, expertise]
-        );
+    const handleSave = () => {
+        // Kirim data ke controller
+        put(route('profile.lecturer.update'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success("Profile updated successfully!");
+                setIsEditing(false);
+            },
+            onError: () => {
+                toast.error("Failed to update profile.");
+            }
+        });
     };
 
-    const removeExpertise = (expertise) => {
-        setSelectedExpertise((prev) => prev.filter((e) => e !== expertise));
+    // Logic UI Helper
+    const toggleExpertise = (item) => {
+        const current = data.expertise;
+        const updated = current.includes(item)
+            ? current.filter((e) => e !== item)
+            : [...current, item];
+        setData('expertise', updated);
+    };
+
+    const removeExpertise = (item) => {
+        setData('expertise', data.expertise.filter((e) => e !== item));
+    };
+
+    const addTitle = (title) => {
+        if (!data.academicTitles.includes(title)) {
+            setData('academicTitles', [...data.academicTitles, title]);
+        }
+    };
+
+    const removeTitle = (title) => {
+        setData('academicTitles', data.academicTitles.filter(t => t !== title));
     };
 
     const getFullName = () => {
-        const titles = formData.academicTitles.join(" ");
-        return `${titles} ${formData.name}`.trim();
+        const titles = data.academicTitles.join(" ");
+        return `${titles} ${data.name}`.trim();
     };
-
-    const supervisedStudents = [
-        {
-            id: 1,
-            name: "Ahmad Rizki Pratama",
-            nim: "2021001234",
-            interest: "Machine Learning",
-            activityType: "Thesis",
-            startDate: "Sep 2024",
-            status: "Active",
-        },
-        {
-            id: 2,
-            name: "Siti Nurhaliza",
-            nim: "2021002345",
-            interest: "Data Science",
-            activityType: "Thesis",
-            startDate: "Sep 2024",
-            status: "Active",
-        },
-        {
-            id: 3,
-            name: "Budi Santoso",
-            nim: "2021003456",
-            interest: "AI Applications",
-            activityType: "PKL",
-            startDate: "Aug 2024",
-            status: "Active",
-        },
-        {
-            id: 4,
-            name: "Farhan Abdullah",
-            nim: "2021006789",
-            interest: "Computer Vision",
-            activityType: "Thesis",
-            startDate: "Jul 2024",
-            status: "Active",
-        },
-        {
-            id: 5,
-            name: "Gita Permata",
-            nim: "2021007890",
-            interest: "Cloud Computing",
-            activityType: "Thesis",
-            startDate: "Sep 2024",
-            status: "Active",
-        },
-        {
-            id: 6,
-            name: "Dewi Lestari",
-            nim: "2021004567",
-            interest: "Machine Learning",
-            activityType: "Competition",
-            startDate: "Oct 2024",
-            status: "Active",
-        },
-    ];
 
     return (
         <MainLayout>
@@ -217,462 +141,228 @@ export default function LecturerProfilePage() {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Lecturer Profile</CardTitle>
                         {!isEditing ? (
-                            <Button
-                                onClick={handleEdit}
-                                variant="outline"
-                                className="gap-2"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                                Edit
+                            <Button onClick={handleEdit} variant="outline" className="gap-2">
+                                <Edit2 className="w-4 h-4" /> Edit
                             </Button>
                         ) : (
                             <div className="flex gap-2">
-                                <Button
-                                    onClick={handleCancel}
-                                    variant="outline"
-                                    className="gap-2"
-                                >
-                                    <X className="w-4 h-4" />
-                                    Cancel
+                                <Button onClick={handleCancel} variant="outline" className="gap-2" disabled={processing}>
+                                    <X className="w-4 h-4" /> Cancel
                                 </Button>
-                                <Button onClick={handleSave} className="gap-2">
-                                    <Save className="w-4 h-4" />
-                                    Update
+                                <Button onClick={handleSave} className="gap-2" disabled={processing}>
+                                    <Save className="w-4 h-4" /> {processing ? 'Saving...' : 'Update'}
                                 </Button>
                             </div>
                         )}
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Profile Picture and Basic Info */}
-                        <div className="flex items-start gap-6">
+                        <div className="flex items-start gap-6 flex-col md:flex-row">
                             <Avatar className="w-24 h-24">
                                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                                    SW
+                                    {data.name.substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 space-y-4">
+                            <div className="flex-1 space-y-4 w-full">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Full Name</Label>
                                         <Input
                                             id="name"
-                                            value={formData.name}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    name: e.target.value,
-                                                })
-                                            }
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
                                             disabled={!isEditing}
                                         />
+                                        {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="nip">NIP</Label>
-                                        <Input
-                                            id="nip"
-                                            value={formData.nip}
-                                            disabled
-                                            className="bg-muted"
-                                        />
+                                        <Input id="nip" value={data.nip} disabled className="bg-muted" />
                                     </div>
                                 </div>
 
+                                {/* Academic Titles */}
                                 <div className="space-y-2">
                                     <Label>Academic Titles</Label>
                                     {isEditing ? (
                                         <div className="space-y-2">
                                             <div className="flex flex-wrap gap-2">
-                                                {formData.academicTitles.map(
-                                                    (title) => (
-                                                        <Badge
-                                                            key={title}
-                                                            variant="secondary"
-                                                            className="gap-1 px-3 py-1"
-                                                        >
-                                                            {title}
-                                                            <button
-                                                                onClick={() => {
-                                                                    setFormData(
-                                                                        {
-                                                                            ...formData,
-                                                                            academicTitles:
-                                                                                formData.academicTitles.filter(
-                                                                                    (
-                                                                                        t
-                                                                                    ) =>
-                                                                                        t !==
-                                                                                        title
-                                                                                ),
-                                                                        }
-                                                                    );
-                                                                }}
-                                                                className="ml-1 hover:bg-secondary-foreground/20 rounded-full"
-                                                            >
-                                                                <X className="w-3 h-3" />
-                                                            </button>
-                                                        </Badge>
-                                                    )
-                                                )}
+                                                {data.academicTitles.map((title) => (
+                                                    <Badge key={title} variant="secondary" className="gap-1">
+                                                        {title}
+                                                        <button onClick={() => removeTitle(title)} className="hover:text-destructive">
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </Badge>
+                                                ))}
                                             </div>
-                                            <Select
-                                                onValueChange={(value) => {
-                                                    if (
-                                                        !formData.academicTitles.includes(
-                                                            value
-                                                        )
-                                                    ) {
-                                                        setFormData({
-                                                            ...formData,
-                                                            academicTitles: [
-                                                                ...formData.academicTitles,
-                                                                value,
-                                                            ],
-                                                        });
-                                                    }
-                                                }}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Add academic title" />
-                                                </SelectTrigger>
+                                            <Select onValueChange={addTitle}>
+                                                <SelectTrigger><SelectValue placeholder="Add title" /></SelectTrigger>
                                                 <SelectContent>
-                                                    {academicTitleOptions.map(
-                                                        (title) => (
-                                                            <SelectItem
-                                                                key={title}
-                                                                value={title}
-                                                            >
-                                                                {title}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
+                                                    {academicTitleOptions.map((t) => (
+                                                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     ) : (
                                         <div className="flex flex-wrap gap-2">
-                                            {formData.academicTitles.map(
-                                                (title) => (
-                                                    <Badge
-                                                        key={title}
-                                                        variant="secondary"
-                                                    >
-                                                        {title}
-                                                    </Badge>
-                                                )
-                                            )}
+                                            {data.academicTitles.map((title) => (
+                                                <Badge key={title} variant="secondary">{title}</Badge>
+                                            ))}
                                         </div>
                                     )}
-                                    <p className="text-xs text-muted-foreground">
-                                        Full name with titles: {getFullName()}
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">Preview: {getFullName()}</p>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                email: e.target.value,
-                                            })
-                                        }
-                                        disabled={!isEditing}
-                                    />
-                                </div>
-
+                                {/* Contact Info */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="phone">
-                                            Phone Number
-                                        </Label>
+                                        <Label>Email</Label>
+                                        <Input value={data.email} disabled className="bg-muted" />
+                                    </div>
+                                    {/*<div className="space-y-2">
+                                        <Label>Phone Number</Label>
                                         <Input
-                                            id="phone"
-                                            value={formData.phone}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    phone: e.target.value,
-                                                })
-                                            }
+                                            value={data.phone}
+                                            onChange={(e) => setData('phone', e.target.value)}
                                             disabled={!isEditing}
                                         />
-                                    </div>
+                                    </div>*/}
                                     <div className="space-y-2">
-                                        <Label htmlFor="office">
-                                            Office Location
-                                        </Label>
+                                        <Label>Office Location</Label>
                                         <Input
-                                            id="office"
-                                            value={formData.office}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    office: e.target.value,
-                                                })
-                                            }
+                                            value={data.office_location}
+                                            onChange={(e) => setData('office_location', e.target.value)}
                                             disabled={!isEditing}
                                         />
                                     </div>
                                 </div>
 
+                                {/* Description */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="description">
-                                        About / Description
-                                    </Label>
+                                    <Label>About / Description</Label>
                                     <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                description: e.target.value,
-                                            })
-                                        }
+                                        value={data.description}
+                                        onChange={(e) => setData('description', e.target.value)}
                                         disabled={!isEditing}
                                         rows={3}
-                                        placeholder="Write a brief description about your research interests and expertise..."
                                     />
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Areas of Expertise Section */}
-                        <div className="space-y-3 pt-4 border-t border-border">
-                            <Label>Areas of Expertise</Label>
-                            {isEditing ? (
-                                <div className="space-y-3">
+                                {/* Expertise */}
+                                <div className="space-y-3 pt-4 border-t">
+                                    <Label>Areas of Expertise</Label>
                                     <div className="flex flex-wrap gap-2">
-                                        {selectedExpertise.map((expertise) => (
-                                            <Badge
-                                                key={expertise}
-                                                variant="secondary"
-                                                className="gap-1 px-3 py-1"
-                                            >
-                                                {expertise}
-                                                <button
-                                                    onClick={() =>
-                                                        removeExpertise(
-                                                            expertise
-                                                        )
-                                                    }
-                                                    className="ml-1 hover:bg-secondary-foreground/20 rounded-full"
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </button>
+                                        {data.expertise.map((item) => (
+                                            <Badge key={item} variant="secondary" className="gap-1">
+                                                {item}
+                                                {isEditing && (
+                                                    <button onClick={() => removeExpertise(item)}>
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                )}
                                             </Badge>
                                         ))}
                                     </div>
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <button
-                                                type="button"
-                                                className="flex h-10 w-full items-center justify-start rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                + Add Expertise Area
-                                            </button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
-                                            className="w-full p-0"
-                                            align="start"
-                                        >
-                                            <Command>
-                                                <CommandInput placeholder="Search expertise areas..." />
-                                                <CommandList>
-                                                    <CommandEmpty>
-                                                        No results found.
-                                                    </CommandEmpty>
-                                                    <CommandGroup>
-                                                        {expertiseOptions.map(
-                                                            (expertise) => (
-                                                                <CommandItem
-                                                                    key={
-                                                                        expertise
-                                                                    }
-                                                                    onSelect={() => {
-                                                                        toggleExpertise(
-                                                                            expertise
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <div className="flex items-center gap-2 w-full">
-                                                                        <div
-                                                                            className={`w-4 h-4 border rounded flex items-center justify-center ${
-                                                                                selectedExpertise.includes(
-                                                                                    expertise
-                                                                                )
-                                                                                    ? "bg-primary border-primary"
-                                                                                    : "border-input"
-                                                                            }`}
-                                                                        >
-                                                                            {selectedExpertise.includes(
-                                                                                expertise
-                                                                            ) && (
-                                                                                <Check className="w-3 h-3 text-primary-foreground" />
-                                                                            )}
-                                                                        </div>
-                                                                        <span>
-                                                                            {
-                                                                                expertise
-                                                                            }
-                                                                        </span>
+                                    {isEditing && (
+                                        <Popover open={open} onOpenChange={setOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" size="sm" className="mt-2">+ Add Expertise</Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="p-0" align="start">
+                                                <Command>
+                                                    <CommandInput placeholder="Search expertise..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>No results found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {expertiseOptions.map((exp) => (
+                                                                <CommandItem key={exp} onSelect={() => toggleExpertise(exp)}>
+                                                                    <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.expertise.includes(exp) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
+                                                                        {data.expertise.includes(exp) && <Check className="h-3 w-3" />}
                                                                     </div>
+                                                                    {exp}
                                                                 </CommandItem>
-                                                            )
-                                                        )}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedExpertise.map((expertise) => (
-                                        <Badge
-                                            key={expertise}
-                                            variant="secondary"
-                                        >
-                                            {expertise}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Supervision Settings */}
-                        <div className="space-y-4 pt-4 border-t border-border">
-                            <h4>Supervision Settings</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="quota">
-                                        Maximum Supervision Quota
-                                    </Label>
-                                    <Input
-                                        id="quota"
-                                        type="number"
-                                        value={formData.quota}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                quota: e.target.value,
-                                            })
-                                        }
-                                        disabled={!isEditing}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        Currently supervising:{" "}
-                                        {formData.currentStudents} of{" "}
-                                        {formData.quota} students
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="available">
-                                        Availability for New Students
-                                    </Label>
-                                    <div className="flex items-center gap-3 h-10">
-                                        <Switch
-                                            id="available"
-                                            checked={formData.available}
-                                            onCheckedChange={(checked) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    available: checked,
-                                                })
-                                            }
-                                            disabled={!isEditing}
-                                        />
-                                        <span className="text-sm text-muted-foreground">
-                                            {formData.available
-                                                ? "Available"
-                                                : "Not Available"}
-                                        </span>
+                                {/* Settings */}
+                                <div className="space-y-4 pt-4 border-t">
+                                    <h4>Supervision Settings</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Maximum Quota</Label>
+                                            <Input
+                                                type="number"
+                                                value={data.quota}
+                                                onChange={(e) => setData('quota', e.target.value)}
+                                                disabled={!isEditing}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Current: {stats.current} of {data.quota} students
+                                            </p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Availability</Label>
+                                            <div className="flex items-center gap-3 h-10">
+                                                <Switch
+                                                    checked={data.is_available}
+                                                    onCheckedChange={(checked) => setData('is_available', checked)}
+                                                    disabled={!isEditing}
+                                                />
+                                                <span className="text-sm text-muted-foreground">
+                                                    {data.is_available ? "Available for new students" : "Not accepting new students"}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formData.available
-                                            ? "You are accepting new supervision requests"
-                                            : "You are not accepting new supervision requests"}
-                                    </p>
                                 </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Currently Supervised Students Card */}
+                {/* Supervised Students List (Data dari DB) */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Currently Supervised Students</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {supervisedStudents.map((student) => (
-                                <div
-                                    key={student.id}
-                                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <Avatar>
-                                            <AvatarFallback className="bg-primary text-primary-foreground">
-                                                {student.name
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <h4>{student.name}</h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                NIM: {student.nim}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                >
-                                                    {student.activityType}
-                                                </Badge>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {student.interest}
-                                                </p>
+                            {supervisedStudents.length > 0 ? (
+                                supervisedStudents.map((student) => (
+                                    <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar>
+                                                <AvatarFallback className="bg-primary text-primary-foreground">
+                                                    {student.name.substring(0, 2).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <h4>{student.name}</h4>
+                                                <p className="text-sm text-muted-foreground">NIM: {student.nim}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Badge variant="outline" className="text-xs">{student.activityType}</Badge>
+                                                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">{student.interest}</p>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="text-right">
+                                            <Badge className="bg-green-100 text-green-700">{student.status}</Badge>
+                                            <p className="text-sm text-muted-foreground mt-1">Since {student.startDate}</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <Badge
-                                            className={
-                                                student.status === "Active"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-gray-100 text-gray-700"
-                                            }
-                                        >
-                                            {student.status}
-                                        </Badge>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            Since {student.startDate}
-                                        </p>
-                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No students currently supervised.
                                 </div>
-                            ))}
-                            {supervisedStudents.length === 0 && (
-                                <p className="text-center text-muted-foreground py-8">
-                                    No students currently supervised
-                                </p>
                             )}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-border">
-                            <div className="flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Supervising {supervisedStudents.length} of{" "}
-                                    {formData.quota} students
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    Available slots:{" "}
-                                    {parseInt(formData.quota) -
-                                        supervisedStudents.length}
-                                </p>
-                            </div>
                         </div>
                     </CardContent>
                 </Card>

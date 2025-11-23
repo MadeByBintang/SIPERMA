@@ -4,61 +4,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserCheck, GitBranch, Clock } from "lucide-react";
 import MainLayout from "@/Layouts/MainLayout";
 
-export default function Dashboard({ auth }) {
-    const userRole = auth?.user?.role_name || "student"; // sesuaikan nama kolom role kamu
+export default function Dashboard({ auth, stats, activities }) {
+    const userRole = auth?.user?.role_name || "student";
 
-    const stats = [
+    // 1. DEFENSIVE CODING: Cek jika data stats belum ada (biar gak blank)
+    if (!stats) {
+        return <div className="p-10 text-center">Loading data... (Pastikan Controller sudah diperbaiki)</div>;
+    }
+
+    // 2. UBAH DATA DATABASE JADI FORMAT KARTU UI
+    const statCards = [
         {
             title: "Total Students",
-            value: "1,234",
+            value: stats.total_students, 
             icon: Users,
             color: "bg-blue-500",
         },
         {
             title: "Total Lecturers",
-            value: "89",
+            value: stats.total_lecturers, 
             icon: UserCheck,
             color: "bg-green-500",
         },
         {
             title: "Active Relations",
-            value: "456",
+            value: stats.active_relations, 
             icon: GitBranch,
             color: "bg-purple-500",
         },
         {
             title: "Pending Matches",
-            value: "23",
+            value: stats.pending_matches, 
             icon: Clock,
             color: "bg-orange-500",
-        },
-    ];
-
-    const recentActivities = [
-        {
-            id: 1,
-            text: "New student registered: Ahmad Rizki",
-            time: "2 hours ago",
-        },
-        {
-            id: 2,
-            text: "Supervisor assigned: Dr. Sarah → Budi Santoso",
-            time: "5 hours ago",
-        },
-        {
-            id: 3,
-            text: "Profile updated: Prof. Ahmad",
-            time: "1 day ago",
-        },
-        {
-            id: 4,
-            text: "New match request submitted",
-            time: "2 days ago",
-        },
-        {
-            id: 5,
-            text: "Report generated: Monthly Summary",
-            time: "3 days ago",
         },
     ];
 
@@ -69,7 +47,8 @@ export default function Dashboard({ auth }) {
             <div className="space-y-8">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((stat) => {
+                    {/* PERBAIKAN DISINI: Gunakan statCards.map, BUKAN stats.map */}
+                    {statCards.map((stat) => {
                         const Icon = stat.icon;
                         return (
                             <Card key={stat.title}>
@@ -84,7 +63,7 @@ export default function Dashboard({ auth }) {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl">{stat.value}</div>
+                                    <div className="text-2xl font-bold">{stat.value}</div>
                                 </CardContent>
                             </Card>
                         );
@@ -98,28 +77,43 @@ export default function Dashboard({ auth }) {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {recentActivities.map((activity) => (
-                                <div
-                                    key={activity.id}
-                                    className="flex items-start gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
-                                >
-                                    <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                                    <div className="flex-1">
-                                        <p className="text-sm">
-                                            {activity.text}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {activity.time}
-                                        </p>
+                            {/* PERBAIKAN DISINI: Gunakan activities (dari DB), BUKAN recentActivities */}
+                            {(!activities || activities.length === 0) ? (
+                                <p className="text-sm text-muted-foreground">No recent activities found.</p>
+                            ) : (
+                                activities.map((activity, index) => (
+                                    <div
+                                        key={activity.id || index}
+                                        className="flex items-start gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
+                                    >
+                                        <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                                        <div className="flex-1">
+                                            {/* Sesuaikan nama kolom DB, biasanya activity_name atau title */}
+                                            <p className="text-sm font-medium">
+                                                {activity.activity_name || "Activity Log"}
+                                            </p>
+                                            
+                                            {/* Tampilkan Tipe jika ada */}
+                                            {activity.activity_type && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    {activity.activity_type.type_name}
+                                                </p>
+                                            )}
+
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {/* Format Tanggal */}
+                                                {new Date(activity.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Quick Stats */}
-                {userRole === "mahasiswa" && (
+                
+                {userRole === "Mahasiswa" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
@@ -127,72 +121,26 @@ export default function Dashboard({ auth }) {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    <p>Dr. Sarah Wijaya, M.Kom</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        Machine Learning & AI
+                                    {/* Mengakses data dosen pembimbing secara aman dengan tanda tanya (?) */}
+                                    <p className="font-medium">
+                                        {auth.user.student?.teamMembers?.[0]?.team?.activity?.supervision?.lecturer?.user?.name || "Not Assigned Yet"}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        Assigned: September 2024
+                                        Status: {auth.user.status || "Active"}
                                     </p>
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Recommended Teammates</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">
-                                    Based on your interests in Machine Learning,
-                                    we found 12 potential teammates.
-                                </p>
                             </CardContent>
                         </Card>
                     </div>
                 )}
 
-                {userRole === "dosen" && (
+                {userRole === "Dosen" && (
                     <Card>
                         <CardHeader>
                             <CardTitle>My Supervised Students</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center pb-3 border-b border-border">
-                                    <div>
-                                        <p>Ahmad Rizki</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            NIM: 2021001
-                                        </p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">
-                                        Active
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center pb-3 border-b border-border">
-                                    <div>
-                                        <p>Siti Nurhaliza</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            NIM: 2021023
-                                        </p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">
-                                        Active
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <p>Budi Santoso</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            NIM: 2021045
-                                        </p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">
-                                        Active
-                                    </span>
-                                </div>
-                            </div>
+                            <p className="text-sm text-muted-foreground">Check Relations menu for details.</p>
                         </CardContent>
                     </Card>
                 )}

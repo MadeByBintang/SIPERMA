@@ -1,103 +1,110 @@
-import { useState } from "react";
-import { Head } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import { useState, useEffect } from "react";
+import { Head, router } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Switch } from "../Components/ui/switch";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Switch } from "@/Components/ui/switch";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
-import { Separator } from "../Components/ui/separator";
+} from "@/Components/ui/select";
+import { Separator } from "@/Components/ui/separator";
 import {
     Save,
-    Settings,
-    Calendar,
     Users,
     Bell,
     Shield,
     Database,
-    Mail,
-    CheckCircle2,
     AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useIsMobile } from "../Components/ui/UseMobile";
+import { useIsMobile } from "@/Components/ui/UseMobile";
 
-export default function SystemSettingsPage() {
+// TERIMA PROPS DARI CONTROLLER
+export default function SystemSettingsPage({ initialSettings = {} }) {
     const isMobile = useIsMobile();
-
-    // Academic Settings
-    const [activeYear, setActiveYear] = useState("2024/2025");
-    const [activeSemester, setActiveSemester] = useState("1");
-    const [semesterStartDate, setSemesterStartDate] = useState("2024-09-01");
-    const [semesterEndDate, setSemesterEndDate] = useState("2025-01-31");
-
-    // Supervision Limits
-    const [maxStudentsPerLecturer, setMaxStudentsPerLecturer] = useState("5");
-    const [maxPKLPerLecturer, setMaxPKLPerLecturer] = useState("3");
-    const [maxThesisPerLecturer, setMaxThesisPerLecturer] = useState("4");
-    const [maxCompetitionPerLecturer, setMaxCompetitionPerLecturer] =
-        useState("2");
-
-    // Registration Settings
-    const [registrationEnabled, setRegistrationEnabled] = useState(true);
-    const [autoApproval, setAutoApproval] = useState(false);
-    const [requireApproval, setRequireApproval] = useState(true);
-
-    // Notification Settings
-    const [emailNotifications, setEmailNotifications] = useState(true);
-    const [systemNotifications, setSystemNotifications] = useState(true);
-    const [deadlineReminders, setDeadlineReminders] = useState(true);
-    const [reminderDaysBefore, setReminderDaysBefore] = useState("7");
-
-    // System Preferences
-    const [maintenanceMode, setMaintenanceMode] = useState(false);
-    const [dataRetentionPeriod, setDataRetentionPeriod] = useState("5");
-
     const [hasChanges, setHasChanges] = useState(false);
 
-    const handleSaveSettings = () => {
-        toast.success("Settings saved successfully!", {
-            description: "All system settings have been updated.",
-        });
-        setHasChanges(false);
-    };
+    // --- INITIALIZE STATE DARI DATABASE ---
+    // Gunakan fallback value (|| "5") jika database masih kosong
 
-    const handleResetToDefaults = () => {
-        setActiveYear("2024/2025");
-        setActiveSemester("1");
-        setMaxStudentsPerLecturer("5");
-        setMaxPKLPerLecturer("3");
-        setMaxThesisPerLecturer("4");
-        setMaxCompetitionPerLecturer("2");
-        setRegistrationEnabled(true);
-        setAutoApproval(false);
-        setRequireApproval(true);
-        setEmailNotifications(true);
-        setSystemNotifications(true);
-        setDeadlineReminders(true);
-        setReminderDaysBefore("7");
-        setMaintenanceMode(false);
-        setDataRetentionPeriod("5");
+    // Supervision Limits
+    const [maxStudentsPerLecturer, setMaxStudentsPerLecturer] = useState(initialSettings.max_students_per_lecturer || "5");
+    const [maxPKLPerLecturer, setMaxPKLPerLecturer] = useState(initialSettings.max_pkl_per_lecturer || "3");
+    const [maxThesisPerLecturer, setMaxThesisPerLecturer] = useState(initialSettings.max_thesis_per_lecturer || "4");
+    const [maxCompetitionPerLecturer, setMaxCompetitionPerLecturer] = useState(initialSettings.max_competition_per_lecturer || "2");
 
-        toast.success("Settings reset to defaults");
-        setHasChanges(false);
-    };
+    // Registration Settings (Convert string "1"/"0" to boolean)
+    const [registrationEnabled, setRegistrationEnabled] = useState(initialSettings.registration_enabled == '1' || initialSettings.registration_enabled === true);
+    const [autoApproval, setAutoApproval] = useState(initialSettings.auto_approval == '1' || initialSettings.auto_approval === true);
+    const [requireApproval, setRequireApproval] = useState(initialSettings.require_approval !== '0' && initialSettings.require_approval !== false); // Default true
+
+    // Notification Settings
+    const [emailNotifications, setEmailNotifications] = useState(initialSettings.email_notifications !== '0');
+    const [systemNotifications, setSystemNotifications] = useState(initialSettings.system_notifications !== '0');
+    const [deadlineReminders, setDeadlineReminders] = useState(initialSettings.deadline_reminders !== '0');
+    const [reminderDaysBefore, setReminderDaysBefore] = useState(initialSettings.reminder_days_before || "7");
+
+    // System Preferences
+    const [maintenanceMode, setMaintenanceMode] = useState(initialSettings.maintenance_mode == '1');
+    const [dataRetentionPeriod, setDataRetentionPeriod] = useState(initialSettings.data_retention_period || "5");
+
 
     const markAsChanged = () => {
         setHasChanges(true);
+    };
+
+    // --- SAVE KE DATABASE ---
+    const handleSaveSettings = () => {
+        // Petakan state local ke nama key database (snake_case)
+        const payload = {
+            max_students_per_lecturer: maxStudentsPerLecturer,
+            max_pkl_per_lecturer: maxPKLPerLecturer,
+            max_thesis_per_lecturer: maxThesisPerLecturer,
+            max_competition_per_lecturer: maxCompetitionPerLecturer,
+            
+            registration_enabled: registrationEnabled,
+            auto_approval: autoApproval,
+            require_approval: requireApproval,
+            
+            email_notifications: emailNotifications,
+            system_notifications: systemNotifications,
+            deadline_reminders: deadlineReminders,
+            reminder_days_before: reminderDaysBefore,
+            
+            maintenance_mode: maintenanceMode,
+            data_retention_period: dataRetentionPeriod,
+        };
+
+        router.post(route('admin.settings.update'), payload, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success("Settings saved successfully!", {
+                    description: "System configuration has been updated.",
+                });
+                setHasChanges(false);
+            },
+            onError: () => {
+                toast.error("Failed to save settings.");
+            }
+        });
+    };
+
+    const handleResetToDefaults = () => {
+        if(confirm("Are you sure you want to reset unsaved changes?")) {
+            window.location.reload(); // Cara termudah reset ke nilai DB terakhir
+        }
     };
 
     return (
@@ -122,105 +129,6 @@ export default function SystemSettingsPage() {
                     )}
                 </div>
 
-                {/* Academic Year Settings */}
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-primary" />
-                            <CardTitle>Academic Year Settings</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Configure the active academic year and semester
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="academic-year">
-                                    Active Academic Year
-                                </Label>
-                                <Select
-                                    value={activeYear}
-                                    onValueChange={(value) => {
-                                        setActiveYear(value);
-                                        markAsChanged();
-                                    }}
-                                >
-                                    <SelectTrigger id="academic-year">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="2024/2025">
-                                            2024/2025
-                                        </SelectItem>
-                                        <SelectItem value="2023/2024">
-                                            2023/2024
-                                        </SelectItem>
-                                        <SelectItem value="2022/2023">
-                                            2022/2023
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="semester">
-                                    Active Semester
-                                </Label>
-                                <Select
-                                    value={activeSemester}
-                                    onValueChange={(value) => {
-                                        setActiveSemester(value);
-                                        markAsChanged();
-                                    }}
-                                >
-                                    <SelectTrigger id="semester">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">
-                                            Semester 1 (Odd)
-                                        </SelectItem>
-                                        <SelectItem value="2">
-                                            Semester 2 (Even)
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="start-date">
-                                    Semester Start Date
-                                </Label>
-                                <Input
-                                    id="start-date"
-                                    type="date"
-                                    value={semesterStartDate}
-                                    onChange={(e) => {
-                                        setSemesterStartDate(e.target.value);
-                                        markAsChanged();
-                                    }}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="end-date">
-                                    Semester End Date
-                                </Label>
-                                <Input
-                                    id="end-date"
-                                    type="date"
-                                    value={semesterEndDate}
-                                    onChange={(e) => {
-                                        setSemesterEndDate(e.target.value);
-                                        markAsChanged();
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* Supervision Limits */}
                 <Card>
                     <CardHeader>
@@ -242,12 +150,10 @@ export default function SystemSettingsPage() {
                                     id="max-total"
                                     type="number"
                                     min="1"
-                                    max="20"
+                                    max="50"
                                     value={maxStudentsPerLecturer}
                                     onChange={(e) => {
-                                        setMaxStudentsPerLecturer(
-                                            e.target.value
-                                        );
+                                        setMaxStudentsPerLecturer(e.target.value);
                                         markAsChanged();
                                     }}
                                 />
@@ -264,16 +170,13 @@ export default function SystemSettingsPage() {
                                     id="max-pkl"
                                     type="number"
                                     min="1"
-                                    max="10"
+                                    max="20"
                                     value={maxPKLPerLecturer}
                                     onChange={(e) => {
                                         setMaxPKLPerLecturer(e.target.value);
                                         markAsChanged();
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Limit for internship supervision
-                                </p>
                             </div>
 
                             <div className="space-y-2">
@@ -284,16 +187,13 @@ export default function SystemSettingsPage() {
                                     id="max-thesis"
                                     type="number"
                                     min="1"
-                                    max="10"
+                                    max="20"
                                     value={maxThesisPerLecturer}
                                     onChange={(e) => {
                                         setMaxThesisPerLecturer(e.target.value);
                                         markAsChanged();
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Limit for thesis supervision
-                                </p>
                             </div>
 
                             <div className="space-y-2">
@@ -304,18 +204,13 @@ export default function SystemSettingsPage() {
                                     id="max-competition"
                                     type="number"
                                     min="1"
-                                    max="10"
+                                    max="20"
                                     value={maxCompetitionPerLecturer}
                                     onChange={(e) => {
-                                        setMaxCompetitionPerLecturer(
-                                            e.target.value
-                                        );
+                                        setMaxCompetitionPerLecturer(e.target.value);
                                         markAsChanged();
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Limit for competition supervision
-                                </p>
                             </div>
                         </div>
                     </CardContent>
@@ -341,8 +236,7 @@ export default function SystemSettingsPage() {
                                     Enable Student Registration
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Allow students to register for new
-                                    activities
+                                    Allow students to register for new activities
                                 </p>
                             </div>
                             <Switch
@@ -363,8 +257,7 @@ export default function SystemSettingsPage() {
                                     Auto-Approve Registrations
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Automatically approve student registrations
-                                    without manual review
+                                    Automatically approve student registrations without manual review
                                 </p>
                             </div>
                             <Switch
@@ -385,8 +278,7 @@ export default function SystemSettingsPage() {
                                     Require Lecturer Approval
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Require lecturers to approve supervision
-                                    requests
+                                    Require lecturers to approve supervision requests
                                 </p>
                             </div>
                             <Switch
@@ -492,18 +384,10 @@ export default function SystemSettingsPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="3">
-                                                3 days before
-                                            </SelectItem>
-                                            <SelectItem value="5">
-                                                5 days before
-                                            </SelectItem>
-                                            <SelectItem value="7">
-                                                7 days before
-                                            </SelectItem>
-                                            <SelectItem value="14">
-                                                14 days before
-                                            </SelectItem>
+                                            <SelectItem value="3">3 days before</SelectItem>
+                                            <SelectItem value="5">5 days before</SelectItem>
+                                            <SelectItem value="7">7 days before</SelectItem>
+                                            <SelectItem value="14">14 days before</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -533,8 +417,7 @@ export default function SystemSettingsPage() {
                                     Maintenance Mode
                                 </Label>
                                 <p className="text-sm text-orange-700">
-                                    Enable to prevent users from accessing the
-                                    system
+                                    Enable to prevent users from accessing the system
                                 </p>
                             </div>
                             <Switch
@@ -568,9 +451,7 @@ export default function SystemSettingsPage() {
                                     <SelectItem value="3">3 years</SelectItem>
                                     <SelectItem value="5">5 years</SelectItem>
                                     <SelectItem value="10">10 years</SelectItem>
-                                    <SelectItem value="unlimited">
-                                        Unlimited
-                                    </SelectItem>
+                                    <SelectItem value="unlimited">Unlimited</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
@@ -583,12 +464,12 @@ export default function SystemSettingsPage() {
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between gap-2 sm:gap-4 pt-4 border-t">
                     <Button variant="outline" onClick={handleResetToDefaults}>
-                        {isMobile ? "Reset" : "Reset to Defaults"}
+                        {isMobile ? "Reset" : "Reset Changes"}
                     </Button>
                     <div className="flex gap-2">
                         <Button
                             variant="outline"
-                            onClick={() => setHasChanges(false)}
+                            onClick={() => window.location.reload()}
                             disabled={!hasChanges}
                         >
                             {isMobile ? "Discard" : "Discard Changes"}

@@ -1,1203 +1,393 @@
-import { useState } from "react";
-import { Head } from "@inertiajs/react";
+import { useState, useEffect } from "react";
+import { Head, router } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
+    Card, CardContent, CardHeader, CardTitle,
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "../Components/ui/table";
-import { Badge } from "../Components/ui/badge";
+    Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from "@/Components/ui/dialog";
 import {
-    Download,
-    Users,
-    BookOpen,
-    Eye,
-    Calendar,
-    User,
-    Info,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/Components/ui/select";
+import {
+    Search, Eye, Edit, Trash2, Plus, GitBranch, UserCheck, CheckCircle2, Users
 } from "lucide-react";
+import { toast } from "sonner";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../Components/ui/select";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "../Components/ui/dialog";
-import { Separator } from "../Components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "../Components/ui/alert";
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/Components/ui/AlertDialog";
 
-const RelationType = "student-student" | "student-lecturer";
+export default function RelationManagementPage({ 
+    studentLecturerRelations = [], 
+    studentStudentRelations = [],
+    studentsList = [], // Terima data dropdown
+    lecturersList = [] // Terima data dropdown
+}) {
+    const [relationType, setRelationType] = useState("student-lecturer");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentTab, setCurrentTab] = useState("all");
 
-const StudentStudentRelation = [
-    {
-        id: "number",
-        activityType: "PKL" | "Competition",
-        activityName: "string",
-        teamMembers: {
-            name: "string",
-            nim: "string",
-            role: "string",
-        },
-        supervisorName: "string",
-        supervisorNIP: "string",
-        startDate: "string",
-        endDate: "string",
-        status: "Active" | "Completed" | "In Progress",
-        location: "string",
-        description: "string",
-    },
-];
+    // State Data (Sync dengan props)
+    const [slData, setSlData] = useState(studentLecturerRelations);
+    const [ssData, setSsData] = useState(studentStudentRelations);
 
-const StudentLecturerRelation = [
-    {
-        id: "number",
-        activityType: "Thesis",
-        thesisTitle: "string",
-        studentName: "string",
-        studentNIM: "string",
-        supervisorName: "string",
-        supervisorNIP: "string",
-        coSupervisorName: "string",
-        coSupervisorNIP: "string",
-        startDate: "string",
-        endDate: "string",
-        status: "Proposal" | "On Progress" | "Completed" | "Revision",
-        researchArea: "string",
-        description: "string",
-    },
-];
+    useEffect(() => {
+        setSlData(studentLecturerRelations);
+        setSsData(studentStudentRelations);
+    }, [studentLecturerRelations, studentStudentRelations]);
 
-export default function RelationManagementPage() {
-    const [filterStatus, setFilterStatus] = useState("all");
-    const [relationType, setRelationType] = useState("student-student");
-    const [selectedDetail, setSelectedDetail] = useState(null);
+    // CRUD States
+    const [selectedRelation, setSelectedRelation] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    
+    // Form State
+    const [formData, setFormData] = useState({});
 
-    // Student-Student Relations (PKL and Competition)
-    const studentStudentRelations = [
-        {
-            id: 1,
-            activityType: "PKL",
-            activityName: "Internship at Tech Startup Indonesia",
-            teamMembers: [
-                {
-                    name: "Ahmad Rizki Pratama",
-                    nim: "2021001234",
-                    role: "Team Leader",
-                },
-                {
-                    name: "Budi Santoso",
-                    nim: "2021003456",
-                    role: "Frontend Developer",
-                },
-                {
-                    name: "Dewi Lestari",
-                    nim: "2021004567",
-                    role: "Backend Developer",
-                },
-            ],
-            supervisorName: "Dr. Rina Kusuma, M.T",
-            supervisorNIP: "198209052008012003",
-            startDate: "2024-09-01",
-            endDate: "2024-12-31",
-            status: "In Progress",
-            location: "PT Tech Startup Indonesia, Jakarta",
-            description:
-                "Developing a mobile application for inventory management system using React Native and Node.js backend.",
-        },
-        {
-            id: 2,
-            activityType: "Competition",
-            activityName: "National Hackathon 2024 - AI Innovation Challenge",
-            teamMembers: [
-                {
-                    name: "Farhan Abdullah",
-                    nim: "2021006789",
-                    role: "Team Leader",
-                },
-                {
-                    name: "Hendra Wijaya",
-                    nim: "2021008901",
-                    role: "AI Developer",
-                },
-                {
-                    name: "Indah Kusuma",
-                    nim: "2021009012",
-                    role: "UI/UX Designer",
-                },
-                {
-                    name: "Karina Dewi",
-                    nim: "2021011234",
-                    role: "Data Analyst",
-                },
-            ],
-            supervisorName: "Dr. Sarah Wijaya, M.Kom",
-            supervisorNIP: "198501122010122001",
-            startDate: "2024-10-01",
-            endDate: "2024-10-15",
-            status: "Completed",
-            location: "Jakarta Convention Center",
-            description:
-                "Built an AI-powered chatbot for mental health support using natural language processing and sentiment analysis.",
-        },
-        {
-            id: 3,
-            activityType: "PKL",
-            activityName: "Industry Internship at Bank Digital",
-            teamMembers: [
-                {
-                    name: "Siti Nurhaliza",
-                    nim: "2021002345",
-                    role: "Team Leader",
-                },
-                {
-                    name: "Lukman Hakim",
-                    nim: "2021012345",
-                    role: "Data Engineer",
-                },
-            ],
-            supervisorName: "Prof. Ahmad Suryanto, Ph.D",
-            supervisorNIP: "197803151998031002",
-            startDate: "2024-08-15",
-            endDate: "2024-11-30",
-            status: "In Progress",
-            location: "PT Bank Digital Indonesia, Surabaya",
-            description:
-                "Working on big data analytics project for customer behavior prediction and fraud detection system.",
-        },
-        {
-            id: 4,
-            activityType: "Competition",
-            activityName: "International Cybersecurity CTF 2024",
-            teamMembers: [
-                {
-                    name: "Eko Prasetyo",
-                    nim: "2021005678",
-                    role: "Team Leader",
-                },
-                {
-                    name: "Joko Prasetyo",
-                    nim: "2021010123",
-                    role: "Cryptography Specialist",
-                },
-                {
-                    name: "Gita Permata",
-                    nim: "2021007890",
-                    role: "Network Security",
-                },
-            ],
-            supervisorName: "Prof. Linda Wijaya, Ph.D",
-            supervisorNIP: "197512201995122001",
-            startDate: "2024-11-05",
-            endDate: "2024-11-07",
-            status: "Active",
-            location: "Online Platform",
-            description:
-                "Participating in capture-the-flag competition focusing on web security, reverse engineering, and cryptography challenges.",
-        },
-        {
-            id: 5,
-            activityType: "PKL",
-            activityName: "Software Development at E-commerce Company",
-            teamMembers: [
-                {
-                    name: "Gita Permata",
-                    nim: "2021007890",
-                    role: "Team Leader",
-                },
-                {
-                    name: "Ahmad Rizki Pratama",
-                    nim: "2021001234",
-                    role: "DevOps Engineer",
-                },
-                {
-                    name: "Farhan Abdullah",
-                    nim: "2021006789",
-                    role: "ML Engineer",
-                },
-            ],
-            supervisorName: "Dr. Bambang Hartono, M.T",
-            supervisorNIP: "198304102009121002",
-            startDate: "2024-07-01",
-            endDate: "2024-10-31",
-            status: "Completed",
-            location: "PT E-commerce Nusantara, Bandung",
-            description:
-                "Implemented cloud-based recommendation system using machine learning and deployed on AWS infrastructure.",
-        },
-    ];
+    // --- HANDLERS CRUD ---
 
-    // Student-Lecturer Relations (Thesis)
-    const studentLecturerRelations = [
-        {
-            id: 1,
-            activityType: "Thesis",
-            thesisTitle:
-                "Deep Learning Approach for Indonesian Text Sentiment Analysis on Social Media",
-            studentName: "Hendra Wijaya",
-            studentNIM: "2021008901",
-            supervisorName: "Dr. Kartika Sari, M.Kom",
-            supervisorNIP: "198608252011012004",
-            coSupervisorName: "Dr. Sarah Wijaya, M.Kom",
-            coSupervisorNIP: "198501122010122001",
-            startDate: "2024-09-01",
-            endDate: "2025-01-31",
-            status: "On Progress",
-            researchArea: "Natural Language Processing",
-            description:
-                "Research focuses on developing a deep learning model using BERT and LSTM for sentiment analysis of Indonesian language posts on Twitter and Instagram.",
-        },
-        {
-            id: 2,
-            activityType: "Thesis",
-            thesisTitle:
-                "Blockchain-based Secure Voting System for University Elections",
-            studentName: "Joko Prasetyo",
-            studentNIM: "2021010123",
-            supervisorName: "Prof. Linda Wijaya, Ph.D",
-            supervisorNIP: "197512201995122001",
-            startDate: "2024-08-15",
-            endDate: "2024-12-20",
-            status: "Proposal",
-            researchArea: "Blockchain & Cryptography",
-            description:
-                "Designing and implementing a decentralized voting system using smart contracts on Ethereum blockchain to ensure transparency and security.",
-        },
-        {
-            id: 3,
-            activityType: "Thesis",
-            thesisTitle:
-                "Real-time Object Detection for Autonomous Vehicles Using YOLO Algorithm",
-            studentName: "Farhan Abdullah",
-            studentNIM: "2021006789",
-            supervisorName: "Dr. Sarah Wijaya, M.Kom",
-            supervisorNIP: "198501122010122001",
-            startDate: "2024-07-01",
-            endDate: "2024-11-30",
-            status: "Revision",
-            researchArea: "Computer Vision & AI",
-            description:
-                "Implementing and optimizing YOLOv8 algorithm for real-time detection of pedestrians, vehicles, and traffic signs in Indonesian road conditions.",
-        },
-        {
-            id: 4,
-            activityType: "Thesis",
-            thesisTitle:
-                "Predictive Analytics for Student Academic Performance Using Machine Learning",
-            studentName: "Lukman Hakim",
-            studentNIM: "2021012345",
-            supervisorName: "Prof. Ahmad Suryanto, Ph.D",
-            supervisorNIP: "197803151998031002",
-            coSupervisorName: "Dr. Bambang Hartono, M.T",
-            coSupervisorNIP: "198304102009121002",
-            startDate: "2024-06-01",
-            endDate: "2024-10-15",
-            status: "Completed",
-            researchArea: "Data Science & Analytics",
-            description:
-                "Developed machine learning models using Random Forest and XGBoost to predict student performance and identify at-risk students for early intervention.",
-        },
-        {
-            id: 5,
-            activityType: "Thesis",
-            thesisTitle:
-                "Cloud-based Microservices Architecture for E-Learning Platform",
-            studentName: "Gita Permata",
-            studentNIM: "2021007890",
-            supervisorName: "Dr. Bambang Hartono, M.T",
-            supervisorNIP: "198304102009121002",
-            startDate: "2024-09-15",
-            endDate: "2025-02-28",
-            status: "On Progress",
-            researchArea: "Cloud Computing & Software Engineering",
-            description:
-                "Designing and implementing scalable microservices architecture using Docker, Kubernetes, and AWS for a comprehensive e-learning platform.",
-        },
-        {
-            id: 6,
-            activityType: "Thesis",
-            thesisTitle:
-                "3D Game Development Using Unreal Engine 5 with AI-Driven NPCs",
-            studentName: "Karina Dewi",
-            studentNIM: "2021011234",
-            supervisorName: "Dr. Rudi Hartono, M.Kom",
-            supervisorNIP: "198107142007011001",
-            startDate: "2024-08-01",
-            endDate: "2024-12-31",
-            status: "On Progress",
-            researchArea: "Game Development & AI",
-            description:
-                "Creating an immersive 3D adventure game with intelligent non-player characters using behavior trees and machine learning for adaptive gameplay.",
-        },
-    ];
+    const handleAdd = () => {
+        setFormData({
+            relationType: relationType, // Default sesuai tab aktif
+            student_id: '',
+            lecturer_id: '',
+            activity_type: 'Thesis',
+            title: '',
+            status: 'active'
+        });
+        setIsAddDialogOpen(true);
+    };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "Active":
-            case "On Progress":
-            case "In Progress":
-                return "bg-blue-100 text-blue-700";
-            case "Completed":
-                return "bg-green-100 text-green-700";
-            case "Proposal":
-                return "bg-yellow-100 text-yellow-700";
-            case "Revision":
-                return "bg-orange-100 text-orange-700";
-            default:
-                return "bg-gray-100 text-gray-700";
-        }
+    const handleEdit = (relation) => {
+        setSelectedRelation(relation);
+        setFormData({
+            title: relation.thesisTitle || relation.activityName,
+            status: relation.status,
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleDelete = (relation) => {
+        setSelectedRelation(relation);
+        setIsDeleteDialogOpen(true);
     };
 
     const handleViewDetails = (relation) => {
-        setSelectedDetail(relation);
+        setSelectedRelation(relation);
         setIsDetailDialogOpen(true);
     };
 
-    const handleCloseDialog = () => {
-        setIsDetailDialogOpen(false);
-        setSelectedDetail(null);
+    // --- DATABASE ACTIONS ---
+
+    const saveCreate = () => {
+        router.post(route('relations.store'), formData, { // Pastikan route ini ada di web.php (misal: /relations)
+            onSuccess: () => {
+                toast.success("Relation created successfully");
+                setIsAddDialogOpen(false);
+            },
+            onError: () => toast.error("Failed to create. Check inputs."),
+        });
     };
 
-    // Filter relations based on status only
-    const filteredRelations =
-        relationType === "student-student"
-            ? studentStudentRelations.filter((relation) => {
-                  const matchesStatus =
-                      filterStatus === "all" ||
-                      relation.status.toLowerCase().replace(" ", "-") ===
-                          filterStatus;
+    const saveUpdate = () => {
+        router.put(route('relations.update', selectedRelation.id), formData, { // Pastikan route ini ada
+            onSuccess: () => {
+                toast.success("Relation updated successfully");
+                setIsEditDialogOpen(false);
+            },
+            onError: () => toast.error("Failed to update."),
+        });
+    };
 
-                  return matchesStatus;
-              })
-            : studentLecturerRelations.filter((relation) => {
-                  const matchesStatus =
-                      filterStatus === "all" ||
-                      relation.status.toLowerCase().replace(" ", "-") ===
-                          filterStatus;
+    const confirmDelete = () => {
+        if(!selectedRelation) return;
+        router.delete(route('relations.destroy', selectedRelation.id), { // Pastikan route ini ada
+            onSuccess: () => {
+                toast.success("Relation deleted successfully");
+                setIsDeleteDialogOpen(false);
+            },
+            onError: () => toast.error("Failed to delete."),
+        });
+    };
 
-                  return matchesStatus;
-              });
+    // --- RENDER HELPERS ---
+    
+    const getFilteredData = () => {
+        const data = relationType === "student-lecturer" ? slData : ssData;
+        return data.filter((item) => {
+            const q = searchQuery.toLowerCase();
+            const type = item.activityType ? item.activityType.toLowerCase() : '';
+            
+            // Filter Tab
+            if (currentTab !== 'all' && !type.includes(currentTab)) return false;
+
+            // Filter Search
+            if (relationType === "student-lecturer") {
+                return (item.studentName?.toLowerCase().includes(q) || 
+                        item.supervisorName?.toLowerCase().includes(q) || 
+                        item.thesisTitle?.toLowerCase().includes(q));
+            } else {
+                return (item.activityName?.toLowerCase().includes(q));
+            }
+        });
+    };
+    const filteredData = getFilteredData();
+
+    const getStatusBadge = (status) => {
+        let style = "bg-gray-100";
+        if (status === 'active') style = "bg-blue-100 text-blue-800";
+        if (status === 'pending') style = "bg-orange-100 text-orange-800";
+        if (status === 'completed') style = "bg-green-100 text-green-800";
+        return <Badge className={style} variant="outline">{status}</Badge>;
+    };
+
+    const getActivityBadge = (type) => {
+        return <Badge variant="outline">{type}</Badge>;
+    };
+
+    // FORM INPUTS
+    const renderFormFields = (isEdit = false) => (
+        <div className="space-y-4 py-2">
+            {/* Tampilkan Pilihan User Hanya Saat CREATE */}
+            {!isEdit && (
+                <>
+                    <div className="space-y-2">
+                        <Label>Relation Type</Label>
+                        <Select value={formData.relationType} onValueChange={(v) => setFormData({...formData, relationType: v})}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="student-lecturer">Supervision (Student-Lecturer)</SelectItem>
+                                <SelectItem value="student-student">Team (Student-Student)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Activity Type</Label>
+                        <Select value={formData.activity_type} onValueChange={(v) => setFormData({...formData, activity_type: v})}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Thesis">Thesis</SelectItem>
+                                <SelectItem value="PKL">PKL</SelectItem>
+                                <SelectItem value="Competition">Competition</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Student (Leader)</Label>
+                        <Select onValueChange={(v) => setFormData({...formData, student_id: v})}>
+                            <SelectTrigger><SelectValue placeholder="Select Student" /></SelectTrigger>
+                            <SelectContent>
+                                {studentsList.map(s => (
+                                    <SelectItem key={s.id} value={String(s.id)}>{s.name} ({s.nim})</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Supervisor (Lecturer)</Label>
+                        <Select onValueChange={(v) => setFormData({...formData, lecturer_id: v})}>
+                            <SelectTrigger><SelectValue placeholder="Select Lecturer" /></SelectTrigger>
+                            <SelectContent>
+                                {lecturersList.map(l => (
+                                    <SelectItem key={l.id} value={String(l.id)}>{l.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            )}
+
+            <div className="space-y-2">
+                <Label>Activity Title</Label>
+                <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={formData.status || 'pending'} onValueChange={(v) => setFormData({...formData, status: v})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+    );
 
     return (
         <MainLayout>
-            <Head title="Relation Management" />
+            <Head title="My Relations" />
             <div className="space-y-6">
-                {/* Info Alert */}
-                <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>System-Managed Relations</AlertTitle>
-                    <AlertDescription>
-                        All relations displayed here are automatically managed
-                        by the system based on registrations and approvals.
-                        Relations cannot be manually edited or deleted as they
-                        are linked to the database records.
-                    </AlertDescription>
-                </Alert>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Relations Management</h1>
+                        <p className="text-muted-foreground">Manage your activity relations.</p>
+                    </div>
+                    <Button onClick={handleAdd} className="gap-2"><Plus className="w-4 h-4"/> Add Relation</Button>
+                </div>
 
-                {/* Filters Card */}
+                {/* Filter Tabs */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Relation Management</CardTitle>
-                        <CardDescription>
-                            View and track student relationships including PKL,
-                            competitions, and thesis supervisions
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col md:flex-row gap-4 justify-between">
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <Select
-                                    value={relationType}
-                                    onValueChange={(value) =>
-                                        setRelationType(value)
-                                    }
-                                >
-                                    <SelectTrigger className="w-full md:w-64">
-                                        <SelectValue placeholder="Select relation type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="student-student">
-                                            <div className="flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Student-Student Relations
-                                            </div>
-                                        </SelectItem>
-                                        <SelectItem value="student-lecturer">
-                                            <div className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4" />
-                                                Student-Lecturer Relations
-                                            </div>
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Select
-                                    value={filterStatus}
-                                    onValueChange={setFilterStatus}
-                                >
-                                    <SelectTrigger className="w-full md:w-48">
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            All Status
-                                        </SelectItem>
-                                        {relationType === "student-student" ? (
-                                            <>
-                                                <SelectItem value="active">
-                                                    Active
-                                                </SelectItem>
-                                                <SelectItem value="in-progress">
-                                                    In Progress
-                                                </SelectItem>
-                                                <SelectItem value="completed">
-                                                    Completed
-                                                </SelectItem>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <SelectItem value="proposal">
-                                                    Proposal
-                                                </SelectItem>
-                                                <SelectItem value="on-progress">
-                                                    On Progress
-                                                </SelectItem>
-                                                <SelectItem value="revision">
-                                                    Revision
-                                                </SelectItem>
-                                                <SelectItem value="completed">
-                                                    Completed
-                                                </SelectItem>
-                                            </>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
+                        <div className="flex flex-col md:flex-row justify-between gap-4">
                             <div className="flex gap-2">
-                                <Button variant="outline" className="gap-2">
-                                    <Download className="w-4 h-4" />
-                                    Export PDF
+                                <Button 
+                                    variant={relationType === "student-lecturer" ? "default" : "outline"}
+                                    onClick={() => { setRelationType("student-lecturer"); setCurrentTab("all"); }}
+                                >
+                                    <UserCheck className="w-4 h-4 mr-2"/> Supervision
                                 </Button>
-                                <Button variant="outline" className="gap-2">
-                                    <Download className="w-4 h-4" />
-                                    Export Excel
+                                <Button 
+                                    variant={relationType === "student-student" ? "default" : "outline"}
+                                    onClick={() => { setRelationType("student-student"); setCurrentTab("all"); }}
+                                >
+                                    <Users className="w-4 h-4 mr-2"/> Team
                                 </Button>
                             </div>
+                            <Input 
+                                placeholder="Search..." 
+                                className="w-[250px]" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* Relations Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>
-                            {relationType === "student-student"
-                                ? "Student-Student Relations (PKL & Competitions)"
-                                : "Student-Lecturer Relations (Thesis)"}
-                        </CardTitle>
-                        <CardDescription>
-                            {filteredRelations.length}{" "}
-                            {filteredRelations.length === 1
-                                ? "relation"
-                                : "relations"}{" "}
-                            found
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        {relationType === "student-student" ? (
-                                            <>
-                                                <TableHead>
-                                                    Activity Type
-                                                </TableHead>
-                                                <TableHead>
-                                                    Activity Name
-                                                </TableHead>
-                                                <TableHead>
-                                                    Team Members
-                                                </TableHead>
-                                                <TableHead>
-                                                    Supervisor
-                                                </TableHead>
-                                                <TableHead>Period</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TableHead>Student</TableHead>
-                                                <TableHead>
-                                                    Thesis Title
-                                                </TableHead>
-                                                <TableHead>
-                                                    Supervisor
-                                                </TableHead>
-                                                <TableHead>
-                                                    Research Area
-                                                </TableHead>
-                                                <TableHead>Period</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
-                                            </>
-                                        )}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredRelations.length > 0 ? (
-                                        filteredRelations.map((relation) => (
-                                            <TableRow key={relation.id}>
-                                                {relationType ===
-                                                "student-student" ? (
+                        <Tabs value={currentTab} onValueChange={setCurrentTab}>
+                            <TabsList className="mb-4">
+                                <TabsTrigger value="all">All</TabsTrigger>
+                                <TabsTrigger value="pkl">PKL</TabsTrigger>
+                                <TabsTrigger value="thesis">Thesis</TabsTrigger>
+                                <TabsTrigger value="competition">Competition</TabsTrigger>
+                            </TabsList>
+
+                            <div className="rounded-md border overflow-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            {relationType === "student-lecturer" ? (
+                                                <>
+                                                    <TableHead>Student</TableHead>
+                                                    <TableHead>Supervisor</TableHead>
+                                                    <TableHead>Activity</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TableHead>Team Name</TableHead>
+                                                    <TableHead>Supervisor</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                </>
+                                            )}
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredData.length > 0 ? filteredData.map((rel) => (
+                                            <TableRow key={rel.id}>
+                                                {relationType === "student-lecturer" ? (
                                                     <>
                                                         <TableCell>
-                                                            <Badge variant="outline">
-                                                                {
-                                                                    relation.activityType
-                                                                }
-                                                            </Badge>
+                                                            <div className="font-medium">{rel.studentName}</div>
+                                                            <div className="text-xs text-muted-foreground">{rel.studentNIM}</div>
                                                         </TableCell>
+                                                        <TableCell>{rel.supervisorName}</TableCell>
                                                         <TableCell>
-                                                            <p className="max-w-xs">
-                                                                {
-                                                                    relation.activityName
-                                                                }
-                                                            </p>
+                                                            {getActivityBadge(rel.activityType)}
+                                                            <p className="text-xs mt-1">{rel.thesisTitle}</p>
                                                         </TableCell>
-                                                        <TableCell>
-                                                            <div>
-                                                                <p>
-                                                                    {
-                                                                        relation
-                                                                            .teamMembers
-                                                                            .length
-                                                                    }{" "}
-                                                                    Members
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    Leader:{" "}
-                                                                    {
-                                                                        relation
-                                                                            .teamMembers[0]
-                                                                            .name
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div>
-                                                                <p>
-                                                                    {
-                                                                        relation.supervisorName
-                                                                    }
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        relation.supervisorNIP
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm">
-                                                                <p>
-                                                                    {new Date(
-                                                                        relation.startDate
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                        {
-                                                                            month: "short",
-                                                                            year: "numeric",
-                                                                        }
-                                                                    )}
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    to{" "}
-                                                                    {new Date(
-                                                                        relation.endDate
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                        {
-                                                                            month: "short",
-                                                                            year: "numeric",
-                                                                        }
-                                                                    )}
-                                                                </p>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getStatusColor(
-                                                                    relation.status
-                                                                )}
-                                                            >
-                                                                {
-                                                                    relation.status
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2"
-                                                                onClick={() =>
-                                                                    handleViewDetails(
-                                                                        relation
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Eye className="w-3 h-3" />
-                                                                View Details
-                                                            </Button>
-                                                        </TableCell>
+                                                        <TableCell>{getStatusBadge(rel.status)}</TableCell>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <TableCell>
-                                                            <div>
-                                                                <p>
-                                                                    {
-                                                                        relation.studentName
-                                                                    }
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        relation.studentNIM
-                                                                    }
-                                                                </p>
-                                                            </div>
+                                                            <div className="font-medium">{rel.activityName}</div>
+                                                            {getActivityBadge(rel.activityType)}
                                                         </TableCell>
-                                                        <TableCell>
-                                                            <p className="max-w-md line-clamp-2">
-                                                                {
-                                                                    relation.thesisTitle
-                                                                }
-                                                            </p>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div>
-                                                                <p>
-                                                                    {
-                                                                        relation.supervisorName
-                                                                    }
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        relation.supervisorNIP
-                                                                    }
-                                                                </p>
-                                                                {relation.coSupervisorName && (
-                                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                                        Co:{" "}
-                                                                        {
-                                                                            relation.coSupervisorName
-                                                                        }
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge variant="secondary">
-                                                                {
-                                                                    relation.researchArea
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm">
-                                                                <p>
-                                                                    {new Date(
-                                                                        relation.startDate
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                        {
-                                                                            month: "short",
-                                                                            year: "numeric",
-                                                                        }
-                                                                    )}
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    to{" "}
-                                                                    {new Date(
-                                                                        relation.endDate
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                        {
-                                                                            month: "short",
-                                                                            year: "numeric",
-                                                                        }
-                                                                    )}
-                                                                </p>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getStatusColor(
-                                                                    relation.status
-                                                                )}
-                                                            >
-                                                                {
-                                                                    relation.status
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2"
-                                                                onClick={() =>
-                                                                    handleViewDetails(
-                                                                        relation
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Eye className="w-3 h-3" />
-                                                                View Details
-                                                            </Button>
-                                                        </TableCell>
+                                                        <TableCell>{rel.supervisorName}</TableCell>
+                                                        <TableCell>{getStatusBadge(rel.status)}</TableCell>
                                                     </>
                                                 )}
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button variant="ghost" size="icon" onClick={() => handleViewDetails(rel)}><Eye className="w-4 h-4"/></Button>
+                                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(rel)}><Edit className="w-4 h-4"/></Button>
+                                                        <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(rel)}><Trash2 className="w-4 h-4"/></Button>
+                                                    </div>
+                                                </TableCell>
                                             </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={7}
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                No relations found matching your
-                                                criteria
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                        )) : (
+                                            <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No data found.</TableCell></TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </Tabs>
                     </CardContent>
                 </Card>
 
-                {/* Detail Dialog */}
-                <Dialog
-                    open={isDetailDialogOpen}
-                    onOpenChange={setIsDetailDialogOpen}
-                >
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>
-                                {relationType === "student-student"
-                                    ? "Team Activity Details"
-                                    : "Thesis Details"}
-                            </DialogTitle>
-                            <DialogDescription>
-                                Detailed information about this{" "}
-                                {relationType === "student-student"
-                                    ? "team activity"
-                                    : "thesis supervision"}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        {selectedDetail && (
-                            <div className="space-y-6">
-                                {relationType === "student-student" ? (
-                                    <>
-                                        {/* Activity Information */}
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <h4 className="flex items-center gap-2">
-                                                    <Users className="w-4 h-4" />
-                                                    Activity Information
-                                                </h4>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-base px-3 py-1"
-                                                >
-                                                    {
-                                                        selectedDetail.activityType
-                                                    }
-                                                </Badge>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1 col-span-2">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Activity Name
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.activityName
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1 col-span-2">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Description
-                                                    </p>
-                                                    <p className="text-sm">
-                                                        {
-                                                            selectedDetail.description
-                                                        }
-                                                    </p>
-                                                </div>
-                                                {selectedDetail.location && (
-                                                    <div className="space-y-1 col-span-2">
-                                                        <p className="text-sm text-muted-foreground">
-                                                            Location
-                                                        </p>
-                                                        <p className="text-sm">
-                                                            {
-                                                                selectedDetail.location
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Start Date
-                                                    </p>
-                                                    <p className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(
-                                                            selectedDetail.startDate
-                                                        ).toLocaleDateString(
-                                                            "en-US",
-                                                            {
-                                                                year: "numeric",
-                                                                month: "long",
-                                                                day: "numeric",
-                                                            }
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        End Date
-                                                    </p>
-                                                    <p className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(
-                                                            selectedDetail.endDate
-                                                        ).toLocaleDateString(
-                                                            "en-US",
-                                                            {
-                                                                year: "numeric",
-                                                                month: "long",
-                                                                day: "numeric",
-                                                            }
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Status
-                                                    </p>
-                                                    <Badge
-                                                        className={getStatusColor(
-                                                            selectedDetail.status
-                                                        )}
-                                                    >
-                                                        {selectedDetail.status}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <Separator />
-
-                                        {/* Team Members */}
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Team Members (
-                                                {
-                                                    selectedDetail.teamMembers
-                                                        .length
-                                                }
-                                                )
-                                            </h4>
-                                            <div className="space-y-3">
-                                                {selectedDetail.teamMembers.map(
-                                                    (member, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="flex items-center justify-between p-3 bg-accent rounded-lg"
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                    <User className="w-5 h-5 text-primary" />
-                                                                </div>
-                                                                <div>
-                                                                    <p>
-                                                                        {
-                                                                            member.name
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        NIM:{" "}
-                                                                        {
-                                                                            member.nim
-                                                                        }
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <Badge variant="secondary">
-                                                                {member.role}
-                                                            </Badge>
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <Separator />
-
-                                        {/* Supervisor */}
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4" />
-                                                Supervisor
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Name
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.supervisorName
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        NIP
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.supervisorNIP
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Thesis Information */}
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4" />
-                                                Thesis Information
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1 col-span-2">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Thesis Title
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.thesisTitle
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1 col-span-2">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Research Area
-                                                    </p>
-                                                    <Badge variant="secondary">
-                                                        {
-                                                            selectedDetail.researchArea
-                                                        }
-                                                    </Badge>
-                                                </div>
-                                                <div className="space-y-1 col-span-2">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Description
-                                                    </p>
-                                                    <p className="text-sm">
-                                                        {
-                                                            selectedDetail.description
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Start Date
-                                                    </p>
-                                                    <p className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(
-                                                            selectedDetail.startDate
-                                                        ).toLocaleDateString(
-                                                            "en-US",
-                                                            {
-                                                                year: "numeric",
-                                                                month: "long",
-                                                                day: "numeric",
-                                                            }
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        End Date
-                                                    </p>
-                                                    <p className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(
-                                                            selectedDetail.endDate
-                                                        ).toLocaleDateString(
-                                                            "en-US",
-                                                            {
-                                                                year: "numeric",
-                                                                month: "long",
-                                                                day: "numeric",
-                                                            }
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Status
-                                                    </p>
-                                                    <Badge
-                                                        className={getStatusColor(
-                                                            selectedDetail.status
-                                                        )}
-                                                    >
-                                                        {selectedDetail.status}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <Separator />
-
-                                        {/* Student Information */}
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2">
-                                                <User className="w-4 h-4" />
-                                                Student
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Name
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.studentName
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        NIM
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedDetail.studentNIM
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <Separator />
-
-                                        {/* Supervisors */}
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4" />
-                                                Supervision
-                                            </h4>
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm text-muted-foreground">
-                                                            Main Supervisor
-                                                        </p>
-                                                        <p>
-                                                            {
-                                                                selectedDetail.supervisorName
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm text-muted-foreground">
-                                                            NIP
-                                                        </p>
-                                                        <p>
-                                                            {
-                                                                selectedDetail.supervisorNIP
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {selectedDetail.coSupervisorName && (
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-1">
-                                                            <p className="text-sm text-muted-foreground">
-                                                                Co-Supervisor
-                                                            </p>
-                                                            <p>
-                                                                {
-                                                                    selectedDetail.coSupervisorName
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-sm text-muted-foreground">
-                                                                NIP
-                                                            </p>
-                                                            <p>
-                                                                {
-                                                                    selectedDetail.coSupervisorNIP
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Action Buttons */}
-                                <div className="flex justify-end pt-4">
-                                    <Button onClick={handleCloseDialog}>
-                                        Close
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                {/* DIALOGS */}
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader><DialogTitle>Add Relation</DialogTitle></DialogHeader>
+                        {renderFormFields(false)}
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={saveCreate}>Create</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader><DialogTitle>Edit Relation</DialogTitle></DialogHeader>
+                        {renderFormFields(true)}
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={saveUpdate}>Update</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-red-500">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                 {/* Detail Dialog */}
+                 <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader><DialogTitle>Details</DialogTitle></DialogHeader>
+                        {selectedRelation && (
+                            <div className="space-y-2">
+                                <p><strong>Activity:</strong> {selectedRelation.thesisTitle || selectedRelation.activityName}</p>
+                                <p><strong>Status:</strong> {selectedRelation.status}</p>
+                                <p><strong>Start Date:</strong> {selectedRelation.startDate}</p>
+                            </div>
+                        )}
+                        <DialogFooter><Button onClick={() => setIsDetailDialogOpen(false)}>Close</Button></DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
             </div>
         </MainLayout>
     );

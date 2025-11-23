@@ -1,29 +1,22 @@
 import { useState } from "react";
-import { Head } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import { Head, useForm, router } from "@inertiajs/react";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Textarea } from "../Components/ui/textarea";
-import { Avatar, AvatarFallback } from "../Components/ui/avatar";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "../Components/ui/popover";
+} from "@/Components/ui/popover";
 import {
     Command,
     CommandEmpty,
@@ -31,454 +24,272 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "../Components/ui/command";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/command";
+import { Badge } from "@/Components/ui/badge";
 import { Edit2, Save, Check, X } from "lucide-react";
+import { toast } from "sonner";
 
-const interestOptions = [
-    "Machine Learning",
-    "Data Science",
-    "Artificial Intelligence",
-    "Web Development",
-    "Mobile Development",
-    "Cybersecurity",
-    "Software Engineering",
-    "Cloud Computing",
-    "Internet of Things",
-    "Blockchain",
-    "Computer Vision",
-    "Natural Language Processing",
-    "Database Systems",
-    "Network Security",
-    "Game Development",
-    "Computer Graphics",
-    "Human-Computer Interaction",
-    "Information Systems",
-    "Distributed Systems",
-    "Big Data Analytics",
-];
-
-export default function StudentProfilePage() {
+export default function StudentProfilePage({ student, supervisors = [], allSkills = [] }) {
     const [isEditing, setIsEditing] = useState(false);
     const [open, setOpen] = useState(false);
-    const [selectedInterests, setSelectedInterests] = useState([
-        "Machine Learning",
-        "Data Science",
-    ]);
-    const [originalInterests, setOriginalInterests] = useState([
-        "Machine Learning",
-        "Data Science",
-    ]);
-    const [formData, setFormData] = useState({
-        name: "Ahmad Rizki Pratama",
-        nim: "2021001234",
-        studyProgram: "Information Technology",
-        email: "ahmad.rizki@university.edu",
-        phone: "+62 812-9876-5432",
-        gpa: "3.85",
-        semester: "7",
-        description:
-            "Passionate about AI and its applications in real-world problems. Looking forward to working on innovative research projects.",
-    });
-    const [originalFormData, setOriginalFormData] = useState({
-        name: "Ahmad Rizki Pratama",
-        nim: "2021001234",
-        studyProgram: "Information Technology",
-        email: "ahmad.rizki@university.edu",
-        phone: "+62 812-9876-5432",
-        gpa: "3.85",
-        semester: "7",
-        description:
-            "Passionate about AI and its applications in real-world problems. Looking forward to working on innovative research projects.",
+
+    // 1. ROBUST INITIAL DATA: Pastikan semua field ada nilainya
+    const initialData = {
+        name: student?.name || "Guest",
+        nim: student?.nim || "-",
+        studyProgram: student?.studyProgram || "-",
+        email: student?.email || "-",
+        //phone: student?.phone || "",
+        //gpa: student?.gpa || "0.00",
+        semester: student?.semester || "1",
+        description: student?.description || "",
+        interests: Array.isArray(student?.interests) ? student.interests : [],
+    };
+
+    // 2. SETUP FORM INERTIA
+    const { data, setData, post, processing, reset, errors } = useForm({
+        //phone: initialData.phone,
+        description: initialData.description,
+        interests: initialData.interests,
+        
+        // Field Read-Only (disimpan di state form hanya untuk display, tidak dikirim ke server via update)
+        // Atau jika ingin dikirim untuk validasi, pastikan backend handle-nya (biasanya ignored)
+        _name: initialData.name, 
+        _nim: initialData.nim,
+        _studyProgram: initialData.studyProgram,
+        _email: initialData.email,
+        _gpa: initialData.gpa,
+        _semester: initialData.semester,
     });
 
-    const handleEdit = () => {
-        // Store current data as original before editing
-        setOriginalFormData(formData);
-        setOriginalInterests([...selectedInterests]);
-        setIsEditing(true);
+    // Handlers
+    const handleEdit = () => setIsEditing(true);
+    
+    const handleCancel = () => {
+        reset(); // Reset form ke nilai awal
+        setIsEditing(false);
     };
 
     const handleSave = () => {
-        setIsEditing(false);
-        // Save logic would go here
-    };
-
-    const handleCancel = () => {
-        // Restore original data
-        setFormData(originalFormData);
-        setSelectedInterests([...originalInterests]);
-        setIsEditing(false);
+        // Gunakan POST ke route update (karena HTML form method spoofing)
+        // Pastikan route 'profile.student.update' ada di web.php
+        router.post(route('profile.student.update'), {
+            _method: 'put', // Method spoofing untuk PUT
+            //phone: data.phone,
+            description: data.description,
+            interests: data.interests,
+        }, {
+            onSuccess: () => {
+                toast.success("Profile updated successfully");
+                setIsEditing(false);
+            },
+            onError: (err) => {
+                console.error(err);
+                toast.error("Failed to update profile. Check inputs.");
+            }
+        });
     };
 
     const toggleInterest = (interest) => {
-        setSelectedInterests((prev) =>
-            prev.includes(interest)
-                ? prev.filter((i) => i !== interest)
-                : [...prev, interest]
-        );
+        const current = data.interests;
+        const updated = current.includes(interest)
+            ? current.filter((i) => i !== interest)
+            : [...current, interest];
+        setData('interests', updated);
     };
 
     const removeInterest = (interest) => {
-        setSelectedInterests((prev) => prev.filter((i) => i !== interest));
+        setData('interests', data.interests.filter((i) => i !== interest));
     };
 
-    const supervisors = [
-        {
-            id: 1,
-            name: "Dr. Sarah Wijaya, M.Kom",
-            expertise: "Machine Learning & AI",
-            period: "Sep 2024 - Present",
-            status: "Active",
-        },
-        {
-            id: 2,
-            name: "Prof. Ahmad Suryanto, Ph.D",
-            expertise: "Data Science",
-            period: "Jan 2024 - Aug 2024",
-            status: "Completed",
-        },
-    ];
+    // Helper untuk Avatar Initial
+    const getInitials = (name) => {
+        return name ? name.substring(0, 2).toUpperCase() : "ST";
+    };
 
     return (
         <MainLayout>
             <Head title="Student Profile" />
             <div className="space-y-6">
+                
                 {/* Profile Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Student Profile</CardTitle>
                         {!isEditing ? (
-                            <Button
-                                onClick={handleEdit}
-                                variant="outline"
-                                className="gap-2"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                                Edit
+                            <Button onClick={handleEdit} variant="outline" className="gap-2">
+                                <Edit2 className="w-4 h-4" /> Edit
                             </Button>
                         ) : (
                             <div className="flex gap-2">
-                                <Button
-                                    onClick={handleCancel}
-                                    variant="outline"
-                                    className="gap-2"
-                                >
-                                    <X className="w-4 h-4" />
-                                    Cancel
+                                <Button onClick={handleCancel} variant="outline" className="gap-2">
+                                    <X className="w-4 h-4" /> Cancel
                                 </Button>
-                                <Button onClick={handleSave} className="gap-2">
-                                    <Save className="w-4 h-4" />
-                                    Save
+                                <Button onClick={handleSave} className="gap-2" disabled={processing}>
+                                    <Save className="w-4 h-4" /> {processing ? "Saving..." : "Save"}
                                 </Button>
                             </div>
                         )}
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Profile Picture and Basic Info */}
-                        <div className="flex items-start gap-6">
+                        <div className="flex flex-col md:flex-row items-start gap-6">
+                            {/* Avatar */}
                             <Avatar className="w-24 h-24">
                                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                                    AR
+                                    {getInitials(initialData.name)}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 space-y-4">
+
+                            {/* Form Fields */}
+                            <div className="flex-1 space-y-4 w-full">
+                                {/* Read Only Fields */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Full Name</Label>
-                                        <Input
-                                            id="name"
-                                            value={formData.name}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    name: e.target.value,
-                                                })
-                                            }
-                                            disabled={!isEditing}
-                                        />
+                                        <Label>Full Name</Label>
+                                        <Input value={initialData.name} disabled className="bg-muted" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="nim">NIM</Label>
-                                        <Input
-                                            id="nim"
-                                            value={formData.nim}
-                                            disabled
-                                            className="bg-muted"
-                                        />
+                                        <Label>NIM</Label>
+                                        <Input value={initialData.nim} disabled className="bg-muted" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="studyProgram">
-                                        Study Program
-                                    </Label>
-                                    <Input
-                                        id="studyProgram"
-                                        value={formData.studyProgram}
-                                        disabled
-                                        className="bg-muted"
-                                    />
+                                    <Label>Study Program</Label>
+                                    <Input value={initialData.studyProgram} disabled className="bg-muted" />
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    email: e.target.value,
-                                                })
-                                            }
-                                            disabled={!isEditing}
-                                        />
+                                        <Label>Email</Label>
+                                        <Input value={initialData.email} disabled className="bg-muted" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone">
-                                            Phone Number
-                                        </Label>
-                                        <Input
-                                            id="phone"
-                                            value={formData.phone}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    phone: e.target.value,
-                                                })
-                                            }
+                                    
+                                    {/* Editable Field: Phone */}
+                                    {/*<div className="space-y-2">
+                                        <Label>Phone Number</Label>
+                                        <Input 
+                                            value={data.phone} 
+                                            onChange={e => setData('phone', e.target.value)}
                                             disabled={!isEditing}
+                                            placeholder="+62..."
                                         />
-                                    </div>
+                                        {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
+                                    </div>*/}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="gpa">GPA</Label>
-                                        <Input
-                                            id="gpa"
-                                            value={formData.gpa}
-                                            disabled
-                                            className="bg-muted"
-                                        />
+                                        <Label>GPA</Label>
+                                        <Input value={initialData.gpa} disabled className="bg-muted" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="semester">
-                                            Current Semester
-                                        </Label>
-                                        <Input
-                                            id="semester"
-                                            value={formData.semester}
-                                            disabled
-                                            className="bg-muted"
-                                        />
+                                        <Label>Semester</Label>
+                                        <Input value={initialData.semester} disabled className="bg-muted" />
                                     </div>
                                 </div>
 
+                                {/* Editable Field: Interest Areas */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="interestArea">
-                                        Interest Areas
-                                    </Label>
-                                    {isEditing ? (
-                                        <div className="space-y-2">
-                                            <Popover
-                                                open={open}
-                                                onOpenChange={setOpen}
-                                            >
+                                    <Label>Interest Areas</Label>
+                                    <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
+                                        {data.interests.length > 0 ? (
+                                            data.interests.map((interest) => (
+                                                <Badge key={interest} variant="secondary" className="gap-1">
+                                                    {interest}
+                                                    {isEditing && (
+                                                        <button 
+                                                            onClick={() => removeInterest(interest)} 
+                                                            className="ml-1 hover:text-red-500"
+                                                            type="button"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    )}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground self-center">No interests selected</span>
+                                        )}
+                                    </div>
+                                    
+                                    {isEditing && (
+                                        <div className="mt-2">
+                                            <Popover open={open} onOpenChange={setOpen}>
                                                 <PopoverTrigger asChild>
-                                                    <button
-                                                        type="button"
-                                                        role="combobox"
-                                                        aria-expanded={open}
-                                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
+                                                    <Button variant="outline" className="w-full justify-between font-normal">
                                                         Select interests...
-                                                        <span className="ml-2 text-xs text-muted-foreground">
-                                                            (
-                                                            {
-                                                                selectedInterests.length
-                                                            }{" "}
-                                                            selected)
-                                                        </span>
-                                                    </button>
+                                                    </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent
-                                                    className="w-full p-0"
-                                                    align="start"
-                                                >
+                                                <PopoverContent className="w-[300px] p-0" align="start">
                                                     <Command>
                                                         <CommandInput placeholder="Search interests..." />
                                                         <CommandList>
-                                                            <CommandEmpty>
-                                                                No interest
-                                                                found.
-                                                            </CommandEmpty>
+                                                            <CommandEmpty>No interest found.</CommandEmpty>
                                                             <CommandGroup>
-                                                                {interestOptions.map(
-                                                                    (
-                                                                        interest
-                                                                    ) => (
-                                                                        <CommandItem
-                                                                            key={
-                                                                                interest
-                                                                            }
-                                                                            onSelect={() =>
-                                                                                toggleInterest(
-                                                                                    interest
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <div className="flex items-center gap-2 flex-1">
-                                                                                <div
-                                                                                    className={`w-4 h-4 border rounded flex items-center justify-center ${
-                                                                                        selectedInterests.includes(
-                                                                                            interest
-                                                                                        )
-                                                                                            ? "bg-primary border-primary"
-                                                                                            : "border-input"
-                                                                                    }`}
-                                                                                >
-                                                                                    {selectedInterests.includes(
-                                                                                        interest
-                                                                                    ) && (
-                                                                                        <Check className="w-3 h-3 text-primary-foreground" />
-                                                                                    )}
-                                                                                </div>
-                                                                                <span>
-                                                                                    {
-                                                                                        interest
-                                                                                    }
-                                                                                </span>
-                                                                            </div>
-                                                                        </CommandItem>
-                                                                    )
-                                                                )}
+                                                                {allSkills.map((skill) => (
+                                                                    <CommandItem key={skill} onSelect={() => toggleInterest(skill)}>
+                                                                        <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.interests.includes(skill) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
+                                                                            {data.interests.includes(skill) && <Check className="h-3 w-3" />}
+                                                                        </div>
+                                                                        {skill}
+                                                                    </CommandItem>
+                                                                ))}
                                                             </CommandGroup>
                                                         </CommandList>
                                                     </Command>
                                                 </PopoverContent>
                                             </Popover>
-
-                                            {/* Selected Interests */}
-                                            {selectedInterests.length > 0 && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {selectedInterests.map(
-                                                        (interest) => (
-                                                            <Badge
-                                                                key={interest}
-                                                                variant="secondary"
-                                                                className="gap-1"
-                                                            >
-                                                                {interest}
-                                                                <button
-                                                                    onClick={() =>
-                                                                        removeInterest(
-                                                                            interest
-                                                                        )
-                                                                    }
-                                                                    className="ml-1 hover:bg-muted rounded-full"
-                                                                >
-                                                                    <X className="w-3 h-3" />
-                                                                </button>
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30">
-                                            {selectedInterests.length > 0 ? (
-                                                selectedInterests.map(
-                                                    (interest) => (
-                                                        <Badge
-                                                            key={interest}
-                                                            variant="secondary"
-                                                        >
-                                                            {interest}
-                                                        </Badge>
-                                                    )
-                                                )
-                                            ) : (
-                                                <span className="text-sm text-muted-foreground">
-                                                    No interests selected
-                                                </span>
-                                            )}
                                         </div>
                                     )}
                                 </div>
 
+                                {/* Editable Field: Description */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="description">
-                                        About / Description
-                                    </Label>
+                                    <Label>About / Description</Label>
                                     <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                description: e.target.value,
-                                            })
-                                        }
+                                        value={data.description}
+                                        onChange={e => setData('description', e.target.value)}
                                         disabled={!isEditing}
                                         rows={3}
-                                        placeholder="Write a brief description about yourself, your academic interests, and career goals..."
+                                        placeholder="Describe your academic interests..."
                                     />
+                                    {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
                                 </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Supervisors Card */}
+                {/* Supervisors History Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Current & Past Supervisors</CardTitle>
+                        <CardTitle>Supervision History</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {supervisors.map((supervisor) => (
-                                <div
-                                    key={supervisor.id}
-                                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                                >
+                            {supervisors.length > 0 ? supervisors.map((supervisor) => (
+                                <div key={supervisor.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                                     <div className="flex items-center gap-4">
                                         <Avatar>
                                             <AvatarFallback className="bg-primary text-primary-foreground">
-                                                {supervisor.name
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
+                                                {getInitials(supervisor.name)}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1">
-                                            <h4>{supervisor.name}</h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                {supervisor.expertise}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {supervisor.period}
-                                            </p>
+                                            <h4 className="font-medium">{supervisor.name}</h4>
+                                            <p className="text-sm text-muted-foreground">{supervisor.expertise}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">{supervisor.period}</p>
                                         </div>
                                     </div>
-                                    <Badge
-                                        className={
-                                            supervisor.status === "Active"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-gray-100 text-gray-700"
-                                        }
-                                    >
+                                    <Badge variant={supervisor.status === "Active" ? "default" : "secondary"}>
                                         {supervisor.status}
                                     </Badge>
                                 </div>
-                            ))}
-                            {supervisors.length === 0 && (
-                                <p className="text-center text-muted-foreground py-8">
-                                    No supervisors assigned yet
-                                </p>
+                            )) : (
+                                <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
+                                    <p>No supervision history found.</p>
+                                </div>
                             )}
                         </div>
                     </CardContent>

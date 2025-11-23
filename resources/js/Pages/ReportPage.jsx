@@ -1,22 +1,23 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Head } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Label } from "../Components/ui/label";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Table,
     TableBody,
@@ -24,16 +25,16 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/table";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/table";
 import {
-    Download,
     FileText,
-    TrendingUp,
     Users,
-    BookOpen,
-    Award,
+    TrendingUp,
     Calendar,
+    Briefcase,
+    GraduationCap,
+    Award,
+    FileSpreadsheet,
 } from "lucide-react";
 import {
     BarChart,
@@ -50,500 +51,201 @@ import {
     LineChart,
     Line,
 } from "recharts";
-import { Separator } from "../Components/ui/separator";
-import { useIsMobile } from "../Components/ui/UseMobile";
+import { useIsMobile } from "@/Components/ui/UseMobile";
+import { toast } from "sonner";
 
-const ActivityType = "all" | "pkl" | "thesis" | "competition";
-
-const StudentActivity = [
-    {
-        id: "number",
-        studentName: "string",
-        studentNIM: "string",
-        activityType: "PKL" | "Thesis" | "Competition",
-        activityName: "string",
-        supervisorName: "string",
-        teamMembers: "string",
-        startDate: "string",
-        endDate: "string",
-        status: "string",
-        progress: "number",
-        researchArea: "string",
-    },
-];
-
-export default function ReportPage() {
+// TERIMA PROPS userRole DARI CONTROLLER
+export default function ReportPage({ activities = [], stats = {}, userRole }) {
     const [activityType, setActivityType] = useState("all");
     const [dateRange, setDateRange] = useState("year");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [exportFormat, setExportFormat] = useState("pdf"); 
     const isMobile = useIsMobile();
 
     // Responsive chart dimensions
     const chartHeight = isMobile ? 200 : 300;
     const pieChartRadius = isMobile ? 60 : 100;
 
-    // Comprehensive student activity data
-    const studentActivities = [
-        {
-            id: 1,
-            studentName: "Ahmad Rizki Pratama",
-            studentNIM: "2021001234",
-            activityType: "PKL",
-            activityName: "Internship at Tech Startup Indonesia",
-            supervisorName: "Dr. Rina Kusuma, M.T",
-            teamMembers: [
-                "Ahmad Rizki Pratama",
-                "Budi Santoso",
-                "Dewi Lestari",
-            ],
-            startDate: "2024-09-01",
-            endDate: "2024-12-31",
-            status: "In Progress",
-            progress: 65,
-        },
-        {
-            id: 2,
-            studentName: "Farhan Abdullah",
-            studentNIM: "2021006789",
-            activityType: "Competition",
-            activityName: "National Hackathon 2024",
-            supervisorName: "Dr. Sarah Wijaya, M.Kom",
-            teamMembers: [
-                "Farhan Abdullah",
-                "Hendra Wijaya",
-                "Indah Kusuma",
-                "Karina Dewi",
-            ],
-            startDate: "2024-10-01",
-            endDate: "2024-10-15",
-            status: "Completed",
-            progress: 100,
-        },
-        {
-            id: 3,
-            studentName: "Hendra Wijaya",
-            studentNIM: "2021008901",
-            activityType: "Thesis",
-            activityName:
-                "Deep Learning for Indonesian Text Sentiment Analysis",
-            supervisorName: "Dr. Kartika Sari, M.Kom",
-            startDate: "2024-09-01",
-            endDate: "2025-01-31",
-            status: "On Progress",
-            progress: 45,
-            researchArea: "Natural Language Processing",
-        },
-        {
-            id: 4,
-            studentName: "Siti Nurhaliza",
-            studentNIM: "2021002345",
-            activityType: "PKL",
-            activityName: "Industry Internship at Bank Digital",
-            supervisorName: "Prof. Ahmad Suryanto, Ph.D",
-            teamMembers: ["Siti Nurhaliza", "Lukman Hakim"],
-            startDate: "2024-08-15",
-            endDate: "2024-11-30",
-            status: "In Progress",
-            progress: 70,
-        },
-        {
-            id: 5,
-            studentName: "Joko Prasetyo",
-            studentNIM: "2021010123",
-            activityType: "Thesis",
-            activityName: "Blockchain-based Secure Voting System",
-            supervisorName: "Prof. Linda Wijaya, Ph.D",
-            startDate: "2024-08-15",
-            endDate: "2024-12-20",
-            status: "Proposal",
-            progress: 20,
-            researchArea: "Blockchain & Cryptography",
-        },
-        {
-            id: 6,
-            studentName: "Eko Prasetyo",
-            studentNIM: "2021005678",
-            activityType: "Competition",
-            activityName: "International Cybersecurity CTF 2024",
-            supervisorName: "Prof. Linda Wijaya, Ph.D",
-            teamMembers: ["Eko Prasetyo", "Joko Prasetyo", "Gita Permata"],
-            startDate: "2024-11-05",
-            endDate: "2024-11-07",
-            status: "Active",
-            progress: 30,
-        },
-        {
-            id: 7,
-            studentName: "Farhan Abdullah",
-            studentNIM: "2021006789",
-            activityType: "Thesis",
-            activityName: "Real-time Object Detection for Autonomous Vehicles",
-            supervisorName: "Dr. Sarah Wijaya, M.Kom",
-            startDate: "2024-07-01",
-            endDate: "2024-11-30",
-            status: "Revision",
-            progress: 85,
-            researchArea: "Computer Vision & AI",
-        },
-        {
-            id: 8,
-            studentName: "Gita Permata",
-            studentNIM: "2021007890",
-            activityType: "PKL",
-            activityName: "Software Development at E-commerce Company",
-            supervisorName: "Dr. Bambang Hartono, M.T",
-            teamMembers: [
-                "Gita Permata",
-                "Ahmad Rizki Pratama",
-                "Farhan Abdullah",
-            ],
-            startDate: "2024-07-01",
-            endDate: "2024-10-31",
-            status: "Completed",
-            progress: 100,
-        },
-        {
-            id: 9,
-            studentName: "Lukman Hakim",
-            studentNIM: "2021012345",
-            activityType: "Thesis",
-            activityName:
-                "Predictive Analytics for Student Academic Performance",
-            supervisorName: "Prof. Ahmad Suryanto, Ph.D",
-            startDate: "2024-06-01",
-            endDate: "2024-10-15",
-            status: "Completed",
-            progress: 100,
-            researchArea: "Data Science & Analytics",
-        },
-        {
-            id: 10,
-            studentName: "Gita Permata",
-            studentNIM: "2021007890",
-            activityType: "Thesis",
-            activityName:
-                "Cloud-based Microservices Architecture for E-Learning",
-            supervisorName: "Dr. Bambang Hartono, M.T",
-            startDate: "2024-09-15",
-            endDate: "2025-02-28",
-            status: "On Progress",
-            progress: 40,
-            researchArea: "Cloud Computing",
-        },
-        {
-            id: 11,
-            studentName: "Karina Dewi",
-            studentNIM: "2021011234",
-            activityType: "Thesis",
-            activityName: "3D Game Development Using Unreal Engine 5",
-            supervisorName: "Dr. Rudi Hartono, M.Kom",
-            startDate: "2024-08-01",
-            endDate: "2024-12-31",
-            status: "On Progress",
-            progress: 55,
-            researchArea: "Game Development & AI",
-        },
-        {
-            id: 12,
-            studentName: "Budi Santoso",
-            studentNIM: "2021003456",
-            activityType: "PKL",
-            activityName: "Internship at Tech Startup Indonesia",
-            supervisorName: "Dr. Rina Kusuma, M.T",
-            teamMembers: [
-                "Ahmad Rizki Pratama",
-                "Budi Santoso",
-                "Dewi Lestari",
-            ],
-            startDate: "2024-09-01",
-            endDate: "2024-12-31",
-            status: "In Progress",
-            progress: 65,
-        },
-        {
-            id: 13,
-            studentName: "Dewi Lestari",
-            studentNIM: "2021004567",
-            activityType: "PKL",
-            activityName: "Internship at Tech Startup Indonesia",
-            supervisorName: "Dr. Rina Kusuma, M.T",
-            teamMembers: [
-                "Ahmad Rizki Pratama",
-                "Budi Santoso",
-                "Dewi Lestari",
-            ],
-            startDate: "2024-09-01",
-            endDate: "2024-12-31",
-            status: "In Progress",
-            progress: 65,
-        },
-        {
-            id: 14,
-            studentName: "Indah Kusuma",
-            studentNIM: "2021009012",
-            activityType: "Competition",
-            activityName: "National Hackathon 2024",
-            supervisorName: "Dr. Sarah Wijaya, M.Kom",
-            teamMembers: [
-                "Farhan Abdullah",
-                "Hendra Wijaya",
-                "Indah Kusuma",
-                "Karina Dewi",
-            ],
-            startDate: "2024-10-01",
-            endDate: "2024-10-15",
-            status: "Completed",
-            progress: 100,
-        },
-    ];
+    // --- LOGIC JUDUL HALAMAN DINAMIS BERDASARKAN ROLE ---
+    const getPageHeader = () => {
+        if (userRole === 'student') {
+            return { title: "My Activity Reports", desc: "Summary of your personal academic activities and progress" };
+        }
+        if (userRole === 'lecturer') {
+            return { title: "Supervision Reports", desc: "Overview of students under your supervision" };
+        }
+        return { title: "All Activity Reports", desc: "Comprehensive summary of all student activities" }; // Admin
+    };
 
-    // Filter activities
-    const filteredActivities = studentActivities.filter((activity) => {
+    const headerInfo = getPageHeader();
+
+    // 2. FILTER DATA (Client Side)
+    const filteredActivities = activities.filter((activity) => {
         const matchesType =
             activityType === "all" ||
             activity.activityType.toLowerCase() === activityType;
+        
         const matchesStatus =
             statusFilter === "all" ||
             activity.status.toLowerCase().replace(" ", "-") === statusFilter;
+        
         return matchesType && matchesStatus;
     });
 
-    // Calculate statistics
-    const totalPKL = studentActivities.filter(
-        (a) => a.activityType === "PKL"
-    ).length;
-    const totalThesis = studentActivities.filter(
-        (a) => a.activityType === "Thesis"
-    ).length;
-    const totalCompetition = studentActivities.filter(
-        (a) => a.activityType === "Competition"
-    ).length;
-    const totalActivities = studentActivities.length;
+    // 3. HITUNG STATISTIK GRAFIK
+    
+    // Distribusi Tipe Aktivitas
+    const activityDistribution = useMemo(() => {
+        const counts = { PKL: 0, Thesis: 0, Competition: 0 };
+        activities.forEach(a => {
+            if (counts[a.activityType] !== undefined) counts[a.activityType]++;
+        });
+        return [
+            { name: "PKL", value: counts.PKL, color: "#1E88E5" },
+            { name: "Thesis", value: counts.Thesis, color: "#10b981" },
+            { name: "Competition", value: counts.Competition, color: "#f59e0b" },
+        ];
+    }, [activities]);
 
-    const completedActivities = studentActivities.filter(
-        (a) => a.status === "Completed"
-    ).length;
-    const activeActivities = studentActivities.filter(
-        (a) =>
-            a.status === "In Progress" ||
-            a.status === "On Progress" ||
-            a.status === "Active"
-    ).length;
-    const proposalActivities = studentActivities.filter(
-        (a) => a.status === "Proposal"
-    ).length;
+    // Distribusi Status
+    const statusDistribution = useMemo(() => {
+        const counts = { Completed: 0, "In Progress": 0, Proposal: 0, Revision: 0 };
+        activities.forEach(a => {
+            if (counts[a.status] !== undefined) counts[a.status]++;
+        });
+        return [
+            { name: "Completed", count: counts.Completed },
+            { name: "In Progress", count: counts["In Progress"] },
+            { name: "Proposal", count: counts.Proposal },
+            { name: "Revision", count: counts.Revision },
+        ];
+    }, [activities]);
 
-    const completionRate = Math.round(
-        (completedActivities / totalActivities) * 100
-    );
-    const averageProgress = Math.round(
-        studentActivities.reduce((sum, a) => sum + a.progress, 0) /
-            totalActivities
-    );
+    // Tren Bulanan
+    const monthlyTrends = useMemo(() => {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const data = months.map(m => ({ month: m, PKL: 0, Thesis: 0, Competition: 0 }));
+        
+        activities.forEach(a => {
+            const date = new Date(a.created_at);
+            if (!isNaN(date)) {
+                const monthIndex = date.getMonth();
+                if (data[monthIndex][a.activityType] !== undefined) {
+                    data[monthIndex][a.activityType]++;
+                }
+            }
+        });
+        return data.filter(d => d.PKL + d.Thesis + d.Competition > 0);
+    }, [activities]);
 
-    // Activity type distribution
-    const activityDistribution = [
-        { name: "PKL", value: totalPKL, color: "#1E88E5" },
-        { name: "Thesis", value: totalThesis, color: "#10b981" },
-        { name: "Competition", value: totalCompetition, color: "#f59e0b" },
-    ];
+    // Progress Grouping
+    const progressByActivity = useMemo(() => {
+        const ranges = [
+            { range: "0-25%", min: 0, max: 25, count: 0 },
+            { range: "26-50%", min: 26, max: 50, count: 0 },
+            { range: "51-75%", min: 51, max: 75, count: 0 },
+            { range: "76-100%", min: 76, max: 100, count: 0 },
+        ];
+        activities.forEach(a => {
+            const p = a.progress;
+            const bucket = ranges.find(r => p >= r.min && p <= r.max);
+            if (bucket) bucket.count++;
+        });
+        return ranges;
+    }, [activities]);
 
-    // Status distribution
-    const statusDistribution = [
-        { name: "Completed", count: completedActivities },
-        { name: "In Progress", count: activeActivities },
-        { name: "Proposal", count: proposalActivities },
-        {
-            name: "Revision",
-            count: studentActivities.filter((a) => a.status === "Revision")
-                .length,
-        },
-    ];
-
-    // Monthly activity trends
-    const monthlyTrends = [
-        { month: "Jun", PKL: 1, Thesis: 1, Competition: 0 },
-        { month: "Jul", PKL: 2, Thesis: 2, Competition: 0 },
-        { month: "Aug", PKL: 3, Thesis: 4, Competition: 0 },
-        { month: "Sep", PKL: 5, Thesis: 6, Competition: 0 },
-        { month: "Oct", PKL: 5, Thesis: 6, Competition: 2 },
-        { month: "Nov", PKL: 5, Thesis: 6, Competition: 2 },
-    ];
-
-    // Progress by student
-    const progressByActivity = [
-        {
-            range: "0-25%",
-            count: studentActivities.filter((a) => a.progress <= 25).length,
-        },
-        {
-            range: "26-50%",
-            count: studentActivities.filter(
-                (a) => a.progress > 25 && a.progress <= 50
-            ).length,
-        },
-        {
-            range: "51-75%",
-            count: studentActivities.filter(
-                (a) => a.progress > 50 && a.progress <= 75
-            ).length,
-        },
-        {
-            range: "76-100%",
-            count: studentActivities.filter((a) => a.progress > 75).length,
-        },
-    ];
-
+    // --- HELPERS ---
     const getStatusColor = (status) => {
         switch (status) {
-            case "Completed":
-                return "bg-green-100 text-green-700";
-            case "In Progress":
-            case "On Progress":
-            case "Active":
-                return "bg-blue-100 text-blue-700";
-            case "Proposal":
-                return "bg-yellow-100 text-yellow-700";
-            case "Revision":
-                return "bg-orange-100 text-orange-700";
-            default:
-                return "bg-gray-100 text-gray-700";
+            case "Completed": return "bg-green-100 text-green-700";
+            case "In Progress": return "bg-blue-100 text-blue-700";
+            case "On Progress": return "bg-blue-100 text-blue-700";
+            case "Active": return "bg-blue-100 text-blue-700";
+            case "Proposal": return "bg-yellow-100 text-yellow-700";
+            case "Revision": return "bg-orange-100 text-orange-700";
+            default: return "bg-gray-100 text-gray-700";
         }
     };
 
     const getActivityIcon = (type) => {
         switch (type) {
-            case "PKL":
-                return <BookOpen className="w-4 h-4" />;
-            case "Thesis":
-                return <FileText className="w-4 h-4" />;
-            case "Competition":
-                return <Award className="w-4 h-4" />;
-            default:
-                return null;
+            case "PKL": return <Briefcase className="w-4 h-4" />;
+            case "Thesis": return <GraduationCap className="w-4 h-4" />;
+            case "Competition": return <Award className="w-4 h-4" />;
+            default: return null;
         }
+    };
+    
+    const handleQuickExportFormat = (format) => {
+        setExportFormat(format);
+        toast.success(`Exporting to ${format.toUpperCase()}...`, {
+            description: "Your file is being prepared."
+        });
     };
 
     return (
         <MainLayout>
             <Head title="Reports" />
             <div className="space-y-6">
-                {/* Report Configuration */}
+                {/* Header Dinamis Sesuai Role */}
+                <div>
+                    <h1>{headerInfo.title}</h1>
+                    <p className="text-sm text-muted-foreground">
+                        {headerInfo.desc}
+                    </p>
+                </div>
+
+                {/* Report Filter Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Activity Reports</CardTitle>
-                        <CardDescription>
-                            Comprehensive summary of all student activities
-                            including PKL, Thesis, and Competitions
-                        </CardDescription>
+                        <CardTitle>Filter Reports</CardTitle>
+                        <CardDescription>Customize the data view</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="activityType">
-                                        Activity Type
-                                    </Label>
-                                    <Select
-                                        value={activityType}
-                                        onValueChange={(value) =>
-                                            setActivityType(value)
-                                        }
-                                    >
-                                        <SelectTrigger
-                                            id="activityType"
-                                            className="w-full md:w-48"
-                                        >
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                    <Label>Activity Type</Label>
+                                    <Select value={activityType} onValueChange={setActivityType}>
+                                        <SelectTrigger className="w-full md:w-48"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">
-                                                All Activities
-                                            </SelectItem>
-                                            <SelectItem value="pkl">
-                                                PKL Only
-                                            </SelectItem>
-                                            <SelectItem value="thesis">
-                                                Thesis Only
-                                            </SelectItem>
-                                            <SelectItem value="competition">
-                                                Competition Only
-                                            </SelectItem>
+                                            <SelectItem value="all">All Activities</SelectItem>
+                                            <SelectItem value="pkl">PKL Only</SelectItem>
+                                            <SelectItem value="thesis">Thesis Only</SelectItem>
+                                            <SelectItem value="competition">Competition Only</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="statusFilter">Status</Label>
-                                    <Select
-                                        value={statusFilter}
-                                        onValueChange={setStatusFilter}
-                                    >
-                                        <SelectTrigger
-                                            id="statusFilter"
-                                            className="w-full md:w-48"
-                                        >
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                    <Label>Status</Label>
+                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                        <SelectTrigger className="w-full md:w-48"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">
-                                                All Status
-                                            </SelectItem>
-                                            <SelectItem value="completed">
-                                                Completed
-                                            </SelectItem>
-                                            <SelectItem value="in-progress">
-                                                In Progress
-                                            </SelectItem>
-                                            <SelectItem value="on-progress">
-                                                On Progress
-                                            </SelectItem>
-                                            <SelectItem value="proposal">
-                                                Proposal
-                                            </SelectItem>
-                                            <SelectItem value="revision">
-                                                Revision
-                                            </SelectItem>
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="completed">Completed</SelectItem>
+                                            <SelectItem value="in-progress">In Progress</SelectItem>
+                                            <SelectItem value="proposal">Proposal</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="dateRange">
-                                        Date Range
-                                    </Label>
-                                    <Select
-                                        value={dateRange}
-                                        onValueChange={setDateRange}
-                                    >
-                                        <SelectTrigger
-                                            id="dateRange"
-                                            className="w-full md:w-48"
-                                        >
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                    <Label>Date Range</Label>
+                                    <Select value={dateRange} onValueChange={setDateRange}>
+                                        <SelectTrigger className="w-full md:w-48"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="month">
-                                                This Month
-                                            </SelectItem>
-                                            <SelectItem value="quarter">
-                                                This Quarter
-                                            </SelectItem>
-                                            <SelectItem value="year">
-                                                This Year
-                                            </SelectItem>
-                                            <SelectItem value="all">
-                                                All Time
-                                            </SelectItem>
+                                            <SelectItem value="month">This Month</SelectItem>
+                                            <SelectItem value="year">This Year</SelectItem>
+                                            <SelectItem value="all">All Time</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-2 md:ml-auto md:pt-0">
-                                    <Button variant="outline" className="gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Export PDF
+                                
+                                <div className="flex flex-col sm:flex-row gap-2 md:ml-auto md:pt-8">
+                                    <Button variant="outline" className="gap-2" onClick={() => handleQuickExportFormat('pdf')}>
+                                        <FileText className="w-4 h-4" /> Export PDF
                                     </Button>
-                                    <Button variant="outline" className="gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Export Excel
+                                    <Button variant="outline" className="gap-2" onClick={() => handleQuickExportFormat('excel')}>
+                                        <FileSpreadsheet className="w-4 h-4" /> Export Excel
                                     </Button>
                                 </div>
                             </div>
@@ -551,92 +253,64 @@ export default function ReportPage() {
                     </CardContent>
                 </Card>
 
-                {/* Summary Statistics */}
+                {/* Summary Statistics Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Total Activities
-                            </CardTitle>
+                            <CardTitle className="text-sm">Total Activities</CardTitle>
                             <TrendingUp className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {filteredActivities.length}
-                                    </span>
-                                    <span className="text-sm text-muted-foreground">
-                                        of {totalActivities}
-                                    </span>
+                                    <span className="text-3xl">{stats.totalProjects}</span>
+                                    <span className="text-sm text-muted-foreground">projects</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    PKL: {totalPKL} | Thesis: {totalThesis} |
-                                    Competition: {totalCompetition}
-                                </p>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Completion Rate
-                            </CardTitle>
+                            <CardTitle className="text-sm">Completed</CardTitle>
                             <Award className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {completionRate}%
-                                    </span>
+                                    <span className="text-3xl">{stats.completedProjects}</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {completedActivities} completed activities
-                                </p>
+                                <p className="text-xs text-muted-foreground">Successfully finished</p>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Active Activities
-                            </CardTitle>
+                            <CardTitle className="text-sm">Active</CardTitle>
                             <Users className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {activeActivities}
-                                    </span>
+                                    <span className="text-3xl">{stats.activeProjects}</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Currently in progress
-                                </p>
+                                <p className="text-xs text-muted-foreground">Currently ongoing</p>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Average Progress
-                            </CardTitle>
+                            <CardTitle className="text-sm">Engagement</CardTitle>
                             <TrendingUp className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {averageProgress}%
-                                    </span>
+                                    <span className="text-3xl">{stats.engagementRate}%</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Across all activities
-                                </p>
+                                <p className="text-xs text-muted-foreground">Participation rate</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -648,36 +322,23 @@ export default function ReportPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Activity Type Distribution</CardTitle>
-                            <CardDescription>
-                                Breakdown by PKL, Thesis, and Competition
-                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ResponsiveContainer
-                                width="100%"
-                                height={chartHeight}
-                            >
+                            <ResponsiveContainer width="100%" height={chartHeight}>
                                 <PieChart>
                                     <Pie
                                         data={activityDistribution}
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
-                                        label={(entry) =>
-                                            `${entry.name}: ${entry.value}`
-                                        }
+                                        label={(entry) => `${entry.name}: ${entry.value}`}
                                         outerRadius={pieChartRadius}
                                         fill="#8884d8"
                                         dataKey="value"
                                     >
-                                        {activityDistribution.map(
-                                            (entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={entry.color}
-                                                />
-                                            )
-                                        )}
+                                        {activityDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
                                     </Pie>
                                     <Tooltip />
                                 </PieChart>
@@ -689,28 +350,15 @@ export default function ReportPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Activity Status</CardTitle>
-                            <CardDescription>
-                                Current status of all activities
-                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ResponsiveContainer
-                                width="100%"
-                                height={chartHeight}
-                            >
+                            <ResponsiveContainer width="100%" height={chartHeight}>
                                 <BarChart data={statusDistribution}>
                                     <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis
-                                        dataKey="name"
-                                        tick={{ fontSize: isMobile ? 11 : 12 }}
-                                    />
+                                    <XAxis dataKey="name" tick={{ fontSize: isMobile ? 11 : 12 }} />
                                     <YAxis />
                                     <Tooltip />
-                                    <Bar
-                                        dataKey="count"
-                                        fill="#1E88E5"
-                                        name="Activities"
-                                    />
+                                    <Bar dataKey="count" fill="#1E88E5" name="Activities" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -719,40 +367,19 @@ export default function ReportPage() {
                     {/* Monthly Trends */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Monthly Activity Trends</CardTitle>
-                            <CardDescription>
-                                Activity registrations over time
-                            </CardDescription>
+                            <CardTitle>Monthly Trends</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ResponsiveContainer
-                                width="100%"
-                                height={chartHeight}
-                            >
+                            <ResponsiveContainer width="100%" height={chartHeight}>
                                 <LineChart data={monthlyTrends}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="month" />
                                     <YAxis />
                                     <Tooltip />
                                     <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="PKL"
-                                        stroke="#1E88E5"
-                                        strokeWidth={2}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="Thesis"
-                                        stroke="#10b981"
-                                        strokeWidth={2}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="Competition"
-                                        stroke="#f59e0b"
-                                        strokeWidth={2}
-                                    />
+                                    <Line type="monotone" dataKey="PKL" stroke="#1E88E5" strokeWidth={2} />
+                                    <Line type="monotone" dataKey="Thesis" stroke="#10b981" strokeWidth={2} />
+                                    <Line type="monotone" dataKey="Competition" stroke="#f59e0b" strokeWidth={2} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -761,29 +388,16 @@ export default function ReportPage() {
                     {/* Progress Distribution */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Progress Distribution</CardTitle>
-                            <CardDescription>
-                                Activities grouped by completion percentage
-                            </CardDescription>
+                            <CardTitle>Progress Overview</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ResponsiveContainer
-                                width="100%"
-                                height={chartHeight}
-                            >
+                            <ResponsiveContainer width="100%" height={chartHeight}>
                                 <BarChart data={progressByActivity}>
                                     <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis
-                                        dataKey="range"
-                                        tick={{ fontSize: isMobile ? 11 : 12 }}
-                                    />
+                                    <XAxis dataKey="range" tick={{ fontSize: isMobile ? 11 : 12 }} />
                                     <YAxis />
                                     <Tooltip />
-                                    <Bar
-                                        dataKey="count"
-                                        fill="#10b981"
-                                        name="Activities"
-                                    />
+                                    <Bar dataKey="count" fill="#10b981" name="Activities" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -795,15 +409,11 @@ export default function ReportPage() {
                     <CardHeader>
                         <CardTitle>Student Activity Details</CardTitle>
                         <CardDescription>
-                            {filteredActivities.length}{" "}
-                            {filteredActivities.length === 1
-                                ? "activity"
-                                : "activities"}{" "}
-                            found
+                            {filteredActivities.length} activities found
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border">
+                        <div className="rounded-md border overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -822,112 +432,39 @@ export default function ReportPage() {
                                             <TableRow key={activity.id}>
                                                 <TableCell>
                                                     <div>
-                                                        <p>
-                                                            {
-                                                                activity.studentName
-                                                            }
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {
-                                                                activity.studentNIM
-                                                            }
-                                                        </p>
+                                                        <p>{activity.studentName}</p>
+                                                        <p className="text-xs text-muted-foreground">{activity.studentNIM}</p>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="gap-1"
-                                                    >
-                                                        {getActivityIcon(
-                                                            activity.activityType
-                                                        )}
+                                                    <Badge variant="outline" className="gap-1">
+                                                        {getActivityIcon(activity.activityType)}
                                                         {activity.activityType}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="max-w-xs">
-                                                        <p className="line-clamp-2">
-                                                            {
-                                                                activity.activityName
-                                                            }
-                                                        </p>
-                                                        {activity.researchArea && (
-                                                            <p className="text-xs text-muted-foreground mt-1">
-                                                                {
-                                                                    activity.researchArea
-                                                                }
-                                                            </p>
-                                                        )}
-                                                        {activity.teamMembers && (
-                                                            <p className="text-xs text-muted-foreground mt-1">
-                                                                Team:{" "}
-                                                                {
-                                                                    activity
-                                                                        .teamMembers
-                                                                        .length
-                                                                }{" "}
-                                                                members
-                                                            </p>
-                                                        )}
+                                                        <p className="line-clamp-2">{activity.activityName}</p>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <p className="text-sm">
-                                                        {
-                                                            activity.supervisorName
-                                                        }
-                                                    </p>
+                                                    <p className="text-sm">{activity.supervisorName}</p>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="text-sm">
                                                         <p className="flex items-center gap-1">
                                                             <Calendar className="w-3 h-3" />
-                                                            {new Date(
-                                                                activity.startDate
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                                {
-                                                                    month: "short",
-                                                                    year: "numeric",
-                                                                }
-                                                            )}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            to{" "}
-                                                            {new Date(
-                                                                activity.endDate
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                                {
-                                                                    month: "short",
-                                                                    year: "numeric",
-                                                                }
-                                                            )}
+                                                            {activity.startDate ? new Date(activity.startDate).toLocaleDateString() : '-'}
                                                         </p>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-16 bg-muted rounded-full h-2">
-                                                            <div
-                                                                className="bg-primary rounded-full h-2 transition-all"
-                                                                style={{
-                                                                    width: `${activity.progress}%`,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-sm">
-                                                            {activity.progress}%
-                                                        </span>
+                                                    <div className="w-16">
+                                                        <span className="text-sm font-medium">{activity.progress}%</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge
-                                                        className={getStatusColor(
-                                                            activity.status
-                                                        )}
-                                                    >
+                                                    <Badge className={getStatusColor(activity.status)}>
                                                         {activity.status}
                                                     </Badge>
                                                 </TableCell>
@@ -935,12 +472,8 @@ export default function ReportPage() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell
-                                                colSpan={7}
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                No activities found matching
-                                                your criteria
+                                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                                No activities found matching your criteria
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -949,213 +482,6 @@ export default function ReportPage() {
                         </div>
                     </CardContent>
                 </Card>
-
-                {/* Summary by Activity Type */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* PKL Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <BookOpen className="w-5 h-5 text-primary" />
-                                PKL Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Total PKL
-                                    </span>
-                                    <span>{totalPKL} activities</span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Completed
-                                    </span>
-                                    <span className="text-green-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType === "PKL" &&
-                                                    a.status === "Completed"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        In Progress
-                                    </span>
-                                    <span className="text-blue-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType === "PKL" &&
-                                                    a.status === "In Progress"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Unique Students
-                                    </span>
-                                    <span>
-                                        {
-                                            new Set(
-                                                studentActivities
-                                                    .filter(
-                                                        (a) =>
-                                                            a.activityType ===
-                                                            "PKL"
-                                                    )
-                                                    .map((a) => a.studentNIM)
-                                            ).size
-                                        }
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Thesis Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-green-600" />
-                                Thesis Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Total Thesis
-                                    </span>
-                                    <span>{totalThesis} activities</span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Completed
-                                    </span>
-                                    <span className="text-green-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType ===
-                                                        "Thesis" &&
-                                                    a.status === "Completed"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        On Progress
-                                    </span>
-                                    <span className="text-blue-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType ===
-                                                        "Thesis" &&
-                                                    a.status === "On Progress"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Proposal
-                                    </span>
-                                    <span className="text-yellow-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType ===
-                                                        "Thesis" &&
-                                                    a.status === "Proposal"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Competition Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Award className="w-5 h-5 text-orange-500" />
-                                Competition Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Total Competitions
-                                    </span>
-                                    <span>{totalCompetition} activities</span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Completed
-                                    </span>
-                                    <span className="text-green-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType ===
-                                                        "Competition" &&
-                                                    a.status === "Completed"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Active
-                                    </span>
-                                    <span className="text-blue-600">
-                                        {
-                                            studentActivities.filter(
-                                                (a) =>
-                                                    a.activityType ===
-                                                        "Competition" &&
-                                                    a.status === "Active"
-                                            ).length
-                                        }
-                                    </span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-muted-foreground">
-                                        Unique Students
-                                    </span>
-                                    <span>
-                                        {
-                                            new Set(
-                                                studentActivities
-                                                    .filter(
-                                                        (a) =>
-                                                            a.activityType ===
-                                                            "Competition"
-                                                    )
-                                                    .map((a) => a.studentNIM)
-                                            ).size
-                                        }
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
             </div>
         </MainLayout>
     );

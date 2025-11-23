@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { Head } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Label } from "../Components/ui/label";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Download,
     FileText,
@@ -32,89 +32,75 @@ import {
     Activity,
     FileSpreadsheet,
     FileBarChart,
-    Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 
-const ReportType =
-    "projects" | "supervisors" | "engagement" | "department" | "timeline";
-const ExportFormat = "pdf" | "excel" | "csv";
-
-const ReportTemplate = [
+const reportTemplates = [
     {
-        id: "string",
-        name: "string",
-        description: "string",
-        icon: "any",
-        type: "ReportType",
+        id: "projects-semester",
+        name: "Projects per Semester",
+        description:
+            "Overview of all projects (PKL, Thesis, Competition) organized by semester",
+        icon: Briefcase,
+        type: "projects",
+    },
+    {
+        id: "supervisors-load",
+        name: "Supervisor Workload",
+        description:
+            "Number of students supervised per lecturer with distribution analysis",
+        icon: UserCheck,
+        type: "supervisors",
+    },
+    {
+        id: "student-engagement",
+        name: "Student Engagement Level",
+        description:
+            "Activity participation rates and engagement metrics by student",
+        icon: TrendingUp,
+        type: "engagement",
+    },
+    {
+        id: "department-statistics",
+        name: "Department Statistics",
+        description:
+            "Comparative analysis of activities across departments",
+        icon: BarChart3,
+        type: "department",
+    },
+    {
+        id: "project-timeline",
+        name: "Project Timeline Analysis",
+        description: "Project completion rates and timeline adherence",
+        icon: Calendar,
+        type: "timeline",
+    },
+    {
+        id: "activity-types",
+        name: "Activity Type Distribution",
+        description: "Breakdown of PKL, Thesis, and Competition activities",
+        icon: Activity,
+        type: "projects",
     },
 ];
 
-export default function SystemReportsPage() {
+// Default stats jika data kosong (fallback)
+const defaultStats = {
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    totalSupervisors: 0,
+    avgStudentsPerSupervisor: 0,
+    engagementRate: 0,
+    departments: 0,
+};
+
+// TERIMA PROPS DARI CONTROLLER
+export default function SystemReportsPage({ stats = defaultStats }) {
     const [selectedReport, setSelectedReport] = useState("");
     const [selectedSemester, setSelectedSemester] = useState("2024-1");
     const [selectedDepartment, setSelectedDepartment] = useState("all");
     const [exportFormat, setExportFormat] = useState("pdf");
-
-    const reportTemplates = [
-        {
-            id: "projects-semester",
-            name: "Projects per Semester",
-            description:
-                "Overview of all projects (PKL, Thesis, Competition) organized by semester",
-            icon: Briefcase,
-            type: "projects",
-        },
-        {
-            id: "supervisors-load",
-            name: "Supervisor Workload",
-            description:
-                "Number of students supervised per lecturer with distribution analysis",
-            icon: UserCheck,
-            type: "supervisors",
-        },
-        {
-            id: "student-engagement",
-            name: "Student Engagement Level",
-            description:
-                "Activity participation rates and engagement metrics by student",
-            icon: TrendingUp,
-            type: "engagement",
-        },
-        {
-            id: "department-statistics",
-            name: "Department Statistics",
-            description:
-                "Comparative analysis of activities across departments",
-            icon: BarChart3,
-            type: "department",
-        },
-        {
-            id: "project-timeline",
-            name: "Project Timeline Analysis",
-            description: "Project completion rates and timeline adherence",
-            icon: Calendar,
-            type: "timeline",
-        },
-        {
-            id: "activity-types",
-            name: "Activity Type Distribution",
-            description: "Breakdown of PKL, Thesis, and Competition activities",
-            icon: Activity,
-            type: "projects",
-        },
-    ];
-
-    // Mock statistics data
-    const statistics = {
-        totalProjects: 147,
-        activeProjects: 89,
-        completedProjects: 52,
-        totalSupervisors: 28,
-        avgStudentsPerSupervisor: 3.2,
-        engagementRate: 87,
-        departments: 4,
-    };
 
     const semesterOptions = [
         { value: "2024-1", label: "Semester 1 - 2024/2025" },
@@ -143,7 +129,7 @@ export default function SystemReportsPage() {
             description: `Format: ${exportFormat.toUpperCase()} | Semester: ${selectedSemester}`,
         });
 
-        // Simulate download
+        // Simulasi proses download (Nantinya bisa diganti window.open ke route export)
         setTimeout(() => {
             toast.success("Report generated successfully!", {
                 description: "Your download will start shortly.",
@@ -168,11 +154,11 @@ export default function SystemReportsPage() {
                 <div>
                     <h1>System Reports</h1>
                     <p className="text-sm text-muted-foreground">
-                        Generate and export comprehensive activity reports
+                        Generate and export comprehensive activity reports based on real-time data
                     </p>
                 </div>
 
-                {/* Quick Stats */}
+                {/* Quick Stats - DATA DARI DATABASE */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -185,11 +171,11 @@ export default function SystemReportsPage() {
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {statistics.totalProjects}
+                                        {stats.totalProjects}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    {statistics.activeProjects} active
+                                    {stats.activeProjects} active
                                 </p>
                             </div>
                         </CardContent>
@@ -206,11 +192,11 @@ export default function SystemReportsPage() {
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {statistics.totalSupervisors}
+                                        {stats.totalSupervisors}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Avg {statistics.avgStudentsPerSupervisor}{" "}
+                                    Avg {stats.avgStudentsPerSupervisor}{" "}
                                     students/supervisor
                                 </p>
                             </div>
@@ -228,7 +214,7 @@ export default function SystemReportsPage() {
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {statistics.engagementRate}%
+                                        {stats.engagementRate}%
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -249,7 +235,7 @@ export default function SystemReportsPage() {
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {statistics.departments}
+                                        {stats.departments}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -362,9 +348,7 @@ export default function SystemReportsPage() {
                                 <Label htmlFor="format">Export Format</Label>
                                 <Select
                                     value={exportFormat}
-                                    onValueChange={(value) =>
-                                        setExportFormat(value)
-                                    }
+                                    onValueChange={setExportFormat}
                                 >
                                     <SelectTrigger id="format">
                                         <SelectValue />
@@ -453,81 +437,6 @@ export default function SystemReportsPage() {
                         })}
                     </div>
                 </div>
-
-                {/* Recent Exports */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent Exports</CardTitle>
-                        <CardDescription>
-                            Your recently generated reports
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {[
-                                {
-                                    name: "Projects per Semester - 2024-1",
-                                    date: "2024-10-25 14:30",
-                                    format: "PDF",
-                                    size: "2.4 MB",
-                                },
-                                {
-                                    name: "Supervisor Workload Analysis",
-                                    date: "2024-10-24 09:15",
-                                    format: "Excel",
-                                    size: "1.8 MB",
-                                },
-                                {
-                                    name: "Student Engagement Report",
-                                    date: "2024-10-23 16:45",
-                                    format: "PDF",
-                                    size: "3.1 MB",
-                                },
-                                {
-                                    name: "Department Statistics - Q3",
-                                    date: "2024-10-20 11:20",
-                                    format: "CSV",
-                                    size: "856 KB",
-                                },
-                            ].map((report, idx) => (
-                                <div
-                                    key={idx}
-                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                                            {report.format === "PDF" && (
-                                                <FileText className="w-5 h-5 text-primary" />
-                                            )}
-                                            {report.format === "Excel" && (
-                                                <FileSpreadsheet className="w-5 h-5 text-primary" />
-                                            )}
-                                            {report.format === "CSV" && (
-                                                <FileBarChart className="w-5 h-5 text-primary" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm">
-                                                {report.name}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {report.date} • {report.size}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="gap-2"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        Download
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </MainLayout>
     );
