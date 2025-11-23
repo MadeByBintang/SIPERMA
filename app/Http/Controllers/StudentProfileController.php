@@ -27,7 +27,8 @@ class StudentProfileController extends Controller
             'email' => $student->email,
             'skills' => $student->skills->map(fn($s) => [
                 'id' => $s->skill_id,
-                'name' => $s->name
+                'name' => $s->name,
+                'level' => $s->pivot->level
             ])->toArray(),
         ] : null;
 
@@ -54,14 +55,10 @@ class StudentProfileController extends Controller
 
         $student = $user -> student;
 
-        $skillIds = $request->input('skills', []);
-
-        $syncData = [];
-        foreach ($skillIds as $id) {
-            $syncData[$id] = ['level' => 3];
-        }
-
-        $student->skills()->sync($syncData);
+        $skills = collect($request->skills)->mapWithKeys(function ($skill) {
+            return [$skill['id'] => ['level' => $skill['level'] ?? 1]];
+        })->toArray();
+        $student->skills()->sync($skills);
 
         return redirect()->route('profile.student') -> with('success', 'Profile updated successfully');
     }

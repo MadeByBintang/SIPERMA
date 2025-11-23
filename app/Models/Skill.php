@@ -28,5 +28,4 @@ class Skill extends Model
                     ->withPivot('level', 'priority')
                     ->withTimestamps();
     }
-
 }

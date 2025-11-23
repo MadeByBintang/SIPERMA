@@ -32,13 +32,21 @@ import { toast } from "sonner";
 export default function StudentProfilePage({ student, supervisors = [], allSkills = [] }) {
     const [isEditing, setIsEditing] = useState(false);
     const [open, setOpen] = useState(false);
+    const [dropdownSkill, setDropdownSkill] = useState(null);
+
 
     const initialData = {
         name: student?.name || "Guest",
         nim: student?.nim || "-",
         studyProgram: student?.studyProgram || "-",
         email: student?.email || "-",
-        skills: Array.isArray(student?.skills) ? student.skills : [],
+        skills: Array.isArray(student?.skills)
+        ? student.skills.map(s => ({
+            id: s.id,
+            name: s.name,
+            level: s.level,
+        }))
+        : [],
     };
 
     // 2. SETUP FORM INERTIA
@@ -59,7 +67,10 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         // Pastikan route 'profile.student.update' ada di web.php
         router.post(route('profile.student.update'), {
             _method: 'post',
-            skills: data.skills.map(s => s.id)
+            skills: data.skills.map(s => ({
+                id: s.id,
+                level: s.level ?? 1,
+            }))
         }, {
             onSuccess: () => {
                 toast.success("Profile updated successfully");
@@ -86,6 +97,11 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
     const removeSkill = (id) => {
         setData('skills', data.skills.filter(i => i.id !== id));
     };
+
+    const updateSkillLevel = (id, level) => {
+        setData('skills', data.skills.map(s => s.id === id ? {...s, level} : s));
+    };
+
 
 
     const getInitials = (name) => {
@@ -159,11 +175,11 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                 {/* Editable Field: skill Areas */}
                                 <div className="space-y-2">
                                     <Label>Skill Areas</Label>
-                                    <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
+                                    {/* <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
                                         {data.skills.length > 0 ? (
                                             data.skills.map((skill) => (
                                                 <Badge key={skill.id} variant="secondary" className="gap-1">
-                                                    {skill.name}
+                                                    {skill.name} {skill.level}
                                                     {isEditing && (
                                                         <button
                                                             onClick={() => removeSkill(skill.id)}
@@ -174,11 +190,55 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                                         </button>
                                                     )}
                                                 </Badge>
+
+
                                             ))
                                         ) : (
                                             <span className="text-sm text-muted-foreground self-center">No skills selected</span>
                                         )}
+                                    </div> */}
+
+                                    <div className="flex flex-wrap gap-2">
+                                    {data.skills.map(skill => (
+                                        <div key={skill.id} className="relative">
+                                        <Badge
+                                            variant="secondary"
+                                            className="gap-1 cursor-pointer flex items-center"
+                                            onClick={() => setDropdownSkill(dropdownSkill === skill.id ? null : skill.id)}
+                                        >
+                                            {skill.name} (Lvl {skill.level})
+                                            {isEditing && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); removeSkill(skill.id); }}
+                                                className="ml-1 hover:text-red-500"
+                                                type="button"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                            )}
+                                        </Badge>
+
+                                        {/* Dropdown muncul hanya untuk badge yang diklik */}
+                                        {isEditing && dropdownSkill === skill.id && (
+                                            <div className="absolute z-10 mt-1 bg-white border border-gray-300 rounded shadow-md">
+                                            {[1,2,3,4,5].map(lvl => (
+                                                <div
+                                                key={lvl}
+                                                className={`px-3 py-1 cursor-pointer hover:bg-gray-100 ${skill.level === lvl ? 'font-bold' : ''}`}
+                                                onClick={() => {
+                                                    updateSkillLevel(skill.id, lvl);
+                                                    setDropdownSkill(null); // tutup dropdown
+                                                }}
+                                                >
+                                                Level {lvl}
+                                                </div>
+                                            ))}
+                                            </div>
+                                        )}
+                                        </div>
+                                    ))}
                                     </div>
+
 
                                     {isEditing && (
                                         <div className="mt-2">
@@ -206,10 +266,18 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                                                         key={skill.id}
                                                                         onSelect={() => toggleSkill(skill)}
                                                                     >
-                                                                        <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${isSelected ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
-                                                                            {isSelected && <Check className="h-3 w-3" />}
+                                                                        <div className="flex items-center justify-between w-full">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className={`w-4 h-4 border rounded flex items-center justify-center ${
+                                                                                        isSelected ? "bg-primary border-primary" : "border-input"
+                                                                                    }`}
+                                                                                >
+                                                                                    {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                                                </div>
+                                                                                <span>{skill.name}</span>
+                                                                            </div>
                                                                         </div>
-                                                                        {skill.name}
                                                                     </CommandItem>
                                                                 )})}
                                                             </CommandGroup>
