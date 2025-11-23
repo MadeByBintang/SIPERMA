@@ -17,7 +17,7 @@ class Student extends Model
         'master_student_id', // Kunci ke data master
         'nim',
         'name',  
-        'phone', 
+        //'phone', 
         'major',
         'year',
         'gpa',

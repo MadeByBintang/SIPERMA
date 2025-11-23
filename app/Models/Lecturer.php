@@ -17,7 +17,7 @@ class Lecturer extends Model
         'master_lecturer_id',
         'nip',
         'name',
-        'phone',
+        //'phone',
         'description',
         'academic_titles',
         'expertise',
