@@ -13,20 +13,16 @@ class StudentProfileController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
+
         // Eager load data student dan skills
         $student = $user->student()->with(['skills', 'supervisions.lecturer.user'])->first();
 
         $studentData = $student ? [
             'id' => $student->student_id,
-            'name' => $user->name,
+            'name' => $student->name,
             'nim' => $student->nim,
-            'studyProgram' => $student->major ?? 'Information Technology',
-            'email' => $user->email,
-            //'phone' => $user->phone ?? '-',
-            //'gpa' => (string) ($student->gpa ?? 0.0),
-            'semester' => $student->year ? (date('Y') - $student->year) * 2 + (date('n') > 6 ? 1 : 0) : '1',
-            'description' => "Student at University", 
+            'studyProgram' => 'Teknologi Informasi',
+            'email' => $student->email,
             'interests' => $student->skills->pluck('name')->toArray(),
         ] : null;
 
@@ -43,7 +39,7 @@ class StudentProfileController extends Controller
         return Inertia::render('StudentProfilePage', [
             'student' => $studentData,
             'supervisors' => $supervisors,
-            'allSkills' => Skill::pluck('name')->toArray(), 
+            'allSkills' => Skill::pluck('name')->toArray(),
         ]);
     }
 
@@ -53,7 +49,7 @@ class StudentProfileController extends Controller
         // Baris ini memberitahu editor bahwa $user adalah Model User, bukan sekadar interface Auth
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
+
         $student = $user->student;
 
         $validated = $request->validate([
@@ -68,7 +64,7 @@ class StudentProfileController extends Controller
 
         // 2. Update Student (Jika ada field description di tabel students)
         // if ($student) {
-        //    $student->update(['description' => $validated['description']]); 
+        //    $student->update(['description' => $validated['description']]);
         // }
 
         // 3. Sync Skills (Interests)

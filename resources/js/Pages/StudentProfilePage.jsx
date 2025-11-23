@@ -33,16 +33,11 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
     const [isEditing, setIsEditing] = useState(false);
     const [open, setOpen] = useState(false);
 
-    // 1. ROBUST INITIAL DATA: Pastikan semua field ada nilainya
     const initialData = {
         name: student?.name || "Guest",
         nim: student?.nim || "-",
         studyProgram: student?.studyProgram || "-",
         email: student?.email || "-",
-        //phone: student?.phone || "",
-        //gpa: student?.gpa || "0.00",
-        semester: student?.semester || "1",
-        description: student?.description || "",
         interests: Array.isArray(student?.interests) ? student.interests : [],
     };
 
@@ -51,10 +46,10 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         //phone: initialData.phone,
         description: initialData.description,
         interests: initialData.interests,
-        
+
         // Field Read-Only (disimpan di state form hanya untuk display, tidak dikirim ke server via update)
         // Atau jika ingin dikirim untuk validasi, pastikan backend handle-nya (biasanya ignored)
-        _name: initialData.name, 
+        _name: initialData.name,
         _nim: initialData.nim,
         _studyProgram: initialData.studyProgram,
         _email: initialData.email,
@@ -64,7 +59,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
 
     // Handlers
     const handleEdit = () => setIsEditing(true);
-    
+
     const handleCancel = () => {
         reset(); // Reset form ke nilai awal
         setIsEditing(false);
@@ -111,7 +106,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
         <MainLayout>
             <Head title="Student Profile" />
             <div className="space-y-6">
-                
+
                 {/* Profile Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
@@ -164,12 +159,12 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         <Label>Email</Label>
                                         <Input value={initialData.email} disabled className="bg-muted" />
                                     </div>
-                                    
+
                                     {/* Editable Field: Phone */}
                                     {/*<div className="space-y-2">
                                         <Label>Phone Number</Label>
-                                        <Input 
-                                            value={data.phone} 
+                                        <Input
+                                            value={data.phone}
                                             onChange={e => setData('phone', e.target.value)}
                                             disabled={!isEditing}
                                             placeholder="+62..."
@@ -178,7 +173,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                     </div>*/}
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>GPA</Label>
                                         <Input value={initialData.gpa} disabled className="bg-muted" />
@@ -187,7 +182,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         <Label>Semester</Label>
                                         <Input value={initialData.semester} disabled className="bg-muted" />
                                     </div>
-                                </div>
+                                </div> */}
 
                                 {/* Editable Field: Interest Areas */}
                                 <div className="space-y-2">
@@ -198,8 +193,8 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                                 <Badge key={interest} variant="secondary" className="gap-1">
                                                     {interest}
                                                     {isEditing && (
-                                                        <button 
-                                                            onClick={() => removeInterest(interest)} 
+                                                        <button
+                                                            onClick={() => removeInterest(interest)}
                                                             className="ml-1 hover:text-red-500"
                                                             type="button"
                                                         >
@@ -212,7 +207,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                             <span className="text-sm text-muted-foreground self-center">No interests selected</span>
                                         )}
                                     </div>
-                                    
+
                                     {isEditing && (
                                         <div className="mt-2">
                                             <Popover open={open} onOpenChange={setOpen}>
@@ -245,7 +240,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                 </div>
 
                                 {/* Editable Field: Description */}
-                                <div className="space-y-2">
+                                {/* <div className="space-y-2">
                                     <Label>About / Description</Label>
                                     <Textarea
                                         value={data.description}
@@ -255,7 +250,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                         placeholder="Describe your academic interests..."
                                     />
                                     {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </CardContent>

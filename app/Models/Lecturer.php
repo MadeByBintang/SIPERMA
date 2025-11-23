@@ -38,7 +38,7 @@ class Lecturer extends Model
         // Param 3: PK di tabel users (user_id)
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
-    
+
     public function masterLecturer()
     {
         return $this->belongsTo(MasterLecturer::class, 'master_lecturer_id', 'master_lecturer_id');

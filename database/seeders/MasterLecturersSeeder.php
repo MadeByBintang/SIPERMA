@@ -28,7 +28,7 @@ class MasterLecturersSeeder extends Seeder // <-- Nama Kelas YANG BENAR
         MasterLecturer::create([
             'nip' => '200006192025062016',
             'full_name' => 'Erika Maulidiya, S.Kom., M.Kom',
-            'email' => 'erikamaulidiya@ulml.ac.id'
+            'email' => 'erikamaulidiya@ulm.ac.id'
         ]);
     }
 }
