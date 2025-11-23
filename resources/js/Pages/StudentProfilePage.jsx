@@ -99,7 +99,11 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
 
     // Helper untuk Avatar Initial
     const getInitials = (name) => {
-        return name ? name.substring(0, 2).toUpperCase() : "ST";
+        return name ? name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .join("")
+                        .toUpperCase() : "ST";
     };
 
     return (
