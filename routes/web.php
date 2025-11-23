@@ -32,33 +32,64 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/admin/dashboard', [DashboardController::class, 'index']) 
-    ->middleware(['auth', 'verified'])
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'role:admin'])
     ->name('admin.dashboard');
 
 // --- ROUTE PROFIL (Semua Role) ---
-Route::middleware(['auth', 'verified'])->group(function () {
-    // 1. Mahasiswa
+// Route::middleware(['auth', 'verified'])->group(function () {
+//     // 1. Mahasiswa
+//     Route::get('/profile/student', [StudentProfileController::class, 'index'])
+//         ->name('profile.student');
+
+//     // 2. Dosen
+//     Route::get('/profile/lecturer', [LecturerProfileController::class, 'index'])
+//         ->name('profile.lecturer');
+
+//     Route::put('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
+//         ->name('profile.lecturer.update');
+
+//     // 3. Admin
+//     Route::get('/profile/admin', [AdminProfileController::class, 'index'])
+//         ->name('profile.admin');
+
+//     Route::post('/profile/admin/update', [AdminProfileController::class, 'update'])
+//         ->name('profile.update');
+
+//     Route::put('/password/update', [AdminProfileController::class, 'updatePassword'])
+//         ->name('password.update');
+// });
+
+Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
+
     Route::get('/profile/student', [StudentProfileController::class, 'index'])
         ->name('profile.student');
 
-    // 2. Dosen
+});
+
+Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
+
     Route::get('/profile/lecturer', [LecturerProfileController::class, 'index'])
         ->name('profile.lecturer');
-    
+
     Route::put('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
         ->name('profile.lecturer.update');
 
-    // 3. Admin
+});
+
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+
     Route::get('/profile/admin', [AdminProfileController::class, 'index'])
         ->name('profile.admin');
-    
+
     Route::post('/profile/admin/update', [AdminProfileController::class, 'update'])
-        ->name('profile.update'); 
+        ->name('profile.update');
 
     Route::put('/password/update', [AdminProfileController::class, 'updatePassword'])
         ->name('password.update');
+
 });
+
 
 // --- REDIRECT PROFIL ---
 Route::get('/profile', function (Request $request) {
@@ -107,7 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // --- FITUR KHUSUS ADMIN ---
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-    
+
     // 1. User Management (LENGKAP dengan CRUD)
     Route::controller(UserManagementController::class)->group(function () {
         Route::get('/users', 'index')->name('users');
@@ -121,7 +152,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // 2. Project Overview (Support Update)
     Route::controller(ProjectOverviewController::class)->group(function () {
         Route::get('/projects', 'index')->name('projects');
-        Route::put('/projects/{id}', 'update')->name('projects.update'); 
+        Route::put('/projects/{id}', 'update')->name('projects.update');
     });
 
     // 3. Admin Relations (CRUD)
@@ -140,7 +171,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     ->middleware(['auth', 'verified'])
     ->name('timeline.progress.update');
 
-    Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);    
+    Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
 
     // 5. System Settings
     Route::get('/settings', [SystemSettingsController::class, 'index'])
