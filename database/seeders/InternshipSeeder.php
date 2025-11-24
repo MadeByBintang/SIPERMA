@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Instantion;
+use App\Models\Internship;
 use Illuminate\Database\Seeder;
-use App\Models\Institution;
 
-class InstitutionSeeder extends Seeder
+class InternshipSeeder extends Seeder
 {
     public function run()
     {
@@ -46,10 +45,10 @@ class InstitutionSeeder extends Seeder
         ];
 
         foreach ($institutions as $data) {
-            
-            Instantion::firstOrCreate(
-                ['name' => $data['name']], 
-                $data 
+
+            Internship::firstOrCreate(
+                ['name' => $data['name']],
+                $data
             );
         }
     }

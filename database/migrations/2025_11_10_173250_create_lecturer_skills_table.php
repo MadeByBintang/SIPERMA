@@ -13,7 +13,6 @@ return new class extends Migration
             $table->unsignedBigInteger('lecturer_id');
             $table->unsignedBigInteger('skill_id');
             $table->tinyInteger('level')->unsigned()->comment('1=Low, 5=Expert');
-            $table->tinyInteger('priority')->unsigned()->default(3)->comment('1=Low interest, 5=Very interested');
             $table->timestamps();
 
             $table -> foreign('lecturer_id') -> references('lecturer_id') -> on('lecturers');

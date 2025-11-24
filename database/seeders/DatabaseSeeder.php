@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Instantion;
 use Illuminate\Database\Seeder; // Pastikan ini ada
 
 class DatabaseSeeder extends Seeder
@@ -17,7 +16,7 @@ class DatabaseSeeder extends Seeder
             MasterStudentsSeeder::class,
             ActivityTypeSeeder::class,
             AdminSeeder::class,
-            Instantion::class,
+            InternshipSeeder::class,
 
             // 2. Akun User (yang menghubungkan data)
             UserSeeder::class,
