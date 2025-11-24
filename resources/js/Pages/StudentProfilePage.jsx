@@ -89,9 +89,14 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
         if (exists) {
             setData('skills', data.skills.filter(i => i.id !== skill.id));
         } else {
-            setData('skills', [...data.skills, skill]);
+            const newSkillEntry = {
+                ...skill,
+                level: 1
+            };
+            setData('skills', [...data.skills, newSkillEntry]);
         }
     };
+
 
 
     const removeSkill = (id) => {
