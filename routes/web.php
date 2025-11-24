@@ -138,6 +138,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/export/pdf', [\App\Http\Controllers\ReportsController::class, 'exportPdf'])
         ->middleware('auth')
         ->name('reports.export.pdf');
+
+    Route::get('/reports/export-excel', [ReportsController::class, 'exportExcel'])
+        ->name('reports.export.excel');
 });
 
 // --- FITUR KHUSUS ADMIN ---

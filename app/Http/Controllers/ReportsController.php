@@ -10,6 +10,9 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\ActivitiesExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class ReportsController extends Controller
 {
@@ -240,5 +243,87 @@ class ReportsController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream("report-$role.pdf");
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role_name;
+
+        $activityType = $request->activityType ?? 'all';
+        $statusFilter = $request->statusFilter ?? 'all';
+        $dateRange = $request->dateRange ?? 'all';
+
+        $supervisionQuery = Supervision::with(['student.user', 'lecturer.user', 'activity']);
+        $teamQuery = Team::with(['leader.student.user', 'supervisor.user']);
+
+        if ($role === 'mahasiswa') {
+            $studentId = $user->student->id ?? 0;
+
+            $supervisionQuery->where('student_id', $studentId);
+            $teamQuery->whereHas(
+                'leader',
+                fn($q) =>
+                $q->where('student_id', $studentId)
+            );
+        } elseif ($role === 'dosen') {
+            $lecturerId = $user->lecturer->id ?? 0;
+
+            $supervisionQuery->where('lecturer_id', $lecturerId);
+            $teamQuery->where('supervisor_id', $lecturerId);
+        }
+
+        if ($activityType !== 'all') {
+            $supervisionQuery->whereHas(
+                'activity',
+                fn($q) =>
+                $q->where('activity_type', $activityType)
+            );
+            $teamQuery->where('type', $activityType);
+        }
+
+        if ($statusFilter !== 'all') {
+            $supervisionQuery->where('supervision_status', $statusFilter);
+            $teamQuery->where('status', $statusFilter);
+        }
+
+        if ($dateRange === 'month') {
+            $supervisionQuery->whereMonth('assigned_date', now()->month);
+            $teamQuery->whereMonth('created_at', now()->month);
+        } elseif ($dateRange === 'year') {
+            $supervisionQuery->whereYear('assigned_date', now()->year);
+            $teamQuery->whereYear('created_at', now()->year);
+        }
+
+        $supervisions = $supervisionQuery->get()->map(function ($s) {
+            return [
+                'student' => $s->student->user->name ?? '-',
+                'supervisor' => $s->lecturer->user->name ?? '-',
+                'activityType' => ucfirst($s->activity->activity_type),
+                'activityName' => $s->activity->title ?? 'No Title',
+                'status' => $s->supervision_status,
+                'startDate' => $s->assigned_date,
+                'endDate' => $s->end_date ?? '-',
+            ];
+        });
+
+        $teams = $teamQuery->get()->map(function ($t) {
+            return [
+                'student' => $t->leader->student->user->name ?? '-',
+                'supervisor' => $t->supervisor->user->name ?? '-',
+                'activityType' => ucfirst($t->type),
+                'activityName' => $t->team_name,
+                'status' => $t->status,
+                'startDate' => $t->created_at->format('Y-m-d'),
+                'endDate' => $t->competition_date ?? '-',
+            ];
+        });
+
+        $activities = $supervisions->concat($teams)->values();
+
+        return Excel::download(
+            new ActivitiesExport($activities),
+            "report-$role.xlsx"
+        );
     }
 }

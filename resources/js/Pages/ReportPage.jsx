@@ -234,6 +234,17 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
                 "_blank"
             );
         }
+
+        if (format === "excel") {
+            window.open(
+                route("reports.export.excel", {
+                    activityType,
+                    statusFilter,
+                    dateRange,
+                }),
+                "_blank"
+            );
+        }
     };
 
     return (
