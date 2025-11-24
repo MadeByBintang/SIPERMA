@@ -15,29 +15,17 @@ class AdminProfileController extends Controller
     public function index()
     {
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $admin = Auth::user() -> admin;
 
         return Inertia::render('AdminProfilePage', [
-            'auth' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    
-                    'role_name' => $user->role->role_name ?? 'admin',
-                    
-                    
-                    'username' => $user->username ?? 'admin',
-                    //'phone' => $user->phone ?? null,
-                    'position' => $user->position ?? null,
-                    'department' => $user->department ?? null,
-                    'address' => $user->address ?? null,
-                ],
-            ],
+            'admin' => [
+                'full_name' => $admin -> full_name,
+                'email'     => $admin -> email
+            ]
         ]);
     }
 
-  
+
     public function update(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -48,10 +36,6 @@ class AdminProfileController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'username' => 'nullable|string|max:255|unique:users,username,' . $user->id,
-            //'phone' => 'nullable|string|max:20',
-            'position' => 'nullable|string|max:100',
-            'department' => 'nullable|string|max:100',
-            'address' => 'nullable|string|max:500',
         ]);
 
         // Update data user
@@ -72,7 +56,7 @@ class AdminProfileController extends Controller
         return redirect()->route('profile.admin');
     }
 
-   
+
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([

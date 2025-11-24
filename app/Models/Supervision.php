@@ -23,7 +23,6 @@ class Supervision extends Model
         'activity_id',
         'supervision_status',
         'assigned_date',
-        // 'academic_year', // Sudah dihapus
         'notes',
     ];
 

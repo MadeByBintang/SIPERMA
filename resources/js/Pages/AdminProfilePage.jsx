@@ -30,23 +30,17 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AdminProfilePage() {
-    // 1. AMBIL DATA DARI DATABASE
+export default function AdminProfilePage({admin}) {
     const { auth } = usePage().props;
-    const user = auth?.user || {}; // Pakai fallback {} agar tidak crash
+    const user = auth?.user || {};
+    const adminData = admin || { full_name: 'Admin', email: 'admin@example.com' };
 
-    // 2. FORM PROFIL (Menggunakan useForm Inertia)
     const { data, setData, post, processing, errors, isDirty } = useForm({
-        name: user?.name || "",
-        email: user?.email || "",
-        //phone: user?.phone || "",
-        position: user?.position || "",
-        department: user?.department || "",
-        address: user?.address || "",
+        name: adminData?.full_name || "",
+        email: adminData?.email || "",
         username: user?.username || "",
     });
 
-    // 3. FORM PASSWORD (Menggunakan useForm Inertia)
     const {
         data: passwordData,
         setData: setPasswordData,
@@ -60,12 +54,10 @@ export default function AdminProfilePage() {
         password_confirmation: "",
     });
 
-    // State UI untuk Password Visibility (Tetap pakai useState)
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // --- LOGIKA SIMPAN KE DATABASE ---
     const handleSaveProfile = (e) => {
         e.preventDefault();
         post(route("profile.update"), {
@@ -110,53 +102,6 @@ export default function AdminProfilePage() {
         <MainLayout>
             <Head title="Admin Profile" />
             <div className="space-y-6">
-                {/* Header */}
-                <div>
-                    <h1>Admin Profile</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your personal information and account settings
-                    </p>
-                </div>
-
-                {/* Profile Overview (Data dari DB) */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Profile Overview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-start gap-6 flex-col md:flex-row">
-                            <Avatar className="w-24 h-24">
-                                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                                    {data.name
-                                        ? data.name.split(" ").map((n) => n[0]).join("").substring(0, 2)
-                                        : "AD"}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 space-y-4">
-                                <div>
-                                    <h3>{data.name}</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        {data.position || "System Administrator"}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {data.department || "IT Department"}
-                                    </p>
-                                </div>
-                                <div className="flex flex-wrap gap-4">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Mail className="w-4 h-4" />
-                                        {data.email}
-                                    </div>
-                                    {/*<div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Phone className="w-4 h-4" />
-                                        {data.phone || "-"}
-                                    </div>*/}
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* Personal Information Form */}
                 <form onSubmit={handleSaveProfile}>
                     <Card>
@@ -180,67 +125,49 @@ export default function AdminProfilePage() {
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="full-name">Full Name</Label>
-                                    <Input
-                                        id="full-name"
-                                        value={data.name}
-                                        onChange={(e) => setData("name", e.target.value)}
-                                    />
-                                    {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                {/* Avatar */}
+                                <div className="flex justify-center md:justify-start">
+                                    <Avatar className="w-24 h-24">
+                                        <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                                            {data.name
+                                                ? data.name
+                                                    .split(" ")
+                                                    .map((n) => n[0])
+                                                    .join("")
+                                                    .substring(0, 2)
+                                                : "AD"}
+                                        </AvatarFallback>
+                                    </Avatar>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email Address</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        onChange={(e) => setData("email", e.target.value)}
-                                    />
-                                    {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
-                                </div>
+                                {/* Full Name & Email */}
+                                <div className="space-y-4 md:space-y-2">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="full-name">Full Name</Label>
+                                        <Input
+                                            id="full-name"
+                                            value={data.name}
+                                            onChange={(e) => setData("name", e.target.value)}
+                                        />
+                                        {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
+                                    </div>
 
-                                {/*<div className="space-y-2">
-                                    <Label htmlFor="phone">Phone Number</Label>
-                                    <Input
-                                        id="phone"
-                                        type="tel"
-                                        value={data.phone}
-                                        onChange={(e) => setData("phone", e.target.value)}
-                                    />
-                                </div>*/}
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="position">Position</Label>
-                                    <Input
-                                        id="position"
-                                        value={data.position}
-                                        onChange={(e) => setData("position", e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="department">Department</Label>
-                                    <Input
-                                        id="department"
-                                        value={data.department}
-                                        onChange={(e) => setData("department", e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        value={data.address}
-                                        onChange={(e) => setData("address", e.target.value)}
-                                    />
+                                    <div className="space-y-1">
+                                        <Label htmlFor="email">Email Address</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData("email", e.target.value)}
+                                        />
+                                        {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
+                                    </div>
                                 </div>
                             </div>
 
+                            {/* Submit Button */}
                             <div className="flex justify-end pt-4">
                                 <Button
                                     type="submit"
@@ -403,54 +330,6 @@ export default function AdminProfilePage() {
                         </CardContent>
                     </Card>
                 </form>
-
-                {/* Security Information - Static / Read Only for now */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Security Information</CardTitle>
-                        <CardDescription>Account security details</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                    <span className="text-sm">Last Login</span>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    October 26, 2024 at 09:15 AM
-                                </p>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                    <span className="text-sm">Role</span>
-                                </div>
-                                <p className="text-sm text-muted-foreground capitalize">
-                                    {user?.role_name || 'Admin'}
-                                </p>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-sm">Login Location</span>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    Jakarta, Indonesia
-                                </p>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Shield className="w-4 h-4 text-green-600" />
-                                    <span className="text-sm">Account Status</span>
-                                </div>
-                                <p className="text-sm text-green-600">
-                                    Active & Secure
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </MainLayout>
     );
