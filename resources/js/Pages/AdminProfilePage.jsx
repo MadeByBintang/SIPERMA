@@ -36,7 +36,7 @@ export default function AdminProfilePage({admin}) {
     const adminData = admin || { full_name: 'Admin', email: 'admin@example.com' };
 
     const { data, setData, post, processing, errors, isDirty } = useForm({
-        name: adminData?.full_name || "",
+        full_name: adminData?.full_name || "",
         email: adminData?.email || "",
         username: user?.username || "",
     });
@@ -131,8 +131,8 @@ export default function AdminProfilePage({admin}) {
                                 <div className="flex justify-center md:justify-start">
                                     <Avatar className="w-24 h-24">
                                         <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                                            {data.name
-                                                ? data.name
+                                            {data.full_name
+                                                ? data.full_name
                                                     .split(" ")
                                                     .map((n) => n[0])
                                                     .join("")
@@ -148,8 +148,8 @@ export default function AdminProfilePage({admin}) {
                                         <Label htmlFor="full-name">Full Name</Label>
                                         <Input
                                             id="full-name"
-                                            value={data.name}
-                                            onChange={(e) => setData("name", e.target.value)}
+                                            value={data.full_name}
+                                            onChange={(e) => setData("full_name", e.target.value)}
                                         />
                                         {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
                                     </div>
