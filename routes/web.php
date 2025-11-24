@@ -67,7 +67,6 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
 
     Route::post('/profile/student/update', [StudentProfileController::class, 'update'])
         ->name('profile.student.update');
-
 });
 
 Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
@@ -77,7 +76,6 @@ Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
 
     Route::post('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
         ->name('profile.lecturer.update');
-
 });
 
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
@@ -90,7 +88,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 
     Route::put('/profile/admin/accountupdate', [AdminProfileController::class, 'updateAccount'])
         ->name('profile.admin.accountupdate');
-
 });
 
 
@@ -137,6 +134,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/approval', [ApprovalCenterController::class, 'index'])
         ->name('approval');
+
+    Route::get('/reports/export/pdf', [\App\Http\Controllers\ReportsController::class, 'exportPdf'])
+        ->middleware('auth')
+        ->name('reports.export.pdf');
 });
 
 // --- FITUR KHUSUS ADMIN ---
@@ -171,8 +172,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         ->name('reports');
 
     Route::post('/timeline/update-log', [\App\Http\Controllers\TimelineProgressController::class, 'updateLog'])
-    ->middleware(['auth', 'verified'])
-    ->name('timeline.progress.update');
+        ->middleware(['auth', 'verified'])
+        ->name('timeline.progress.update');
 
     Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
 

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportsController extends Controller
 {
@@ -25,14 +26,13 @@ class ReportsController extends Controller
         if ($role === 'student') {
             // Mahasiswa: Hanya melihat aktivitas miliknya sendiri
             // Asumsi: User punya relasi 'student'
-            $studentId = $user->student->id ?? 0; 
-            
+            $studentId = $user->student->id ?? 0;
+
             $supervisionQuery->where('student_id', $studentId);
             // Untuk tim, cek apakah dia leader (bisa ditambahkan logic member jika ada tabel pivot)
-            $teamQuery->whereHas('leader', function($q) use ($studentId) {
+            $teamQuery->whereHas('leader', function ($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             });
-
         } elseif ($role === 'lecturer') {
             // Dosen: Hanya melihat mahasiswa yang dibimbingnya
             // Asumsi: User punya relasi 'lecturer'
@@ -44,7 +44,7 @@ class ReportsController extends Controller
         // Admin: Tidak ada filter (melihat semua)
 
         // --- 3. EKSEKUSI QUERY & MAPPING DATA ---
-        
+
         // Data Supervisi (Thesis/PKL Individu)
         $supervisions = $supervisionQuery->get()->map(function ($s) {
             return [
@@ -90,7 +90,7 @@ class ReportsController extends Controller
         $totalProjects = $allActivities->count();
         $activeProjects = $allActivities->filter(fn($a) => in_array($a['status'], ['In Progress', 'On Progress', 'Active']))->count();
         $completedProjects = $allActivities->filter(fn($a) => $a['status'] === 'Completed')->count();
-        
+
         $totalSupervisors = Lecturer::count(); // Ini tetap global context
         $avgStudentsPerSupervisor = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
         $engagementRate = $totalProjects > 0 ? round(($activeProjects / $totalProjects) * 100) : 0;
@@ -118,5 +118,127 @@ class ReportsController extends Controller
         if (in_array($s, ['proposal', 'pending'])) return 'Proposal';
         if (in_array($s, ['revision'])) return 'Revision';
         return 'Unknown';
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role_name;
+
+        // FILTER dari frontend
+        $activityType = $request->activityType ?? 'all';
+        $statusFilter = $request->statusFilter ?? 'all';
+        $dateRange = $request->dateRange ?? 'all';
+
+        // -----------------------------------------------------
+        // 1. ROLE BASE QUERY
+        // -----------------------------------------------------
+        $supervisionQuery = Supervision::with(['student.user', 'lecturer.user', 'activity']);
+        $teamQuery = Team::with(['leader.student.user', 'supervisor.user']);
+
+        if ($role === 'mahasiswa') {
+            $studentId = $user->student->id ?? 0;
+
+            $supervisionQuery->where('student_id', $studentId);
+            $teamQuery->whereHas(
+                'leader',
+                fn($q) =>
+                $q->where('student_id', $studentId)
+            );
+        } elseif ($role === 'dosen') {
+            $lecturerId = $user->lecturer->id ?? 0;
+
+            $supervisionQuery->where('lecturer_id', $lecturerId);
+            $teamQuery->where('supervisor_id', $lecturerId);
+        }
+
+        // -----------------------------------------------------
+        // 2. FILTER ACTIVITY TYPE
+        // -----------------------------------------------------
+        if ($activityType !== 'all') {
+            $supervisionQuery->whereHas('activity', function ($q) use ($activityType) {
+                $q->where('activity_type', $activityType);
+            });
+
+            $teamQuery->where('type', $activityType);
+        }
+
+        // -----------------------------------------------------
+        // 3. FILTER STATUS
+        // -----------------------------------------------------
+        if ($statusFilter !== 'all') {
+            $supervisionQuery->where('supervision_status', $statusFilter);
+            $teamQuery->where('status', $statusFilter);
+        }
+
+        // -----------------------------------------------------
+        // 4. FILTER DATE RANGE (BERBEDA UNTUK SUPERVISIONS)
+        // -----------------------------------------------------
+        if ($dateRange === 'month') {
+
+            // **supervisions: pakai assigned_date**
+            $supervisionQuery->whereMonth('assigned_date', now()->month);
+
+            // teams: created_at normal
+            $teamQuery->whereMonth('created_at', now()->month);
+        } elseif ($dateRange === 'year') {
+
+            $supervisionQuery->whereYear('assigned_date', now()->year);
+            $teamQuery->whereYear('created_at', now()->year);
+        }
+
+        // -----------------------------------------------------
+        // 5. MAP DATA
+        // -----------------------------------------------------
+        $supervisions = $supervisionQuery->get()->map(function ($s) {
+            return [
+                'student' => $s->student->user->name ?? '-',
+                'supervisor' => $s->lecturer->user->name ?? '-',
+                'activityType' => ucfirst($s->activity->activity_type),
+                'activityName' => $s->activity->title ?? 'No Title',
+                'status' => $s->supervision_status,
+                'startDate' => $s->assigned_date,
+                'endDate' => $s->end_date ?? '-',
+            ];
+        });
+
+        $teams = $teamQuery->get()->map(function ($t) {
+            return [
+                'student' => $t->leader->student->user->name ?? '-',
+                'supervisor' => $t->supervisor->user->name ?? '-',
+                'activityType' => ucfirst($t->type),
+                'activityName' => $t->team_name,
+                'status' => $t->status,
+                'startDate' => $t->created_at->format('Y-m-d'),
+                'endDate' => $t->competition_date ?? '-',
+            ];
+        });
+
+        $activities = $supervisions->concat($teams);
+
+        // -----------------------------------------------------
+        // 6. VIEW PDF BERDASARKAN ROLE
+        // -----------------------------------------------------
+        $view = match ($role) {
+            'dosen' => 'pdf.reports.lecturer',
+            'mahasiswa' => 'pdf.reports.student',
+            default => 'pdf.reports.admin'
+        };
+
+        // -----------------------------------------------------
+        // 7. GENERATE PDF
+        // -----------------------------------------------------
+        $pdf = Pdf::loadView($view, [
+            'user' => $user,
+            'role' => $role,
+            'activities' => $activities,
+            'filters' => [
+                'activityType' => $activityType,
+                'statusFilter' => $statusFilter,
+                'dateRange' => $dateRange
+            ]
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("report-$role.pdf");
     }
 }
