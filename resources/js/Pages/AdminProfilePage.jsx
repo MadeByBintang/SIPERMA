@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { usePage, useForm, Head } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
-
-// PENTING: Gunakan '@' agar tidak error White Screen (Module not found)
 import {
     Card,
     CardContent,
@@ -18,11 +16,8 @@ import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import {
     Save,
     User,
-    Mail,
-    //Phone,
-    MapPin,
-    Lock,
     Shield,
+    Lock,
     Eye,
     EyeOff,
     CheckCircle2,
@@ -30,25 +25,38 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AdminProfilePage({admin}) {
+export default function AdminProfilePage({ admin }) {
     const { auth } = usePage().props;
     const user = auth?.user || {};
-    const adminData = admin || { full_name: 'Admin', email: 'admin@example.com' };
+    const adminData = admin || { full_name: "Admin", email: "admin@example.com" };
 
+    // ---------------- PROFILE FORM ----------------
     const { data, setData, post, processing, errors, isDirty } = useForm({
         full_name: adminData?.full_name || "",
         email: adminData?.email || "",
-        username: user?.username || "",
     });
 
+    const handleSaveProfile = (e) => {
+        e.preventDefault();
+        post(route("profile.admin.update"), {
+            onSuccess: () =>
+                toast.success("Profile updated successfully!", {
+                    description: "Your personal information has been saved.",
+                }),
+            onError: () => toast.error("Failed to update profile."),
+        });
+    };
+
+    // ---------------- ACCOUNT FORM ----------------
     const {
-        data: passwordData,
-        setData: setPasswordData,
-        put: updatePassword,
-        processing: passwordProcessing,
-        errors: passwordErrors,
-        reset: resetPassword,
+        data: accountData,
+        setData: setAccountData,
+        put: updateAccount,
+        processing: accountProcessing,
+        errors: accountErrors,
+        reset
     } = useForm({
+        username: user?.username || "",
         current_password: "",
         password: "",
         password_confirmation: "",
@@ -58,29 +66,23 @@ export default function AdminProfilePage({admin}) {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleSaveProfile = (e) => {
-        e.preventDefault();
-        post(route("profile.update"), {
-            onSuccess: () => toast.success("Profile updated successfully!", {
-                description: "Your personal information has been saved to database.",
-            }),
-            onError: () => toast.error("Failed to update profile."),
-        });
-    };
 
-    const handleChangePassword = (e) => {
+    const handleChangeAccount = (e) => {
         e.preventDefault();
-        updatePassword(route("password.update"), {
+        updateAccount(route("profile.admin.accountupdate"), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success("Password changed successfully!");
-                resetPassword();
+                toast.success("Account updated successfully!");
+                reset("current_password", "password", "password_confirmation");
+
+                // ambil username terbaru dari auth props
+                setAccountData({ username: page.props.auth.user.username });
             },
-            onError: () => toast.error("Failed to change password."),
+            onError: () => toast.error("Failed to update account."),
         });
     };
 
-    // Helper UI: Password Strength
+    // ---------------- PASSWORD STRENGTH ----------------
     const getPasswordStrength = (password) => {
         if (!password) return { strength: 0, label: "", color: "" };
         let strength = 0;
@@ -96,38 +98,33 @@ export default function AdminProfilePage({admin}) {
         return { strength, label: "Very Strong", color: "bg-green-600" };
     };
 
-    const passwordStrength = getPasswordStrength(passwordData.password);
+    const passwordStrength = getPasswordStrength(accountData.password);
 
     return (
         <MainLayout>
             <Head title="Admin Profile" />
             <div className="space-y-6">
-                {/* Personal Information Form */}
+
+                {/* ----------- PROFILE FORM ----------- */}
                 <form onSubmit={handleSaveProfile}>
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-5 h-5 text-primary" />
-                                        <CardTitle>Personal Information</CardTitle>
-                                    </div>
-                                    <CardDescription>Update your personal details</CardDescription>
+                                <div className="flex items-center gap-2">
+                                    <User className="w-5 h-5 text-primary" />
+                                    <CardTitle>Personal Information</CardTitle>
                                 </div>
-                                {/* Menggunakan isDirty dari Inertia untuk cek perubahan */}
                                 {isDirty && (
                                     <div className="flex items-center gap-2">
                                         <AlertCircle className="w-4 h-4 text-orange-500" />
-                                        <span className="text-sm text-orange-500">
-                                            Unsaved changes
-                                        </span>
+                                        <span className="text-sm text-orange-500">Unsaved changes</span>
                                     </div>
                                 )}
                             </div>
+                            <CardDescription>Update your name and email</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                {/* Avatar */}
                                 <div className="flex justify-center md:justify-start">
                                     <Avatar className="w-24 h-24">
                                         <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
@@ -141,8 +138,6 @@ export default function AdminProfilePage({admin}) {
                                         </AvatarFallback>
                                     </Avatar>
                                 </div>
-
-                                {/* Full Name & Email */}
                                 <div className="space-y-4 md:space-y-2">
                                     <div className="space-y-1">
                                         <Label htmlFor="full-name">Full Name</Label>
@@ -151,9 +146,8 @@ export default function AdminProfilePage({admin}) {
                                             value={data.full_name}
                                             onChange={(e) => setData("full_name", e.target.value)}
                                         />
-                                        {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
+                                        {errors.full_name && <div className="text-red-500 text-xs">{errors.full_name}</div>}
                                     </div>
-
                                     <div className="space-y-1">
                                         <Label htmlFor="email">Email Address</Label>
                                         <Input
@@ -166,166 +160,134 @@ export default function AdminProfilePage({admin}) {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Submit Button */}
                             <div className="flex justify-end pt-4">
-                                <Button
-                                    type="submit"
-                                    className="gap-2"
-                                    disabled={processing || !isDirty}
-                                >
-                                    <Save className="w-4 h-4" />
-                                    {processing ? "Saving..." : "Save Profile"}
+                                <Button type="submit" className="gap-2" disabled={processing || !isDirty}>
+                                    <Save className="w-4 h-4" /> {processing ? "Saving..." : "Save Profile"}
                                 </Button>
                             </div>
                         </CardContent>
                     </Card>
                 </form>
 
-                {/* Account Credentials Form */}
-                <form onSubmit={handleChangePassword}>
+                {/* ----------- ACCOUNT FORM ----------- */}
+                <form onSubmit={handleChangeAccount}>
                     <Card>
                         <CardHeader>
                             <div className="flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-primary" />
-                                <CardTitle>Account Credentials</CardTitle>
+                                <CardTitle>Account</CardTitle>
                             </div>
-                            <CardDescription>Manage your login credentials</CardDescription>
+                            <CardDescription>Update username or password</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="username">Username</Label>
-                                    <Input
-                                        id="username"
-                                        value={data.username}
-                                        onChange={(e) => setData("username", e.target.value)}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        Your username for logging into the system
-                                    </p>
-                                    {errors.username && <div className="text-red-500 text-xs">{errors.username}</div>}
-                                </div>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    value={accountData.username}
+                                    onChange={(e) => setAccountData("username", e.target.value)}
+                                />
+                                {accountErrors.username && <div className="text-red-500 text-xs">{accountErrors.username}</div>}
                             </div>
 
                             <Separator />
 
-                            <div className="space-y-4">
-                                <div>
-                                    <h4 className="flex items-center gap-2">
-                                        <Lock className="w-4 h-4" /> Change Password
-                                    </h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Update your account password
-                                    </p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="current-password">Current Password</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="current-password"
-                                                type={showCurrentPassword ? "text" : "password"}
-                                                value={passwordData.current_password}
-                                                onChange={(e) => setPasswordData("current_password", e.target.value)}
-                                                placeholder="Enter current password"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="absolute right-0 top-0 h-full px-3"
-                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                            >
-                                                {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </Button>
-                                        </div>
-                                        {passwordErrors.current_password && <div className="text-red-500 text-xs">{passwordErrors.current_password}</div>}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="new-password">New Password</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="new-password"
-                                                type={showNewPassword ? "text" : "password"}
-                                                value={passwordData.password}
-                                                onChange={(e) => setPasswordData("password", e.target.value)}
-                                                placeholder="Enter new password"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="absolute right-0 top-0 h-full px-3"
-                                                onClick={() => setShowNewPassword(!showNewPassword)}
-                                            >
-                                                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </Button>
-                                        </div>
-                                        {passwordData.password && (
-                                            <div className="space-y-2 mt-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-muted-foreground">Strength:</span>
-                                                    <span className="text-xs">{passwordStrength.label}</span>
-                                                </div>
-                                                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full transition-all ${passwordStrength.color}`}
-                                                        style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {passwordErrors.password && <div className="text-red-500 text-xs">{passwordErrors.password}</div>}
-                                        <p className="text-xs text-muted-foreground">
-                                            Must be at least 8 characters long
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="confirm-password">Confirm New Password</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="confirm-password"
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                value={passwordData.password_confirmation}
-                                                onChange={(e) => setPasswordData("password_confirmation", e.target.value)}
-                                                placeholder="Re-enter new password"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="absolute right-0 top-0 h-full px-3"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            >
-                                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </Button>
-                                        </div>
-                                        {passwordData.password_confirmation && passwordData.password === passwordData.password_confirmation && (
-                                            <div className="flex items-center gap-2 text-xs text-green-600">
-                                                <CheckCircle2 className="w-3 h-3" />
-                                                Passwords match
-                                            </div>
-                                        )}
-                                        {passwordData.password_confirmation && passwordData.password !== passwordData.password_confirmation && (
-                                            <div className="flex items-center gap-2 text-xs text-red-600">
-                                                <AlertCircle className="w-3 h-3" />
-                                                Passwords do not match
-                                            </div>
-                                        )}
-                                        {passwordErrors.password_confirmation && <div className="text-red-500 text-xs">{passwordErrors.password_confirmation}</div>}
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end pt-4">
-                                    <Button type="submit" className="gap-2" disabled={passwordProcessing}>
-                                        <Lock className="w-4 h-4" />
-                                        Change Password
+                            <div className="space-y-2">
+                                <Label htmlFor="current-password">Current Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="current-password"
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={accountData.current_password}
+                                        onChange={(e) => setAccountData("current_password", e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    >
+                                        {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </Button>
                                 </div>
+                                {accountErrors.current_password && <div className="text-red-500 text-xs">{accountErrors.current_password}</div>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="new-password">New Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="new-password"
+                                        type={showNewPassword ? "text" : "password"}
+                                        value={accountData.password}
+                                        onChange={(e) => setAccountData("password", e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                    >
+                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                {accountData.password && (
+                                    <div className="mt-2">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                            <span>Strength:</span>
+                                            <span>{passwordStrength.label}</span>
+                                        </div>
+                                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all ${passwordStrength.color}`}
+                                                style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {accountErrors.password && <div className="text-red-500 text-xs">{accountErrors.password}</div>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="confirm-password">Confirm Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="confirm-password"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={accountData.password_confirmation}
+                                        onChange={(e) => setAccountData("password_confirmation", e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                {accountData.password_confirmation &&
+                                    accountData.password === accountData.password_confirmation && (
+                                        <div className="flex items-center gap-2 text-xs text-green-600">
+                                            <CheckCircle2 className="w-3 h-3" /> Passwords match
+                                        </div>
+                                    )}
+                                {accountData.password_confirmation &&
+                                    accountData.password !== accountData.password_confirmation && (
+                                        <div className="flex items-center gap-2 text-xs text-red-600">
+                                            <AlertCircle className="w-3 h-3" /> Passwords do not match
+                                        </div>
+                                    )}
+                                {accountErrors.password_confirmation && <div className="text-red-500 text-xs">{accountErrors.password_confirmation}</div>}
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <Button type="submit" className="gap-2" disabled={accountProcessing}>
+                                    <Lock className="w-4 h-4" /> Update Account
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

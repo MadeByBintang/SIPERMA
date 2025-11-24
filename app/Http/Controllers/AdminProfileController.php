@@ -77,20 +77,42 @@ class AdminProfileController extends Controller
     }
 
 
-    public function updatePassword(Request $request)
-    {
-        $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
+    public function updateAccount(Request $request)
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        /** @var \App\Models\User $user */
-        $user = $request->user();
+    $rules = [];
 
-        $user->update([
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        return back();
+    // Username validasi hanya jika berubah
+    if ($request->input('username') !== $user->username) {
+        $rules['username'] = ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)];
     }
+
+    // Password validasi hanya jika user mau ganti password
+    if ($request->filled('password')) {
+        $rules['current_password'] = ['required'];
+        $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
+    }
+
+    $validated = $request->validate($rules);
+
+    // Update username jika ada
+    if (isset($validated['username'])) {
+        $user->username = $validated['username'];
+    }
+
+    // Update password jika ada
+    if (!empty($validated['password'])) {
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+        $user->password = Hash::make($validated['password']);
+    }
+
+    $user->save();
+
+    return redirect()->route('profile.admin')->with('success', 'Account updated successfully.');
+}
+
 }

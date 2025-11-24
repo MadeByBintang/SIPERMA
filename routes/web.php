@@ -86,10 +86,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         ->name('profile.admin');
 
     Route::post('/profile/admin/update', [AdminProfileController::class, 'update'])
-        ->name('profile.update');
+        ->name('profile.admin.update');
 
-    Route::put('/password/update', [AdminProfileController::class, 'updatePassword'])
-        ->name('password.update');
+    Route::put('/profile/admin/accountupdate', [AdminProfileController::class, 'updateAccount'])
+        ->name('profile.admin.accountupdate');
 
 });
 
