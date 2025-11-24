@@ -19,6 +19,15 @@ function normalizeUrl(url) {
     return url.split("?")[0].replace(/\/$/, "");
 }
 
+function removeAcademicTitles(name) {
+    if (!name) return "";
+    // Regex penjelasan:
+    // (^(\w+\.\s+)*) -> Menghapus gelar depan (misal: Dr. Ir. )
+    // | -> ATAU
+    // (,\s*([a-zA-Z\.]+))+$ -> Menghapus gelar belakang setelah koma (misal: , S.Kom, M.T)
+    return name.replace(/(^(\w+\.\s+)*)|(,\s*([a-zA-Z\.]+))+$/g, "").trim();
+}
+
 export default function Sidebar({ setMobileMenuOpen }) {
     const { auth } = usePage().props;
     const url = usePage().url ?? "";
@@ -27,6 +36,8 @@ export default function Sidebar({ setMobileMenuOpen }) {
     const userRole = auth?.user?.role_name || "student";
     const full_name = auth?.user?.profile?.full_name || "fulan";
     const id_number = auth?.user?.profile?.id_number || "67";
+
+    const initial_name =  removeAcademicTitles(full_name)
 
     const studentMenu = [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -122,7 +133,7 @@ export default function Sidebar({ setMobileMenuOpen }) {
                 <div className="flex items-center gap-3 px-2 py-2">
                     <Avatar className="w-9 h-9 md:w-10 md:h-10">
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                            {full_name
+                            {initial_name
                                 .split(" ")
                                 .map((w) => w[0])
                                 .join("")

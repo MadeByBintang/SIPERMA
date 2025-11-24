@@ -17,19 +17,10 @@ class Lecturer extends Model
         'master_lecturer_id',
         'nip',
         'name',
-        //'phone',
-        'description',
-        'academic_titles',
-        'expertise',
-        'office_location',
-        'quota',
-        'is_available'
-    ];
-
-    protected $casts = [
-        'academic_titles' => 'array',
-        'expertise' => 'array',
-        'is_available' => 'boolean',
+        'email',
+        // 'academic_titles',
+        'supervision_quota',
+        'status'
     ];
 
     public function user()
@@ -44,6 +35,19 @@ class Lecturer extends Model
         return $this->belongsTo(MasterLecturer::class, 'master_lecturer_id', 'master_lecturer_id');
     }
 
+    public function getNameAttribute(){
+        return $this -> masterLecturer -> full_name ?? $this->attributes['name'] ?? '-' ;
+    }
+
+    public function getNipAttribute(){
+        return $this -> masterLecturer -> nip ?? $this -> attributes['nip'] ?? '-';
+    }
+
+    public function getEmailAttribute()
+    {
+        return $this -> masterLecturer -> email ?? '-';
+    }
+
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'lecturer_id', 'lecturer_id');
@@ -55,12 +59,6 @@ class Lecturer extends Model
      */
     public function skills()
     {
-        // Parameter:
-        // 1. Model Tujuan (Skill::class)
-        // 2. Nama Tabel Pivot ('lecturer_skills') <-- INI YANG DIPERBAIKI (JAMAK)
-        // 3. Foreign Key model ini di pivot ('lecturer_id')
-        // 4. Foreign Key model tujuan di pivot ('skill_id')
-
         return $this->belongsToMany(Skill::class, 'lecturer_skills', 'lecturer_id', 'skill_id')
                     ->withPivot('level')
                     ->withTimestamps();

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Head, usePage, useForm } from "@inertiajs/react"; // Tambahkan useForm
+import { Head, usePage, useForm, router } from "@inertiajs/react"; // Tambahkan useForm
 import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
@@ -47,89 +47,95 @@ const academicTitleOptions = [
     "S.Kom", "M.Kom", "M.T", "M.Sc", "Ph.D", "Dr.", "Prof."
 ];
 
-export default function LecturerProfilePage({ supervisedStudents, stats }) {
-    const { auth } = usePage().props;
-    const user = auth.user;
-    const lecturerData = auth.lecturer || {};
+function removeAcademicTitles(name) {
+    if (!name) return "";
+    // Regex penjelasan:
+    // (^(\w+\.\s+)*) -> Menghapus gelar depan (misal: Dr. Ir. )
+    // | -> ATAU
+    // (,\s*([a-zA-Z\.]+))+$ -> Menghapus gelar belakang setelah koma (misal: , S.Kom, M.T)
+    return name.replace(/(^(\w+\.\s+)*)|(,\s*([a-zA-Z\.]+))+$/g, "").trim();
+}
 
-    // Parse JSON data dari database (karena disimpan sebagai string JSON)
-    const parseJson = (data) => {
-        try {
-            return typeof data === 'string' ? JSON.parse(data) : (data || []);
-        } catch (e) {
-            return [];
-        }
+const getInitials = (name) => {
+    return name ? name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase() : "-";
+};
+
+export default function LecturerProfilePage({lecturer, supervisedStudents = [], allSkills = []}) {
+
+    const initialData = {
+        name: lecturer?.name || "Guest",
+        nip: lecturer?.nip || "-",
+        studyProgram: "Teknologi Informasi",
+        email: lecturer?.email || "-",
+        supervision_quota: lecturer?.supervision_quota || "0",
+        skills: Array.isArray(lecturer?.skills)
+        ? lecturer.skills.map(s => ({
+            id: s.id,
+            name: s.name,
+            level: s.level,
+        }))
+        : [],
     };
 
-    const initialTitles = parseJson(lecturerData.academic_titles);
-    const initialExpertise = parseJson(lecturerData.expertise);
-
-    const { data, setData, put, processing, errors, reset } = useForm({
-        name: user.name || "",
-        nip: lecturerData.nip || user.username || "-", // NIP biasanya username dosen
-        email: user.email || "",
-        //phone: user.phone || "",
-        academicTitles: initialTitles,
-        expertise: initialExpertise,
-        description: lecturerData.description || "",
-        office_location: lecturerData.office_location || "",
-        quota: lecturerData.quota || 10,
-        is_available: Boolean(lecturerData.is_available),
+    const { data, setData, post, processing, reset, errors } = useForm({
+        skills: initialData.skills,
     });
 
+
     const [isEditing, setIsEditing] = useState(false);
-    const [open, setOpen] = useState(false); // Popover state
+    const [open, setOpen] = useState(false);
+    const [dropdownSkill, setDropdownSkill] = useState(null);
 
     // Handle Actions
-    const handleEdit = () => {
-        setIsEditing(true);
-    };
+    const handleEdit = () => setIsEditing(true);
 
     const handleCancel = () => {
-        reset(); // Kembalikan ke data awal dari props
+        reset();
         setIsEditing(false);
     };
 
     const handleSave = () => {
-        // Kirim data ke controller
-        put(route('profile.lecturer.update'), {
-            preserveScroll: true,
+        // Gunakan POST ke route update (karena HTML form method spoofing)
+        // Pastikan route 'profile.student.update' ada di web.php
+        router.post(route('profile.lecturer.update'), {
+            _method: 'post',
+            skills: data.skills.map(s => ({
+                id: s.id,
+                level: s.level ?? 1,
+            }))
+        }, {
             onSuccess: () => {
-                toast.success("Profile updated successfully!");
+                toast.success("Profile updated successfully");
                 setIsEditing(false);
             },
-            onError: () => {
-                toast.error("Failed to update profile.");
+            onError: (err) => {
+                console.error(err);
+                toast.error("Failed to update profile. Check inputs.");
             }
         });
     };
 
-    // Logic UI Helper
-    const toggleExpertise = (item) => {
-        const current = data.expertise;
-        const updated = current.includes(item)
-            ? current.filter((e) => e !== item)
-            : [...current, item];
-        setData('expertise', updated);
-    };
 
-    const removeExpertise = (item) => {
-        setData('expertise', data.expertise.filter((e) => e !== item));
-    };
-
-    const addTitle = (title) => {
-        if (!data.academicTitles.includes(title)) {
-            setData('academicTitles', [...data.academicTitles, title]);
+    const toggleSkill = (skill) => {
+        const exists = data.skills.find(i => i.id === skill.id);
+        if (exists) {
+            setData('skills', data.skills.filter(i => i.id !== skill.id));
+        } else {
+            setData('skills', [...data.skills, skill]);
         }
     };
 
-    const removeTitle = (title) => {
-        setData('academicTitles', data.academicTitles.filter(t => t !== title));
+
+    const removeSkill = (id) => {
+        setData('skills', data.skills.filter(i => i.id !== id));
     };
 
-    const getFullName = () => {
-        const titles = data.academicTitles.join(" ");
-        return `${titles} ${data.name}`.trim();
+    const updateSkillLevel = (id, level) => {
+        setData('skills', data.skills.map(s => s.id === id ? {...s, level} : s));
     };
 
     return (
@@ -159,7 +165,7 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                         <div className="flex items-start gap-6 flex-col md:flex-row">
                             <Avatar className="w-24 h-24">
                                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                                    {data.name.substring(0, 2).toUpperCase()}
+                                    {getInitials(removeAcademicTitles(initialData.name))}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 space-y-4 w-full">
@@ -168,78 +174,32 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                                         <Label htmlFor="name">Full Name</Label>
                                         <Input
                                             id="name"
-                                            value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            disabled={!isEditing}
+                                            value={initialData.name}
+                                            disabled className="bg-muted"
                                         />
                                         {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="nip">NIP</Label>
-                                        <Input id="nip" value={data.nip} disabled className="bg-muted" />
+                                        <Input id="nip" value={initialData.nip} disabled className="bg-muted" />
                                     </div>
-                                </div>
-
-                                {/* Academic Titles */}
-                                <div className="space-y-2">
-                                    <Label>Academic Titles</Label>
-                                    {isEditing ? (
-                                        <div className="space-y-2">
-                                            <div className="flex flex-wrap gap-2">
-                                                {data.academicTitles.map((title) => (
-                                                    <Badge key={title} variant="secondary" className="gap-1">
-                                                        {title}
-                                                        <button onClick={() => removeTitle(title)} className="hover:text-destructive">
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                            <Select onValueChange={addTitle}>
-                                                <SelectTrigger><SelectValue placeholder="Add title" /></SelectTrigger>
-                                                <SelectContent>
-                                                    {academicTitleOptions.map((t) => (
-                                                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-2">
-                                            {data.academicTitles.map((title) => (
-                                                <Badge key={title} variant="secondary">{title}</Badge>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <p className="text-xs text-muted-foreground">Preview: {getFullName()}</p>
                                 </div>
 
                                 {/* Contact Info */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Email</Label>
-                                        <Input value={data.email} disabled className="bg-muted" />
+                                        <Input value={initialData.email} disabled className="bg-muted" />
                                     </div>
-                                    {/*<div className="space-y-2">
-                                        <Label>Phone Number</Label>
-                                        <Input
-                                            value={data.phone}
-                                            onChange={(e) => setData('phone', e.target.value)}
-                                            disabled={!isEditing}
-                                        />
-                                    </div>*/}
+
                                     <div className="space-y-2">
-                                        <Label>Office Location</Label>
-                                        <Input
-                                            value={data.office_location}
-                                            onChange={(e) => setData('office_location', e.target.value)}
-                                            disabled={!isEditing}
-                                        />
+                                        <Label>Program Studi</Label>
+                                        <Input value={initialData.studyProgram} disabled className="bg-muted" />
                                     </div>
                                 </div>
 
                                 {/* Description */}
-                                <div className="space-y-2">
+                                {/* <div className="space-y-2">
                                     <Label>About / Description</Label>
                                     <Textarea
                                         value={data.description}
@@ -247,13 +207,13 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                                         disabled={!isEditing}
                                         rows={3}
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* Expertise */}
-                                <div className="space-y-3 pt-4 border-t">
-                                    <Label>Areas of Expertise</Label>
+                                {/* <div className="space-y-3 pt-4 border-t">
+                                    <Label>Skill Areas</Label>
                                     <div className="flex flex-wrap gap-2">
-                                        {data.expertise.map((item) => (
+                                        {data.skills.map((item) => (
                                             <Badge key={item} variant="secondary" className="gap-1">
                                                 {item}
                                                 {isEditing && (
@@ -277,8 +237,8 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                                                         <CommandGroup>
                                                             {expertiseOptions.map((exp) => (
                                                                 <CommandItem key={exp} onSelect={() => toggleExpertise(exp)}>
-                                                                    <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.expertise.includes(exp) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
-                                                                        {data.expertise.includes(exp) && <Check className="h-3 w-3" />}
+                                                                    <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.skills.includes(exp) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
+                                                                        {data.skills.includes(exp) && <Check className="h-3 w-3" />}
                                                                     </div>
                                                                     {exp}
                                                                 </CommandItem>
@@ -289,25 +249,135 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                                             </PopoverContent>
                                         </Popover>
                                     )}
+                                </div> */}
+                                <div className="space-y-2">
+                                    <Label>Skill Areas</Label>
+                                    {/* <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
+                                        {data.skills.length > 0 ? (
+                                            data.skills.map((skill) => (
+                                                <Badge key={skill.id} variant="secondary" className="gap-1">
+                                                    {skill.name} {skill.level}
+                                                    {isEditing && (
+                                                        <button
+                                                            onClick={() => removeSkill(skill.id)}
+                                                            className="ml-1 hover:text-red-500"
+                                                            type="button"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    )}
+                                                </Badge>
+
+
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground self-center">No skills selected</span>
+                                        )}
+                                    </div> */}
+
+                                    <div className="flex flex-wrap gap-2">
+                                    {data.skills.map(skill => (
+                                        <div key={skill.id} className="relative">
+                                        <Badge
+                                            variant="secondary"
+                                            className="gap-1 cursor-pointer flex items-center"
+                                            onClick={() => setDropdownSkill(dropdownSkill === skill.id ? null : skill.id)}
+                                        >
+                                            {skill.name} (Lvl {skill.level})
+                                            {isEditing && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); removeSkill(skill.id); }}
+                                                className="ml-1 hover:text-red-500"
+                                                type="button"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                            )}
+                                        </Badge>
+
+                                        {/* Dropdown muncul hanya untuk badge yang diklik */}
+                                        {isEditing && dropdownSkill === skill.id && (
+                                            <div className="absolute z-10 mt-1 bg-white border border-gray-300 rounded shadow-md">
+                                            {[1,2,3,4,5].map(lvl => (
+                                                <div
+                                                key={lvl}
+                                                className={`px-3 py-1 cursor-pointer hover:bg-gray-100 ${skill.level === lvl ? 'font-bold' : ''}`}
+                                                onClick={() => {
+                                                    updateSkillLevel(skill.id, lvl);
+                                                    setDropdownSkill(null); // tutup dropdown
+                                                }}
+                                                >
+                                                Level {lvl}
+                                                </div>
+                                            ))}
+                                            </div>
+                                        )}
+                                        </div>
+                                    ))}
+                                    </div>
+
+
+                                    {isEditing && (
+                                        <div className="mt-2">
+                                            <Popover open={open} onOpenChange={setOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        role="combobox"
+                                                        aria-expanded={open}
+                                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        Select skills...
+                                                    </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[300px] p-0" align="start">
+                                                    <Command>
+                                                        <CommandInput placeholder="Search skills..." />
+                                                        <CommandList>
+                                                            <CommandEmpty>No skill found.</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {allSkills.map((skill) => {
+                                                                    const isSelected = data.skills.some(i => i.id === skill.id);
+                                                                    return (
+                                                                    <CommandItem
+                                                                        key={skill.id}
+                                                                        onSelect={() => toggleSkill(skill)}
+                                                                    >
+                                                                        <div className="flex items-center justify-between w-full">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className={`w-4 h-4 border rounded flex items-center justify-center ${
+                                                                                        isSelected ? "bg-primary border-primary" : "border-input"
+                                                                                    }`}
+                                                                                >
+                                                                                    {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                                                </div>
+                                                                                <span>{skill.name}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </CommandItem>
+                                                                )})}
+                                                            </CommandGroup>
+                                                        </CommandList>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Settings */}
-                                <div className="space-y-4 pt-4 border-t">
-                                    <h4>Supervision Settings</h4>
+                                <div className="space-y-4 pt-4">
+                                    <h4>Supervision Info</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Maximum Quota</Label>
-                                            <Input
-                                                type="number"
-                                                value={data.quota}
-                                                onChange={(e) => setData('quota', e.target.value)}
-                                                disabled={!isEditing}
-                                            />
+                                            <div className="text-2xl font-bold">{initialData.supervision_quota}</div>
                                             <p className="text-xs text-muted-foreground">
-                                                Current: {stats.current} of {data.quota} students
+                                                Current: {initialData.supervision_quota} of {initialData.supervision_quota} students
                                             </p>
                                         </div>
-                                        <div className="space-y-2">
+                                        {/* <div className="space-y-2">
                                             <Label>Availability</Label>
                                             <div className="flex items-center gap-3 h-10">
                                                 <Switch
@@ -319,7 +389,7 @@ export default function LecturerProfilePage({ supervisedStudents, stats }) {
                                                     {data.is_available ? "Available for new students" : "Not accepting new students"}
                                                 </span>
                                             </div>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             </div>

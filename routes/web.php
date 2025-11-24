@@ -75,7 +75,7 @@ Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
     Route::get('/profile/lecturer', [LecturerProfileController::class, 'index'])
         ->name('profile.lecturer');
 
-    Route::put('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
+    Route::post('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
         ->name('profile.lecturer.update');
 
 });

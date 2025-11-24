@@ -18,7 +18,6 @@ class LecturerSkill extends Model
         'lecturer_id',
         'skill_id',
         'level',
-        'priority'
     ];
 
     public function lecturer()

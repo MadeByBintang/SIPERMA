@@ -29,7 +29,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Edit2, Save, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
-export default function StudentProfilePage({ student, supervisors = [], allSkills = [] }) {
+export default function StudentProfilePage({student, supervisors = [], allSkills = [] }) {
     const [isEditing, setIsEditing] = useState(false);
     const [open, setOpen] = useState(false);
     const [dropdownSkill, setDropdownSkill] = useState(null);
@@ -58,7 +58,7 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
     const handleEdit = () => setIsEditing(true);
 
     const handleCancel = () => {
-        reset(); // Reset form ke nilai awal
+        reset();
         setIsEditing(false);
     };
 
@@ -159,17 +159,17 @@ export default function StudentProfilePage({ student, supervisors = [], allSkill
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label>Study Program</Label>
-                                    <Input value={initialData.studyProgram} disabled className="bg-muted" />
-                                </div>
-
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Email</Label>
                                         <Input value={initialData.email} disabled className="bg-muted" />
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label>Program Studi</Label>
+                                        <Input value={initialData.studyProgram} disabled className="bg-muted" />
+                                    </div>
                                 </div>
+
 
 
                                 {/* Editable Field: skill Areas */}

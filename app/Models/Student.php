@@ -18,7 +18,6 @@ class Student extends Model
         'nim',
         'name',
         'status',
-        'interest_field',
     ];
 
     // Relasi ke Master Data
