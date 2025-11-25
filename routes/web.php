@@ -108,7 +108,7 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
 });
 
 // --- FITUR UMUM / DOSEN ---
-Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Dosen bisa melihat ini, Mahasiswa juga mungkin (tergantung logic controller)
     Route::get('/relations', [RelationManagementController::class, 'index'])
         ->name('relations'); // Ini view untuk user biasa, beda dengan admin.relations
