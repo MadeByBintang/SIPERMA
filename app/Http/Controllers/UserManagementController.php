@@ -16,14 +16,11 @@ use Inertia\Inertia;
 
 class UserManagementController extends Controller
 {
-    /**
-     * Menampilkan daftar semua pengguna.
-     */
     public function index(Request $request)
     {
         $search = $request->input('search');
 
-        // 1. Ambil Master Students
+        // 1. Master Students
         $masterStudentsQuery = MasterStudent::query();
         if ($search) {
             $masterStudentsQuery->where(function ($q) use ($search) {
@@ -34,7 +31,7 @@ class UserManagementController extends Controller
         }
         $masterStudents = $masterStudentsQuery->orderBy('full_name')->get();
 
-        // 2. Ambil Master Lecturers
+        // 2. Master Lecturers
         $masterLecturersQuery = MasterLecturer::query();
         if ($search) {
             $masterLecturersQuery->where(function ($q) use ($search) {
@@ -45,22 +42,20 @@ class UserManagementController extends Controller
         }
         $masterLecturers = $masterLecturersQuery->orderBy('full_name')->get();
 
-        // 3. Prepare usernames
+        // 3. Mapping Users
         $studentUsernames = $masterStudents->pluck('nim')->filter()->unique()->values()->all();
         $lecturerUsernames = $masterLecturers->pluck('nip')->filter()->unique()->values()->all();
         $allUsernames = array_merge($studentUsernames, $lecturerUsernames);
 
-        // Load relasi 'lecturer' agar bisa mengambil supervision_quota
         $usersByUsername = User::with('lecturer')
             ->whereIn('username', $allUsernames)
             ->get()
             ->keyBy('username');
 
-        // 4. Map Data Students
+        // 4. Students List
         $students = $masterStudents->map(function ($m) use ($usersByUsername) {
             $user = $usersByUsername->get(trim($m->nim));
             $isRegistered = $user !== null;
-
             return [
                 'id' => $isRegistered ? (string) $user->user_id : 'mstu-' . $m->master_student_id,
                 'nim' => $m->nim ?? '-',
@@ -71,21 +66,12 @@ class UserManagementController extends Controller
             ];
         })->values()->all();
 
-        // 5. Map Data Lecturers
+        // 5. Lecturers List
         $lecturers = $masterLecturers->map(function ($m) use ($usersByUsername) {
             $user = $usersByUsername->get(trim($m->nip));
             $isRegistered = $user !== null;
-
-            // Ambil quota dari tabel lecturers (profil)
-            $quota = 0;
-            if ($isRegistered && $user->lecturer) {
-                $quota = $user->lecturer->supervision_quota;
-            }
-
-            $expertise = [];
-            if (!empty($m->expertise)) {
-                $expertise = array_map('trim', explode(',', $m->expertise));
-            }
+            $quota = ($isRegistered && $user->lecturer) ? $user->lecturer->supervision_quota : 0;
+            $expertise = !empty($m->expertise) ? array_map('trim', explode(',', $m->expertise)) : [];
 
             return [
                 'id' => $isRegistered ? (string) $user->user_id : 'mlec-' . $m->master_lecturer_id,
@@ -106,52 +92,68 @@ class UserManagementController extends Controller
         ]);
     }
 
-    /**
-     * Menyimpan pengguna baru.
-     */
     public function store(Request $request)
     {
         $isStudent = $request->userType === 'student' || (!$request->has('department') && $request->userType !== 'lecturer');
         
-        $table = $isStudent ? 'master_students' : 'master_lecturers';
-        
         $rules = [
-            'email' => "required|email|unique:{$table},email",
             'supervision_quota' => !$isStudent ? 'required|integer|min:0|max:20' : 'nullable',
         ];
 
         if ($isStudent) {
-            // PERBAIKAN: Cek unique di master_students DAN di users
-            $rules['nim'] = "required|string|unique:master_students,nim|unique:users,username"; 
+            // Rules untuk Student
+            $rules['nim'] = [
+                'required', 'string', 'regex:/^[0-9]+$/', 
+                'unique:master_students,nim', 
+                'unique:master_lecturers,nip', // Cek silang ke Dosen (ID)
+                'unique:users,username'
+            ];
+            // Rules Email (Cek di kedua tabel)
+            $rules['email'] = [
+                'required', 'email', 
+                'unique:master_students,email', 
+                'unique:master_lecturers,email' // Cek silang ke email Dosen
+            ];
         } else {
-            // PERBAIKAN: Cek unique di master_lecturers DAN di users
-            $rules['nip'] = "required|string|unique:master_lecturers,nip|unique:users,username";
+            // Rules untuk Lecturer
+            $rules['nip'] = [
+                'required', 'string', 'regex:/^[0-9]+$/', 
+                'unique:master_lecturers,nip', 
+                'unique:master_students,nim', // Cek silang ke Mahasiswa (ID)
+                'unique:users,username'
+            ];
+            // Rules Email (Cek di kedua tabel)
+            $rules['email'] = [
+                'required', 'email', 
+                'unique:master_lecturers,email', 
+                'unique:master_students,email' // Cek silang ke email Mahasiswa
+            ];
         }
 
         $messages = [
-            'email.unique' => 'This email is already registered.',
-            'nim.unique' => 'This NIM is already registered or used as a username.',
-            'nip.unique' => 'This NIP is already registered or used as a username.',
+            'email.unique' => 'This email is already registered (Check both Student and Lecturer lists).',
+            'nim.regex' => 'NIM must contain only numbers.',
+            'nip.regex' => 'NIP must contain only numbers.',
+            'nim.unique' => 'This NIM is already registered.',
+            'nip.unique' => 'This NIP is already registered.',
             'users.unique' => 'This ID is already in use by another account.',
+            'master_lecturers.unique' => 'This ID/Email is already registered as a Lecturer.',
+            'master_students.unique'  => 'This ID/Email is already registered as a Student.',
         ];
 
         $request->validate($rules, $messages);
 
         $username = trim($isStudent ? $request->nim : $request->nip);
-        
-        // Double check user trash (optional safety)
         $existingUser = User::withTrashed()->where('username', $username)->first();
+
         if ($existingUser && !$existingUser->trashed()) {
-            return redirect()->back()->withErrors([
-                ($isStudent ? 'nim' : 'nip') => 'User account is already active.'
-            ]);
+            return redirect()->back()->withErrors([($isStudent ? 'nim' : 'nip') => 'User account is already active.']);
         }
 
         DB::transaction(function () use ($request, $isStudent, $username, $existingUser) {
             $roleName = $isStudent ? 'mahasiswa' : 'dosen';
             $role = Role::where('role_name', $roleName)->firstOrFail();
             
-            // A. Simpan ke Master Data
             if ($isStudent) {
                 $master = MasterStudent::create([
                     'nim' => $username,
@@ -172,7 +174,6 @@ class UserManagementController extends Controller
                 $masterId = $master->master_lecturer_id;
             }
 
-            // B. Buat User Login
             if ($existingUser && $existingUser->trashed()) {
                 $existingUser->restore();
                 $existingUser->password = Hash::make('password123');
@@ -187,7 +188,6 @@ class UserManagementController extends Controller
                 ]);
             }
 
-            // C. Hubungkan Profil & Simpan Quota
             if ($isStudent) {
                 Student::updateOrCreate(
                     ['user_id' => $user->user_id],
@@ -208,32 +208,27 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users')->with('success', 'User created successfully.');
     }
 
-    /**
-     * Memperbarui data pengguna.
-     */
     public function update(Request $request, $id)
     {
-        // 1. Handle jika ID adalah string (Edit Master Only)
+        // 1. Handle Edit Master Only
         if (!is_numeric($id)) {
             $parts = explode('-', $id);
             $prefix = $parts[0];
             $masterId = $parts[1];
-            $tableMaster = ($prefix === 'mstu') ? 'master_students' : 'master_lecturers';
-            $pkColumn = ($prefix === 'mstu') ? 'master_student_id' : 'master_lecturer_id';
-
-            $rules = ['email' => "required|email|unique:{$tableMaster},email,{$masterId},{$pkColumn}"];
             
             if ($prefix === 'mstu') {
-                // Cek Unique Master Students
-                $rules['nim'] = "required|string|unique:master_students,nim,{$masterId},master_student_id";
-                $request->validate($rules);
+                $request->validate([
+                    'email' => ["required", "email", "unique:master_students,email,{$masterId},master_student_id", "unique:master_lecturers,email"],
+                    'nim' => ["required", "string", "regex:/^[0-9]+$/", "unique:master_students,nim,{$masterId},master_student_id", "unique:master_lecturers,nip"]
+                ]);
                 MasterStudent::where('master_student_id', $masterId)->update([
                     'full_name' => $request->name, 'email' => $request->email, 'nim' => trim($request->nim)
                 ]);
             } else {
-                // Cek Unique Master Lecturers
-                $rules['nip'] = "required|string|unique:master_lecturers,nip,{$masterId},master_lecturer_id";
-                $request->validate($rules);
+                $request->validate([
+                    'email' => ["required", "email", "unique:master_lecturers,email,{$masterId},master_lecturer_id", "unique:master_students,email"],
+                    'nip' => ["required", "string", "regex:/^[0-9]+$/", "unique:master_lecturers,nip,{$masterId},master_lecturer_id", "unique:master_students,nim"]
+                ]);
                 MasterLecturer::where('master_lecturer_id', $masterId)->update([
                     'full_name' => $request->name, 'email' => $request->email, 'nip' => trim($request->nip)
                 ]);
@@ -246,52 +241,55 @@ class UserManagementController extends Controller
         $roleName = strtolower($user->getRoleNameAttribute() ?? '');
         $isStudent = ($roleName === 'mahasiswa');
         
-        $tableMaster = $isStudent ? 'master_students' : 'master_lecturers';
-        $pkColumn = $isStudent ? 'master_student_id' : 'master_lecturer_id';
-        
         $ignoreId = 0;
         if ($isStudent && $user->student) $ignoreId = $user->student->master_student_id ?? 0;
         elseif (!$isStudent && $user->lecturer) $ignoreId = $user->lecturer->master_lecturer_id ?? 0;
 
-        $rules = [
-            'email' => "required|email|unique:{$tableMaster},email,{$ignoreId},{$pkColumn}"
-        ];
+        $rules = [];
 
         if (!$isStudent) {
-            // VALIDASI DOSEN
+            // Rules Dosen
             $rules['nip'] = [
-                'required',
-                'string',
-                // Cek unique di master_lecturers (ignore self)
+                'required', 'string', 'regex:/^[0-9]+$/', 
                 "unique:master_lecturers,nip,{$ignoreId},master_lecturer_id",
-                // PERBAIKAN: Cek unique di users juga (ignore self)
-                "unique:users,username,{$user->user_id},user_id"
+                "unique:users,username,{$user->user_id},user_id",
+                "unique:master_students,nim" // Cek silang ID
+            ];
+            $rules['email'] = [
+                'required', 'email',
+                "unique:master_lecturers,email,{$ignoreId},master_lecturer_id",
+                "unique:master_students,email" // Cek silang Email
             ];
             $rules['supervision_quota'] = 'required|integer|min:0|max:20';
         } else {
-            // VALIDASI MAHASISWA
+            // Rules Mahasiswa
             $rules['nim'] = [
-                'required',
-                'string',
-                // Cek unique di master_students (ignore self)
+                'required', 'string', 'regex:/^[0-9]+$/', 
                 "unique:master_students,nim,{$ignoreId},master_student_id",
-                // PERBAIKAN: Cek unique di users juga (ignore self)
-                "unique:users,username,{$user->user_id},user_id"
+                "unique:users,username,{$user->user_id},user_id",
+                "unique:master_lecturers,nip" // Cek silang ID
+            ];
+            $rules['email'] = [
+                'required', 'email',
+                "unique:master_students,email,{$ignoreId},master_student_id",
+                "unique:master_lecturers,email" // Cek silang Email
             ];
         }
 
-        // Pesan Error Kustom agar user paham kenapa gagal
         $messages = [
-            'email.unique' => 'Email is already taken.',
-            'nim.unique' => 'NIM or Username is already taken by another account.',
-            'nip.unique' => 'NIP or Username is already taken by another account.',
+            'email.unique' => 'Email is already taken by another account (Student/Lecturer).',
+            'nim.regex' => 'NIM must contain only numbers.',
+            'nip.regex' => 'NIP must contain only numbers.',
+            'nim.unique' => 'NIM is already taken.',
+            'nip.unique' => 'NIP is already taken.',
+            'master_lecturers.unique' => 'This ID/Email is already registered as a Lecturer.',
+            'master_students.unique' => 'This ID/Email is already registered as a Student.',
         ];
 
         $request->validate($rules, $messages);
 
         DB::transaction(function () use ($request, $user, $isStudent) {
             if ($isStudent && $user->student && $user->student->masterStudent) {
-                // Update Student
                 $user->student->masterStudent->update([
                     'full_name' => $request->name,
                     'email' => $request->email,
@@ -300,19 +298,14 @@ class UserManagementController extends Controller
                 if ($request->nim !== $user->username) $user->update(['username' => trim($request->nim)]);
 
             } elseif (!$isStudent && $user->lecturer && $user->lecturer->masterLecturer) {
-                // Update Lecturer
-                // 1. Update Master Info
                 $user->lecturer->masterLecturer->update([
                     'full_name' => $request->name,
                     'email' => $request->email,
                     'nip' => trim($request->nip),
                 ]);
-
-                // 2. Update Quota di tabel Lecturers
                 $user->lecturer->update([
                     'supervision_quota' => $request->supervision_quota
                 ]);
-
                 if ($request->nip !== $user->username) $user->update(['username' => trim($request->nip)]);
             }
         });
@@ -320,9 +313,6 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users')->with('success', 'User updated successfully');
     }
 
-    /**
-     * Hapus Data.
-     */
     public function destroy($id)
     {
         try {
@@ -343,10 +333,7 @@ class UserManagementController extends Controller
                 }
 
                 $user = User::with(['role', 'student', 'lecturer'])->findOrFail($id);
-                
-                if ($user->user_id === Auth::user()->user_id) {
-                    throw new \Exception('Cannot delete your own account.');
-                }
+                if ($user->user_id === Auth::user()->user_id) throw new \Exception('Cannot delete your own account.');
 
                 $roleName = strtolower($user->getRoleNameAttribute() ?? '');
                 
@@ -362,34 +349,25 @@ class UserManagementController extends Controller
 
                 $user->forceDelete(); 
             });
-
             return redirect()->back()->with('success', 'Data deleted successfully.');
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Delete failed: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Toggle Status.
-     */
     public function toggleStatus($id)
     {
         $masterRecord = null;
-
         if (!is_numeric($id)) {
             $parts = explode('-', $id);
             $prefix = $parts[0];
             $masterId = $parts[1];
-
             if ($prefix === 'mstu') $masterRecord = MasterStudent::find($masterId);
             elseif ($prefix === 'mlec') $masterRecord = MasterLecturer::find($masterId);
         } else {
             $user = User::with(['role', 'student.masterStudent', 'lecturer.masterLecturer'])->find($id);
-            
             if ($user) {
                 if ($user->user_id === Auth::user()->user_id) return redirect()->back()->with('error', 'Cannot deactivate your own account.');
-
                 $roleName = strtolower($user->getRoleNameAttribute() ?? '');
                 if ($roleName === 'mahasiswa' && $user->student) $masterRecord = $user->student->masterStudent;
                 elseif ($roleName === 'dosen' && $user->lecturer) $masterRecord = $user->lecturer->masterLecturer;
@@ -399,9 +377,8 @@ class UserManagementController extends Controller
         if ($masterRecord) {
             $newStatus = !(bool)$masterRecord->is_active;
             $masterRecord->forceFill(['is_active' => $newStatus])->save();
-            return redirect()->back()->with('success', "Status successfully updated.");
+            return redirect()->back()->with('success', "Status updated.");
         }
-
-        return redirect()->back()->with('error', 'Failed to toggle status: Record not found.');
+        return redirect()->back()->with('error', 'Failed to toggle status.');
     }
 }

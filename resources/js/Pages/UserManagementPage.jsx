@@ -53,23 +53,14 @@ import {
 import { toast } from "sonner";
 
 export default function UserManagementPage({ students: propStudents = [], lecturers: propLecturers = [], filters = {} }) {
-    // State Pencarian
     const [searchQuery, setSearchQuery] = useState(filters.search || "");
-    
-    // State Dialog
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    
-    // State Data Aktif
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedUserType, setSelectedUserType] = useState("student");
     const [currentTab, setCurrentTab] = useState("student");
-
-    // Form state
     const [formData, setFormData] = useState({});
-
-    // STATE DATA LOKAL
     const [students, setStudents] = useState(propStudents);
     const [lecturers, setLecturers] = useState(propLecturers);
 
@@ -78,21 +69,17 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         setLecturers(propLecturers);
     }, [propStudents, propLecturers]);
 
-    // --- HANDLERS ---
-
     const handleSearch = (e) => {
         if (e.key === 'Enter') {
             router.get(route('admin.users'), { search: searchQuery }, { preserveState: true });
         }
     };
 
-    // ADD USER
     const handleAddUser = () => {
         setSelectedUserType(currentTab);
         setFormData({
             userType: currentTab,
             status: 'active',
-            // Default value penting agar tidak error validasi
             supervision_quota: currentTab === 'lecturer' ? 5 : 0 
         });
         setIsAddDialogOpen(true);
@@ -107,23 +94,20 @@ export default function UserManagementPage({ students: propStudents = [], lectur
             },
             onError: (errors) => {
                 console.error(errors);
-                // PERBAIKAN: Menangani error spesifik dari backend (Validasi Unique)
                 if (errors.email) toast.error(errors.email);
                 else if (errors.nim) toast.error(errors.nim);
                 else if (errors.nip) toast.error(errors.nip);
                 else if (errors.supervision_quota) toast.error(errors.supervision_quota);
-                else toast.error("Failed to add user. Please check input fields.");
+                else toast.error("Failed to add user. Check inputs.");
             }
         });
     };
 
-    // EDIT USER
     const handleEditUser = (user, type) => {
         setSelectedUser(user);
         setSelectedUserType(type);
         setFormData({
             ...user,
-            // Pastikan supervision_quota ada saat edit
             supervision_quota: user.supervision_quota || 0,
         });
         setIsEditDialogOpen(true);
@@ -138,17 +122,15 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                 setFormData({});
             },
             onError: (errors) => {
-                // PERBAIKAN: Menangani error spesifik saat edit (Validasi Unique)
                 if (errors.email) toast.error(errors.email);
                 else if (errors.nim) toast.error(errors.nim);
                 else if (errors.nip) toast.error(errors.nip);
                 else if (errors.supervision_quota) toast.error(errors.supervision_quota);
-                else toast.error("Failed to update user. Duplicate data detected.");
+                else toast.error("Failed to update user.");
             }
         });
     };
 
-    // DELETE USER
     const handleDeleteUser = (user, type) => {
         setSelectedUser(user);
         setSelectedUserType(type);
@@ -167,14 +149,10 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         });
     };
 
-    // TOGGLE STATUS
     const handleToggleStatus = (user) => {
         const action = user.status === 'active' ? 'deactivate' : 'activate';
-        
-        // Cek apakah user memiliki akun (bukan data master saja)
         if (!user.has_user_account) {
-             if (confirm(`This user does not have a login account yet (Master Data only). Do you want to toggle the Master Data status?`)) {
-                 // Lanjut toggle master data
+             if (confirm(`This user does not have a login account yet. Do you want to toggle status?`)) {
              } else {
                  return;
              }
@@ -189,7 +167,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         });
     };
 
-    // --- RENDER HELPER ---
     const getStatusBadge = (status) => {
         const isActive = status === 'active';
         return (
@@ -199,13 +176,21 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         );
     };
 
-    // Form Fields
     const renderStudentFormFields = () => (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="nim">NIM</Label>
-                    <Input id="nim" placeholder="e.g., 2021001234" value={formData.nim || ""} onChange={(e) => setFormData({ ...formData, nim: e.target.value })} required />
+                    <Input 
+                        id="nim" 
+                        placeholder="e.g., 2021001234" 
+                        value={formData.nim || ""} 
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            setFormData({ ...formData, nim: value });
+                        }} 
+                        required 
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -226,7 +211,16 @@ export default function UserManagementPage({ students: propStudents = [], lectur
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="nip">NIP</Label>
-                    <Input id="nip" placeholder="e.g., 198501012010011001" value={formData.nip || ""} onChange={(e) => setFormData({ ...formData, nip: e.target.value })} required />
+                    <Input 
+                        id="nip" 
+                        placeholder="e.g., 198501012010011001" 
+                        value={formData.nip || ""} 
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            setFormData({ ...formData, nip: value });
+                        }} 
+                        required 
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -240,7 +234,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                 </div>
             </div>
             
-            {/* INPUT QUOTA */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <Label htmlFor="supervision_quota">Supervision Quota (Max Students)</Label>
@@ -292,7 +285,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                         <TabsTrigger value="lecturer" className="gap-2"><Award className="w-4 h-4" /> Lecturers ({lecturers.length})</TabsTrigger>
                     </TabsList>
 
-                    {/* STUDENTS TABLE */}
                     <TabsContent value="student">
                         <Card>
                             <CardContent className="p-0">
@@ -313,16 +305,12 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                                     <TableCell>{student.nim}</TableCell>
                                                     <TableCell className="font-medium">{student.name}</TableCell> 
                                                     <TableCell className="text-muted-foreground">{student.email}</TableCell>
-                                                    
                                                     <TableCell>{getStatusBadge(student.status)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
-                                                            {/* Edit Button */}
                                                             <Button variant="ghost" size="icon" onClick={() => handleEditUser(student, "student")}>
                                                                 <Edit className="w-4 h-4" />
                                                             </Button>
-                                                            
-                                                            {/* Toggle Status Button */}
                                                             <Button 
                                                                 variant="ghost" 
                                                                 size="icon" 
@@ -332,8 +320,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                                             >
                                                                 <Power className="w-4 h-4" />
                                                             </Button>
-
-                                                            {/* Delete Button */}
                                                             <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteUser(student, "student")}>
                                                                 <Trash2 className="w-4 h-4" />
                                                             </Button>
@@ -352,7 +338,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                         </Card>
                     </TabsContent>
 
-                    {/* LECTURERS TABLE */}
                     <TabsContent value="lecturer">
                         <Card>
                             <CardContent className="p-0">
@@ -375,14 +360,12 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                                     <TableCell className="font-medium">{lecturer.name}</TableCell>
                                                     <TableCell className="text-muted-foreground">{lecturer.email}</TableCell>
                                                     <TableCell className="text-center">{lecturer.supervision_quota}</TableCell> 
-                                                    
                                                     <TableCell>{getStatusBadge(lecturer.status)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
                                                             <Button variant="ghost" size="icon" onClick={() => handleEditUser(lecturer, "lecturer")}>
                                                                 <Edit className="w-4 h-4" />
                                                             </Button>
-                                                            
                                                             <Button 
                                                                 variant="ghost" 
                                                                 size="icon" 
@@ -392,7 +375,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                                             >
                                                                 <Power className="w-4 h-4" />
                                                             </Button>
-
                                                             <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteUser(lecturer, "lecturer")}>
                                                                 <Trash2 className="w-4 h-4" />
                                                             </Button>
@@ -412,7 +394,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                     </TabsContent>
                 </Tabs>
 
-                {/* Dialogs */}
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
