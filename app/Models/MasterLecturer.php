@@ -17,7 +17,11 @@ class MasterLecturer extends Model
         'nip',
         'full_name',
         'email',
-        'is_active',   
-        
+        'is_active',
+
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 }

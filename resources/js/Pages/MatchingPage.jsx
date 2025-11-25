@@ -31,35 +31,26 @@ import {
 } from "@/Components/ui/dialog";
 import { Separator } from "@/Components/ui/separator";
 
-// TERIMA DATA DARI CONTROLLER
+const FOCUS_LABELS = {
+    "BIG DATA": "Big Data",
+    "MTI": "Manajemen TI",
+    "JARINGAN": "Jaringan",
+    "": "Belum Menentukan Fokus"
+};
+
 export default function MatchingPage({
+    user,
     matches = [],
-    currentUserName,
-    userRole,
 }) {
-    const [filterAvailability, setFilterAvailability] = useState("all");
+    const userRole = user.role_name;
+
+    const [filterFocus, setFilterFocus] = useState("all");
     const [selectedMatch, setSelectedMatch] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [recommendationType, setRecommendationType] = useState(
-        userRole === "lecturer" ? "students" : "students"
+        userRole === "dosen" ? "students" : "students"
     );
 
-    // Helper Warna Skor
-    const getMatchColor = (score) => {
-        if (score >= 90)
-            return "bg-green-100 text-green-700 hover:bg-green-200";
-        if (score >= 80) return "bg-blue-100 text-blue-700 hover:bg-blue-200";
-        return "bg-yellow-100 text-yellow-700 hover:bg-yellow-200";
-    };
-
-    // Helper Warna Ketersediaan
-    const getAvailabilityColor = (status) => {
-        if (status === "Available")
-            return "bg-green-100 text-green-700 border-green-200";
-        if (status === "Limited")
-            return "bg-yellow-100 text-yellow-700 border-yellow-200";
-        return "bg-red-100 text-red-700 border-red-200";
-    };
 
     const handleViewDetails = (match) => {
         setSelectedMatch(match);
@@ -71,16 +62,15 @@ export default function MatchingPage({
         setSelectedMatch(null);
     };
 
-    // Filter data berdasarkan Availability
-    const filteredMatches = matches.filter((match) => {
-        if (filterAvailability === "all") return true;
-        if (filterAvailability === "available")
-            return match.availability === "Available";
-        if (filterAvailability === "limited")
-            return match.availability === "Limited";
-        if (filterAvailability === "unavailable")
-            return match.availability === "Not Available";
-        return true;
+    const currentList = matches[recommendationType] || [];
+    const filteredMatches = currentList.filter((match) => {
+        if (filterFocus === "all") return true;
+
+        if (filterFocus === "none") {
+            return !match.focus || match.focus === "" || match.focus === "-";
+        }
+
+        return match.focus === filterFocus;
     });
 
     return (
@@ -88,15 +78,15 @@ export default function MatchingPage({
             <Head title="Matching" />
             <div className="space-y-6">
                 {/* Info Alert */}
-                <Alert>
+                {/* <Alert>
                     <Info className="h-4 w-4" />
                     <AlertTitle>Matching Algorithm</AlertTitle>
                     <AlertDescription>
                         {userRole === "dosen"
-                            ? "Our system recommends students whose interests align with your expertise. Match scores above 90% indicate highly compatible pairings for supervision."
-                            : "Our system matches students with lecturers based on interest alignment, expertise compatibility, and availability. Match scores above 90% indicate highly compatible pairings."}
+                            ? "Saya Dosen. Our system recommends students whose interests align with your expertise. Match scores above 90% indicate highly compatible pairings for supervision."
+                            : "Saya Mahasiswa. Our system matches students with lecturers based on interest alignment, expertise compatibility, and availability. Match scores above 90% indicate highly compatible pairings."}
                     </AlertDescription>
-                </Alert>
+                </Alert> */}
 
                 {/* Matching Results Table */}
                 <Card>
@@ -105,12 +95,12 @@ export default function MatchingPage({
                             {/* Mobile: Three lines */}
                             <div className="md:hidden space-y-4">
                                 <CardTitle>
-                                    {userRole === "lecturer"
+                                    {userRole === "dosen"
                                         ? "Student Recommendations"
                                         : "Recommended Matches"}
                                 </CardTitle>
                                 {/* Only show recommendation type dropdown for students */}
-                                {userRole === "student" && (
+                                {userRole === "mahasiswa" && (
                                     <Select
                                         value={recommendationType}
                                         onValueChange={(value) =>
@@ -131,25 +121,20 @@ export default function MatchingPage({
                                     </Select>
                                 )}
                                 <Select
-                                    value={filterAvailability}
-                                    onValueChange={setFilterAvailability}
+                                    value={filterFocus}
+                                    onValueChange={setFilterFocus}
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Filter by status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">
-                                            All Status
-                                        </SelectItem>
-                                        <SelectItem value="available">
-                                            Available
-                                        </SelectItem>
-                                        <SelectItem value="limited">
-                                            Limited
-                                        </SelectItem>
-                                        <SelectItem value="unavailable">
-                                            Not Available
-                                        </SelectItem>
+                                        <SelectItem value="all">All Focus</SelectItem>
+
+                                        <SelectItem value="BIG DATA">Big Data</SelectItem>
+                                        <SelectItem value="MTI">Manajemen TI</SelectItem>
+                                        <SelectItem value="JARINGAN">Jaringan</SelectItem>
+
+                                        <SelectItem value="none">Belum ada Fokus</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -184,27 +169,22 @@ export default function MatchingPage({
                                         </Select>
                                     )}
                                     <Select
-                                        value={filterAvailability}
-                                        onValueChange={setFilterAvailability}
+                                        value={filterFocus}
+                                        onValueChange={setFilterFocus}
                                     >
-                                        <SelectTrigger className="w-48">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">
-                                                All Status
-                                            </SelectItem>
-                                            <SelectItem value="available">
-                                                Available
-                                            </SelectItem>
-                                            <SelectItem value="limited">
-                                                Limited
-                                            </SelectItem>
-                                            <SelectItem value="unavailable">
-                                                Not Available
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Focus</SelectItem>
+
+                                        <SelectItem value="BIG DATA">Big Data</SelectItem>
+                                        <SelectItem value="MTI">Manajemen TI</SelectItem>
+                                        <SelectItem value="JARINGAN">Jaringan</SelectItem>
+
+                                        <SelectItem value="none">Belum ada Fokus</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 </div>
                             </div>
                         </div>
@@ -218,12 +198,6 @@ export default function MatchingPage({
                                             <>
                                                 <TableHead>Student</TableHead>
                                                 <TableHead>Interest</TableHead>
-                                                <TableHead>
-                                                    Match Score
-                                                </TableHead>
-                                                <TableHead>
-                                                    Availability
-                                                </TableHead>
                                                 <TableHead className="text-right">
                                                     Actions
                                                 </TableHead>
@@ -232,12 +206,6 @@ export default function MatchingPage({
                                             <>
                                                 <TableHead>Lecturer</TableHead>
                                                 <TableHead>Expertise</TableHead>
-                                                <TableHead>
-                                                    Match Score
-                                                </TableHead>
-                                                <TableHead>
-                                                    Availability
-                                                </TableHead>
                                                 <TableHead className="text-right">
                                                     Actions
                                                 </TableHead>
@@ -257,43 +225,20 @@ export default function MatchingPage({
                                                             <div>
                                                                 <p>
                                                                     {
-                                                                        match.studentName
+                                                                        match.name
                                                                     }
                                                                 </p>
                                                                 <p className="text-xs text-muted-foreground">
                                                                     {
-                                                                        match.studentNIM
+                                                                        match.uid
                                                                     }
                                                                 </p>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             {
-                                                                match.studentInterest
+                                                                FOCUS_LABELS[match.focus]
                                                             }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getMatchColor(
-                                                                    match.matchScore
-                                                                )}
-                                                            >
-                                                                {
-                                                                    match.matchScore
-                                                                }
-                                                                %
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getAvailabilityColor(
-                                                                    match.availability
-                                                                )}
-                                                            >
-                                                                {
-                                                                    match.availability
-                                                                }
-                                                            </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right">
                                                             <Button
@@ -315,43 +260,20 @@ export default function MatchingPage({
                                                             <div>
                                                                 <p>
                                                                     {
-                                                                        match.recommendedLecturer
+                                                                        match.name
                                                                     }
                                                                 </p>
                                                                 <p className="text-xs text-muted-foreground">
                                                                     {
-                                                                        match.lecturerNIP
+                                                                        match.uid
                                                                     }
                                                                 </p>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             {
-                                                                match.lecturerExpertise
+                                                                FOCUS_LABELS[match.focus]
                                                             }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getMatchColor(
-                                                                    match.matchScore
-                                                                )}
-                                                            >
-                                                                {
-                                                                    match.matchScore
-                                                                }
-                                                                %
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getAvailabilityColor(
-                                                                    match.availability
-                                                                )}
-                                                            >
-                                                                {
-                                                                    match.availability
-                                                                }
-                                                            </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right">
                                                             <Button
@@ -391,121 +313,77 @@ export default function MatchingPage({
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>Match Analysis</DialogTitle>
+                            <DialogTitle>Detailed Info</DialogTitle>
                             <DialogDescription>
-                                Detailed breakdown of compatibility
+                                Detailed information about the person
                             </DialogDescription>
                         </DialogHeader>
 
                         {selectedMatch && (
                             <div className="space-y-6">
-                                {/* Match Score Header */}
-                                <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg border">
-                                    <div>
-                                        <h3 className="font-semibold text-lg">
-                                            Compatibility Score
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Calculated based on skills,
-                                            interests, and history
-                                        </p>
-                                    </div>
-                                    <Badge
-                                        className={`${getMatchColor(
-                                            selectedMatch.matchScore
-                                        )} text-xl px-4 py-2`}
-                                    >
-                                        {selectedMatch.matchScore}% Match
-                                    </Badge>
-                                </div>
+
 
                                 {/* Info Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Left Side: Target Profile Info */}
+                                <div className="ggrid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
                                     <div className="space-y-4">
                                         <h4 className="flex items-center gap-2 font-medium border-b pb-2">
-                                            {userRole === "mahasiswa" ? (
+                                            {selectedMatch.type === "lecturer" ? (
                                                 <BookOpen className="w-4 h-4" />
                                             ) : (
                                                 <GraduationCap className="w-4 h-4" />
                                             )}
-                                            {userRole === "mahasiswa"
+                                            {selectedMatch.type === "lecturer"
                                                 ? "Lecturer Profile"
                                                 : "Student Profile"}
                                         </h4>
-                                        <div className="space-y-3 text-sm">
-                                            <div>
-                                                <span className="text-muted-foreground block text-xs uppercase tracking-wider">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <p className="text-sm text-muted-foreground">
                                                     Name
-                                                </span>
-                                                <span className="font-medium text-base">
-                                                    {userRole === "mahasiswa"
-                                                        ? selectedMatch.recommendedLecturer
-                                                        : selectedMatch.studentName}
-                                                </span>
+                                                </p>
+                                                <p>
+                                                    {
+                                                        selectedMatch.name
+                                                    }
+                                                </p>
                                             </div>
-                                            <div>
-                                                <span className="text-muted-foreground block text-xs uppercase tracking-wider">
-                                                    Email
-                                                </span>
-                                                <div className="flex items-center gap-1">
-                                                    <Mail className="w-3 h-3" />
-                                                    {userRole === "mahasiswa"
-                                                        ? selectedMatch.lecturerEmail
-                                                        : selectedMatch.studentEmail}
+                                            <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {
+                                                            selectedMatch.type === 'student' ? 'NIM' : 'NIP'
+                                                        }
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedMatch.uid
+                                                        }
+                                                    </p>
                                                 </div>
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Email
+                                                </p>
+                                                <p className="flex items-center gap-1 text-sm">
+                                                    <Mail className="w-3 h-3" />
+                                                    {
+                                                        selectedMatch.email
+                                                    }
+                                                </p>
                                             </div>
                                             <div>
-                                                <span className="text-muted-foreground block text-xs uppercase tracking-wider">
-                                                    {userRole === "mahasiswa"
+                                                <p className="text-sm text-muted-foreground">
+                                                    {selectedMatch.type === 'lecturer'
                                                         ? "Expertise"
                                                         : "Interests"}
-                                                </span>
-                                                <span className="leading-relaxed">
-                                                    {userRole === "mahasiswa"
-                                                        ? selectedMatch.lecturerExpertise
-                                                        : selectedMatch.studentInterest}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground block text-xs uppercase tracking-wider">
-                                                    Description
-                                                </span>
-                                                <p className="text-muted-foreground">
-                                                    {userRole === "mahasiswa"
-                                                        ? selectedMatch.lecturerDescription
-                                                        : selectedMatch.studentDescription}
                                                 </p>
+                                                <Badge>
+                                                    {
+                                                        FOCUS_LABELS[selectedMatch.focus]
+                                                    }
+                                                </Badge>
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Right Side: Matching Reasons */}
-                                    {userRole === "mahasiswa" && (
-                                        <div className="space-y-4">
-                                            <h4 className="flex items-center gap-2 font-medium border-b pb-2">
-                                                <Award className="w-4 h-4" />
-                                                Key Matching Factors
-                                            </h4>
-                                            <ul className="space-y-3">
-                                                {selectedMatch.matchingReasons.map(
-                                                    (reason, index) => (
-                                                        <li
-                                                            key={index}
-                                                            className="flex items-start gap-2 text-sm bg-green-50 p-2 rounded border border-green-100 text-green-800"
-                                                        >
-                                                            <div className="mt-1">
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-green-600" />
-                                                            </div>
-                                                            <span>
-                                                                {reason}
-                                                            </span>
-                                                        </li>
-                                                    )
-                                                )}
-                                            </ul>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <Separator />
@@ -516,10 +394,6 @@ export default function MatchingPage({
                                     >
                                         Close
                                     </Button>
-                                    {/* Button tambahan jika ingin langsung kontak/request */}
-                                    {userRole === "mahasiswa" && (
-                                        <Button>Request Supervision</Button>
-                                    )}
                                 </div>
                             </div>
                         )}

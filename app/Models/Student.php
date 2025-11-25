@@ -39,6 +39,10 @@ class Student extends Model
         return $this->masterStudent->email ?? '-';
     }
 
+    public function getStatusAttribute(){
+        return $this -> masterStudent -> is_active;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
