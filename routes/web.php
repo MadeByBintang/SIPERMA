@@ -99,13 +99,14 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
         ->name('application.status');
     Route::post('/application/respond/{id}', [ApplicationStatusController::class, 'respond'])
         ->name('application.respond');
-
-    // Fitur Lain
-    Route::get('/matching', [MatchingController::class, 'index'])
-        ->name('matching');
-    Route::get('/timeline', [TimelineProgressController::class, 'index'])
-        ->name('timeline.progress');
 });
+
+Route::get('/matching', [MatchingController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('matching');
+Route::get('/timeline', [TimelineProgressController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('timeline.progress');
 
 // --- FITUR UMUM / DOSEN ---
 Route::middleware(['auth', 'verified'])->group(function () {
