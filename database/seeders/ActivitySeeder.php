@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Activity;
 use App\Models\ActivityType;
 
-class ActivitiesSeeder extends Seeder
+class ActivitySeeder extends Seeder
 {
     public function run(): void
     {

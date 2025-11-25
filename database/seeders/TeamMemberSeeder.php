@@ -12,7 +12,7 @@ class TeamMemberSeeder extends Seeder
 {
     public function run(): void
     {
-       
+        
         $team = Team::where('team_name', 'Tim MBKM PT X')->first();
 
        
