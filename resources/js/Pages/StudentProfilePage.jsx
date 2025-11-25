@@ -65,7 +65,7 @@ import {
 const FOCUS_LABELS = {
     "BIG DATA": "Big Data",
     "MTI": "Manajemen TI",
-    "JARINGAN": "Jaringan Komputer",
+    "JARINGAN": "Jaringan",
     "": "Belum Menentukan Fokus"
 };
 
