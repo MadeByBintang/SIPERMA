@@ -9,35 +9,38 @@ class Activity extends Model
 {
     use HasFactory;
 
-    // Sesuai screenshot, Primary Key adalah 'activity_id'
+   
     protected $primaryKey = 'activity_id';
 
     protected $fillable = [
         'activity_type_id',
-        'institution_id',
+        'internship_id', 
         'title',
         'description',
         'start_date',
         'end_date',
+        'topics', 
     ];
 
-    /**
-     * Relasi ke Tipe Aktivitas
-     */
+    protected $casts = [
+        'topics' => 'array',
+    ];
+
+   
     public function activityType()
     {
         return $this->belongsTo(ActivityType::class, 'activity_type_id', 'activity_type_id');
     }
 
-    public function institution()
+
+    public function internship()
     {
-        
-        return $this->belongsTo(Institution::class, 'institution_id', 'id');
+        return $this->belongsTo(Internship::class, 'internship_id', 'internship_id');
     }
 
     public function logs()
     {
-        // hasMany(ModelTujuan, ForeignKeyDiSana, LocalKeyDiSini)
+        
         return $this->hasMany(ActivityLog::class, 'activity_id', 'activity_id');
     }
 
