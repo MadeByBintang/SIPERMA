@@ -46,6 +46,10 @@ class Lecturer extends Model
         return $this -> masterLecturer -> email ?? '-';
     }
 
+    public function getStatusAttribute(){
+        return $this -> masterLecturer -> is_active;
+    }
+
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'lecturer_id', 'lecturer_id');
