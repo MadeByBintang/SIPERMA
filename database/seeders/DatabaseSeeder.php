@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
 
             // 2. Akun User (yang menghubungkan data)
             UserSeeder::class,
+            FocusSeeder::class,
 
             // 3. Data Alur Kerja (Workflow)
             ActivitySeeder::class,     // <-- TAMBAHKAN INI
