@@ -17,7 +17,6 @@ class Student extends Model
         'master_student_id',
         'nim',
         'name',
-        'skill',
         'status',
     ];
 

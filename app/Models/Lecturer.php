@@ -18,7 +18,7 @@ class Lecturer extends Model
         'nip',
         'name',
         'email',
-        'expertise',
+        'focus',
         'supervision_quota',
         'status'
     ];
