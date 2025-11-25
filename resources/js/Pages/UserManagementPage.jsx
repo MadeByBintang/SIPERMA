@@ -42,20 +42,13 @@ import {
     AlertDialogTitle,
 } from "@/Components/ui/AlertDialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-import {
     Plus,
     Search,
     Edit,
     Trash2,
     GraduationCap,
     Award,
-    Power, // Icon untuk toggle status
+    Power, 
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -98,7 +91,9 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         setSelectedUserType(currentTab);
         setFormData({
             userType: currentTab,
-            status: 'active'
+            status: 'active',
+            // Default value penting agar tidak error validasi
+            supervision_quota: currentTab === 'lecturer' ? 5 : 0 
         });
         setIsAddDialogOpen(true);
     };
@@ -112,7 +107,12 @@ export default function UserManagementPage({ students: propStudents = [], lectur
             },
             onError: (errors) => {
                 console.error(errors);
-                toast.error("Failed to add user. Check input fields.");
+                // PERBAIKAN: Menangani error spesifik dari backend (Validasi Unique)
+                if (errors.email) toast.error(errors.email);
+                else if (errors.nim) toast.error(errors.nim);
+                else if (errors.nip) toast.error(errors.nip);
+                else if (errors.supervision_quota) toast.error(errors.supervision_quota);
+                else toast.error("Failed to add user. Please check input fields.");
             }
         });
     };
@@ -123,7 +123,8 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         setSelectedUserType(type);
         setFormData({
             ...user,
-            expertise: Array.isArray(user.expertise) ? user.expertise.join(', ') : user.expertise
+            // Pastikan supervision_quota ada saat edit
+            supervision_quota: user.supervision_quota || 0,
         });
         setIsEditDialogOpen(true);
     };
@@ -136,7 +137,14 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                 setSelectedUser(null);
                 setFormData({});
             },
-            onError: () => toast.error("Failed to update user")
+            onError: (errors) => {
+                // PERBAIKAN: Menangani error spesifik saat edit (Validasi Unique)
+                if (errors.email) toast.error(errors.email);
+                else if (errors.nim) toast.error(errors.nim);
+                else if (errors.nip) toast.error(errors.nip);
+                else if (errors.supervision_quota) toast.error(errors.supervision_quota);
+                else toast.error("Failed to update user. Duplicate data detected.");
+            }
         });
     };
 
@@ -159,17 +167,26 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         });
     };
 
-    // TOGGLE STATUS (FIXED LOGIC)
+    // TOGGLE STATUS
     const handleToggleStatus = (user) => {
         const action = user.status === 'active' ? 'deactivate' : 'activate';
         
-        if (confirm(`Are you sure you want to ${action} this user?`)) {
-            router.put(route('admin.users.toggle-status', user.id), {}, {
-                preserveScroll: true,
-                onSuccess: () => toast.success(`User status updated`),
-                onError: () => toast.error("Failed to update status")
-            });
+        // Cek apakah user memiliki akun (bukan data master saja)
+        if (!user.has_user_account) {
+             if (confirm(`This user does not have a login account yet (Master Data only). Do you want to toggle the Master Data status?`)) {
+                 // Lanjut toggle master data
+             } else {
+                 return;
+             }
+        } else {
+             if (!confirm(`Are you sure you want to ${action} this user?`)) return;
         }
+
+        router.put(route('admin.users.toggle-status', user.id), {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success(`Status updated`),
+            onError: () => toast.error("Failed to update status")
+        });
     };
 
     // --- RENDER HELPER ---
@@ -182,7 +199,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
         );
     };
 
-    // Form Fields (Sama seperti sebelumnya)
+    // Form Fields
     const renderStudentFormFields = () => (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,41 +217,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" placeholder="student@university.ac.id" value={formData.email || ""} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                 </div>
-                {/*<div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" placeholder="+62 812-3456-7890" value={formData.phone || ""} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-                </div>*/}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="major">Major</Label>
-                    <Select value={formData.major || ""} onValueChange={(value) => setFormData({ ...formData, major: value })}>
-                        <SelectTrigger id="major"><SelectValue placeholder="Select major" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Computer Science">Computer Science</SelectItem>
-                            <SelectItem value="Information Systems">Information Systems</SelectItem>
-                            <SelectItem value="Software Engineering">Software Engineering</SelectItem>
-                            <SelectItem value="Information Technology">Information Technology</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="year">Enrollment Year</Label>
-                    <Select value={formData.year || ""} onValueChange={(value) => setFormData({ ...formData, year: value })}>
-                        <SelectTrigger id="year"><SelectValue placeholder="Select year" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="2021">2021</SelectItem>
-                            <SelectItem value="2022">2022</SelectItem>
-                            <SelectItem value="2023">2023</SelectItem>
-                            <SelectItem value="2024">2024</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-            {/*<div className="space-y-2">
-                <Label htmlFor="gpa">GPA</Label>
-                <Input id="gpa" type="number" step="0.01" min="0" max="4" value={formData.gpa || ""} onChange={(e) => setFormData({ ...formData, gpa: e.target.value })} />
-            </div>*/}
         </>
     );
 
@@ -255,27 +238,24 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" placeholder="lecturer@university.ac.id" value={formData.email || ""} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                 </div>
-                {/*<div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" placeholder="+62 821-1234-5678" value={formData.phone || ""} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-                </div>*/}
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Select value={formData.department || ""} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-                    <SelectTrigger id="department"><SelectValue placeholder="Select department" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Computer Science">Computer Science</SelectItem>
-                        <SelectItem value="Information Systems">Information Systems</SelectItem>
-                        <SelectItem value="Software Engineering">Software Engineering</SelectItem>
-                        <SelectItem value="Information Technology">Information Technology</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="expertise">Areas of Expertise</Label>
-                <Input id="expertise" placeholder="e.g., Machine Learning, AI (comma separated)" value={formData.expertise || ""} onChange={(e) => setFormData({ ...formData, expertise: e.target.value })} />
-                <p className="text-xs text-muted-foreground">Enter multiple areas separated by commas</p>
+            
+            {/* INPUT QUOTA */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="supervision_quota">Supervision Quota (Max Students)</Label>
+                    <Input 
+                        id="supervision_quota" 
+                        type="number" 
+                        min="0"
+                        max="20"
+                        placeholder="e.g., 8" 
+                        value={formData.supervision_quota || ""} 
+                        onChange={(e) => setFormData({ ...formData, supervision_quota: e.target.value })} 
+                        required 
+                    />
+                    <p className="text-xs text-muted-foreground">Required. Max 20.</p>
+                </div>
             </div>
         </>
     );
@@ -286,7 +266,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
             <div className="space-y-6">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                        <h1>User Management</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
                         <p className="text-sm text-muted-foreground">Manage student and lecturer accounts</p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -322,7 +302,6 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                             <TableHead>NIM</TableHead>
                                             <TableHead>Name</TableHead>
                                             <TableHead>Email</TableHead>
-                                            <TableHead>Major</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
@@ -332,9 +311,9 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                             students.map((student) => (
                                                 <TableRow key={student.id}>
                                                     <TableCell>{student.nim}</TableCell>
-                                                    <TableCell className="font-medium">{student.name}</TableCell>
+                                                    <TableCell className="font-medium">{student.name}</TableCell> 
                                                     <TableCell className="text-muted-foreground">{student.email}</TableCell>
-                                                    <TableCell>{student.major}</TableCell>
+                                                    
                                                     <TableCell>{getStatusBadge(student.status)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
@@ -364,7 +343,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No students found.</TableCell>
+                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No students found.</TableCell>
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -382,8 +361,8 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                         <TableRow>
                                             <TableHead>NIP</TableHead>
                                             <TableHead>Name</TableHead>
-                                            <TableHead>Department</TableHead>
-                                            <TableHead>Expertise</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead>Quota</TableHead> 
                                             <TableHead>Status</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
@@ -394,15 +373,9 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                                 <TableRow key={lecturer.id}>
                                                     <TableCell>{lecturer.nip}</TableCell>
                                                     <TableCell className="font-medium">{lecturer.name}</TableCell>
-                                                    <TableCell>{lecturer.department}</TableCell>
-                                                    <TableCell>
-                                                        <div className="flex gap-1 flex-wrap max-w-[200px]">
-                                                            {lecturer.expertise.slice(0, 2).map((exp, idx) => (
-                                                                <Badge key={idx} variant="outline" className="text-xs">{exp}</Badge>
-                                                            ))}
-                                                            {lecturer.expertise.length > 2 && <span className="text-xs text-muted-foreground">+{lecturer.expertise.length - 2}</span>}
-                                                        </div>
-                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">{lecturer.email}</TableCell>
+                                                    <TableCell className="text-center">{lecturer.supervision_quota}</TableCell> 
+                                                    
                                                     <TableCell>{getStatusBadge(lecturer.status)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
@@ -429,7 +402,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No lecturers found.</TableCell>
+                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No lecturers found.</TableCell> 
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -439,7 +412,7 @@ export default function UserManagementPage({ students: propStudents = [], lectur
                     </TabsContent>
                 </Tabs>
 
-                {/* Add/Edit Dialogs & Alert Dialog tetep sama seperti sebelumnya, tidak perlu diubah */}
+                {/* Dialogs */}
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
