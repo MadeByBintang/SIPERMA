@@ -105,14 +105,13 @@ const TeamSelectionCard = ({
                                                         {member.interest}
                                                     </Badge>
                                                 {/* ))} */}
-                                            {member.interests.length > 2 && (
+                                            {member.interests  && (
                                                 <Badge
                                                     variant="outline"
                                                     className="text-xs"
                                                 >
                                                     +
-                                                    {member.interests.length -
-                                                        2}
+                                                    {member.interests}
                                                 </Badge>
                                             )}
                                         </div>
