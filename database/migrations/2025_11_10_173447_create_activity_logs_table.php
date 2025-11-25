@@ -10,14 +10,12 @@ return new class extends Migration
     {
         Schema::create('activity_logs', function (Blueprint $table) {
             $table->id('log_id');
-            $table->unsignedBigInteger('supervision_id');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('activity_id');
             $table->dateTime('log_date');
             $table->text('progress_note');
             $table->string('action_type', 50);
 
-            $table->foreign('supervision_id')->references('supervision_id')->on('supervisions');
-            $table->foreign('user_id')->references('user_id')->on('users');
+            $table->foreign('activity_id')->references('activity_id')->on('activities');
         });
     }
 

@@ -13,7 +13,7 @@ return new class extends Migration
 
             $table->string('team_name', 100);
 
-            $table->unsignedBigInteger('activity_id');
+            // $table->unsignedBigInteger('activity_id');
             $table->text('description')->nullable();
 
             $table->string('status')->default('pending');
@@ -22,16 +22,16 @@ return new class extends Migration
             $table->softDeletes();
 
 
-            $table->foreign('activity_id')
-                  ->references('activity_id')
-                  ->on('activities');
+            // $table->foreign('activity_id')
+            //       ->references('activity_id')
+            //       ->on('activities');
 
 
-            $table->unsignedBigInteger('leader_id')->nullable();
-            $table->unsignedBigInteger('supervisor_id')->nullable();
+            // $table->unsignedBigInteger('leader_id')->nullable();
+            // $table->unsignedBigInteger('supervision_id')->nullable();
 
-            $table->foreign('leader_id')->references('student_id')->on('students')->onDelete('set null');
-            $table->foreign('supervisor_id')->references('lecturer_id')->on('lecturers')->onDelete('set null');
+            // $table->foreign('leader_id')->references('student_id')->on('students')->onDelete('set null');
+            // $table->foreign('supervision_id')->references('supervision_id')->on('supervisions')->onDelete('set null');
         });
     }
 
