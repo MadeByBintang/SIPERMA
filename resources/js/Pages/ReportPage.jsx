@@ -68,13 +68,13 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
 
     // --- LOGIC JUDUL HALAMAN DINAMIS BERDASARKAN ROLE ---
     const getPageHeader = () => {
-        if (userRole === "student") {
+        if (userRole === "mahasiswa") {
             return {
-                title: "My Activity Reports",
+                title: "Activity Reports",
                 desc: "Summary of your personal academic activities and progress",
             };
         }
-        if (userRole === "lecturer") {
+        if (userRole === "dosen") {
             return {
                 title: "Supervision Reports",
                 desc: "Overview of students under your supervision",
@@ -251,21 +251,10 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
         <MainLayout>
             <Head title="Reports" />
             <div className="space-y-6">
-                {/* Header Dinamis Sesuai Role */}
-                <div>
-                    <h1>{headerInfo.title}</h1>
-                    <p className="text-sm text-muted-foreground">
-                        {headerInfo.desc}
-                    </p>
-                </div>
-
-                {/* Report Filter Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Filter Reports</CardTitle>
-                        <CardDescription>
-                            Customize the data view
-                        </CardDescription>
+                        <CardTitle>{headerInfo.title}</CardTitle>
+                        <CardDescription>{headerInfo.desc}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -343,7 +332,7 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
                                     </Select>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row gap-2 md:ml-auto md:pt-8">
+                                <div className="flex flex-col sm:flex-row gap-2 md:ml-auto md:pt-0">
                                     <Button
                                         variant="outline"
                                         className="gap-2"
@@ -395,7 +384,9 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Completed</CardTitle>
+                            <CardTitle className="text-sm">
+                                Completion Rate
+                            </CardTitle>
                             <Award className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -414,7 +405,9 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Active</CardTitle>
+                            <CardTitle className="text-sm">
+                                Active Activities
+                            </CardTitle>
                             <Users className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -425,7 +418,7 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Currently ongoing
+                                    Currently in progress
                                 </p>
                             </div>
                         </CardContent>
@@ -434,7 +427,7 @@ export default function ReportPage({ activities = [], stats = {}, userRole }) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
-                                Engagement
+                                Engagement Rate
                             </CardTitle>
                             <TrendingUp className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
