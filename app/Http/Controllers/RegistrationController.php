@@ -29,13 +29,13 @@ class RegistrationController extends Controller
         $institutions = Internship::select('id', 'name')->orderBy('name')->get();
 
         // Ambil data Dosen
-        $lecturers = Lecturer::with(['user', 'skills', 'masterLecturer'])
+        $lecturers = Lecturer::with(['user', 'masterLecturer'])
             ->get()
             ->map(function ($lecturer) {
                 return [
                     'id' => $lecturer->lecturer_id,
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
-                    'expertise' => $lecturer->skills->pluck('name')->toArray(),
+                    'expertise' => $lecturer->focus,
                     'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
                     'maxStudents' => $lecturer->quota ?? 8,
                     'availability' => ($lecturer->supervisions()->count() < ($lecturer->quota ?? 8)) ? 'Available' : 'Full',
@@ -44,7 +44,7 @@ class RegistrationController extends Controller
             });
 
         // Data Mahasiswa (Calon Teman Tim)
-        $students = Student::with(['user', 'skills'])
+        $students = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
             ->get()
             ->map(function ($student) {
@@ -52,7 +52,7 @@ class RegistrationController extends Controller
                     'id' => $student->student_id,
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
-                    'interests' => $student->skills->pluck('name')->toArray(),
+                    'interests' => $student->focus,
                     'matchScore' => rand(70, 99),
                 ];
             });
@@ -61,7 +61,7 @@ class RegistrationController extends Controller
             'studentInfo' => [
                 'name' => $currentStudent->name ?? $user->name,
                 'nim' => $currentStudent->nim,
-                'interests' => $currentStudent->skills->pluck('name')->toArray(),
+                'interests' => $currentStudent->focus,
             ],
             'recommendedTeamMembers' => $students,
             'recommendedSupervisors' => $lecturers,

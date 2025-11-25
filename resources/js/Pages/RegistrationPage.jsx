@@ -94,17 +94,17 @@ const TeamSelectionCard = ({
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-1 flex-wrap">
-                                            {member.interests
+                                            {/* {member.interests
                                                 .slice(0, 2)
-                                                .map((interest, idx) => (
+                                                .map((interest, idx) => ( */}
                                                     <Badge
-                                                        key={idx}
+                                                        // key={idx}
                                                         variant="outline"
                                                         className="text-xs"
                                                     >
-                                                        {interest}
+                                                        {member.interest}
                                                     </Badge>
-                                                ))}
+                                                {/* ))} */}
                                             {member.interests.length > 2 && (
                                                 <Badge
                                                     variant="outline"
@@ -263,17 +263,17 @@ export default function RegistrationPage({
                                             <TableCell>{sup.name}</TableCell>
                                             <TableCell>
                                                 <div className="flex gap-1 flex-wrap">
-                                                    {sup.expertise
+                                                    {/* {sup.expertise
                                                         .slice(0, 2)
-                                                        .map((exp, i) => (
+                                                        .map((exp, i) => ( */}
                                                             <Badge
-                                                                key={i}
+                                                                // key={i}
                                                                 variant="outline"
                                                                 className="text-xs"
                                                             >
-                                                                {exp}
+                                                                {sup.expertise}
                                                             </Badge>
-                                                        ))}
+                                                        {/* ))} */}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -545,16 +545,16 @@ export default function RegistrationPage({
                                 <div className="space-y-2">
                                     <Label>Your Interests</Label>
                                     <div className="flex gap-2">
-                                        {studentInfo.interests.map(
-                                            (interest, index) => (
+                                        {/* {studentInfo.interests.map( */}
+                                            {/* (interest, index) => ( */}
                                                 <Badge
-                                                    key={index}
+                                                    // key={studentInfo.interests}
                                                     variant="secondary"
                                                 >
-                                                    {interest}
+                                                    {studentInfo.interests}
                                                 </Badge>
                                             )
-                                        )}
+                                        {/* )} */}
                                     </div>
                                 </div>
                                 <div className="space-y-4 border p-4 rounded-md bg-muted/20">
@@ -760,9 +760,9 @@ export default function RegistrationPage({
                                                 </div>
                                                 {/*<div className="space-y-1">
                                                             <Label>Phone (Optional)</Label>
-                                                            <Input 
-                                                                value={data.newOwnerPhone} 
-                                                                onChange={e => setData('newOwnerPhone', e.target.value)} 
+                                                            <Input
+                                                                value={data.newOwnerPhone}
+                                                                onChange={e => setData('newOwnerPhone', e.target.value)}
                                                                 placeholder="0812..."
                                                             />
                                                         </div>*/}
