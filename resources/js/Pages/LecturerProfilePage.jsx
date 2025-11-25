@@ -77,7 +77,14 @@ const getInitials = (name) => {
         .toUpperCase() : "-";
 };
 
-export default function LecturerProfilePage({lecturer, supervisedStudents = [], allSkills = []}) {
+const FOCUS_LABELS = {
+    "BIG DATA": "Big Data",
+    "MTI": "Manajemen TI",
+    "JARINGAN": "Jaringan Komputer",
+    "": "Belum Menentukan Fokus"
+};
+
+export default function LecturerProfilePage({lecturer, supervisedStudents = []}) {
 
     const { auth } = usePage().props;
     const user = auth?.user || {};
@@ -88,24 +95,17 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
         studyProgram: "Teknologi Informasi",
         email: lecturer?.email || "-",
         supervision_quota: lecturer?.supervision_quota || "0",
-        skills: Array.isArray(lecturer?.skills)
-        ? lecturer.skills.map(s => ({
-            id: s.id,
-            name: s.name,
-            level: s.level,
-        }))
-        : [],
+        focus: lecturer?.focus || ""
     };
 
-    const { data, setData, post, processing, reset, errors } = useForm({
-        skills: initialData.skills,
+    const { data, setData, processing, reset, errors } = useForm({
+        name: initialData.name,
+        email: initialData.email,
+        focus: initialData.focus,
     });
 
 
     const [isEditing, setIsEditing] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [dropdownSkill, setDropdownSkill] = useState(null);
-
     // Handle Actions
     const handleEdit = () => setIsEditing(true);
 
@@ -119,10 +119,9 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
         // Pastikan route 'profile.student.update' ada di web.php
         router.post(route('profile.lecturer.update'), {
             _method: 'post',
-            skills: data.skills.map(s => ({
-                id: s.id,
-                level: s.level ?? 1,
-            }))
+            name: data.name,
+            email: data.email,
+            focus: data.focus,
         }, {
             onSuccess: () => {
                 toast.success("Profile updated successfully");
@@ -133,29 +132,6 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                 toast.error("Failed to update profile. Check inputs.");
             }
         });
-    };
-
-
-    const toggleSkill = (skill) => {
-        const exists = data.skills.find(i => i.id === skill.id);
-        if (exists) {
-            setData('skills', data.skills.filter(i => i.id !== skill.id));
-        } else {
-            const newSkillEntry = {
-                ...skill,
-                level: 1
-            };
-            setData('skills', [...data.skills, newSkillEntry]);
-        }
-    };
-
-
-    const removeSkill = (id) => {
-        setData('skills', data.skills.filter(i => i.id !== id));
-    };
-
-    const updateSkillLevel = (id, level) => {
-        setData('skills', data.skills.map(s => s.id === id ? {...s, level} : s));
     };
 
     const {
@@ -245,10 +221,12 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                                         <Label htmlFor="name">Full Name</Label>
                                         <Input
                                             id="name"
-                                            value={initialData.name}
-                                            disabled className="bg-muted"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            disabled={!isEditing}
+                                            className={!isEditing ? "bg-muted" : "bg-background"}
                                         />
-                                        {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
+                                        {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="nip">NIP</Label>
@@ -260,7 +238,14 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Email</Label>
-                                        <Input value={initialData.email} disabled className="bg-muted" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            disabled={!isEditing}
+                                            className={!isEditing ? "bg-muted" : "bg-background"}
+                                        />
                                     </div>
 
                                     <div className="space-y-2">
@@ -269,172 +254,42 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                                     </div>
                                 </div>
 
-                                {/* Description */}
-                                {/* <div className="space-y-2">
-                                    <Label>About / Description</Label>
-                                    <Textarea
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
-                                        disabled={!isEditing}
-                                        rows={3}
-                                    />
-                                </div> */}
-
-                                {/* Expertise */}
-                                {/* <div className="space-y-3 pt-4 border-t">
-                                    <Label>Skill Areas</Label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {data.skills.map((item) => (
-                                            <Badge key={item} variant="secondary" className="gap-1">
-                                                {item}
-                                                {isEditing && (
-                                                    <button onClick={() => removeExpertise(item)}>
-                                                        <X className="w-3 h-3" />
-                                                    </button>
-                                                )}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                    {isEditing && (
-                                        <Popover open={open} onOpenChange={setOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="outline" size="sm" className="mt-2">+ Add Expertise</Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="p-0" align="start">
-                                                <Command>
-                                                    <CommandInput placeholder="Search expertise..." />
-                                                    <CommandList>
-                                                        <CommandEmpty>No results found.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {expertiseOptions.map((exp) => (
-                                                                <CommandItem key={exp} onSelect={() => toggleExpertise(exp)}>
-                                                                    <div className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border ${data.skills.includes(exp) ? "bg-primary text-primary-foreground" : "opacity-50"}`}>
-                                                                        {data.skills.includes(exp) && <Check className="h-3 w-3" />}
-                                                                    </div>
-                                                                    {exp}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    )}
-                                </div> */}
                                 <div className="space-y-2">
-                                    <Label>Skill Areas</Label>
-                                    {/* <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
-                                        {data.skills.length > 0 ? (
-                                            data.skills.map((skill) => (
-                                                <Badge key={skill.id} variant="secondary" className="gap-1">
-                                                    {skill.name} {skill.level}
-                                                    {isEditing && (
-                                                        <button
-                                                            onClick={() => removeSkill(skill.id)}
-                                                            className="ml-1 hover:text-red-500"
-                                                            type="button"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    )}
-                                                </Badge>
-
-
-                                            ))
-                                        ) : (
-                                            <span className="text-sm text-muted-foreground self-center">No skills selected</span>
-                                        )}
-                                    </div> */}
+                                    <Label>Bidang Fokus</Label>
 
                                     <div className="flex flex-wrap gap-2">
-                                    {data.skills.map(skill => (
-                                        <div key={skill.id} className="relative">
-                                        <Badge
-                                            variant="secondary"
-                                            className="gap-1 cursor-pointer flex items-center"
-                                            onClick={() => setDropdownSkill(dropdownSkill === skill.id ? null : skill.id)}
-                                        >
-                                            {skill.name} (Lvl {skill.level})
-                                            {isEditing && (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); removeSkill(skill.id); }}
-                                                className="ml-1 hover:text-red-500"
-                                                type="button"
+                                        {isEditing ? (
+                                            <Select
+                                                value={data.focus}
+                                                onValueChange={(val) => setData('focus', val)}
                                             >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                            )}
-                                        </Badge>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select Focus Area" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none" className="text-muted-foreground italic">
+                                                        -- Belum Menentukan Fokus --
+                                                    </SelectItem>
 
-                                        {/* Dropdown muncul hanya untuk badge yang diklik */}
-                                        {isEditing && dropdownSkill === skill.id && (
-                                            <div className="absolute z-10 mt-1 bg-white border border-gray-300 rounded shadow-md">
-                                            {[1,2,3,4,5].map(lvl => (
-                                                <div
-                                                key={lvl}
-                                                className={`px-3 py-1 cursor-pointer hover:bg-gray-100 ${skill.level === lvl ? 'font-bold' : ''}`}
-                                                onClick={() => {
-                                                    updateSkillLevel(skill.id, lvl);
-                                                    setDropdownSkill(null); // tutup dropdown
-                                                }}
-                                                >
-                                                Level {lvl}
-                                                </div>
-                                            ))}
+                                                    <SelectItem value="BIG DATA">Big Data</SelectItem>
+                                                    <SelectItem value="MTI">Manajemen TI</SelectItem>
+                                                    <SelectItem value="JARINGAN">Jaringan</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <Input
+                                                value={FOCUS_LABELS[initialData.focus] || initialData.focus || ""}
+                                                disabled
+                                                className="bg-muted"
+                                            />
+                                        )}
+                                        {errors.focus && (
+                                            <div className="text-red-500 text-sm mt-1">
+                                                {errors.focus}
                                             </div>
                                         )}
-                                        </div>
-                                    ))}
                                     </div>
 
-
-                                    {isEditing && (
-                                        <div className="mt-2">
-                                            <Popover open={open} onOpenChange={setOpen}>
-                                                <PopoverTrigger asChild>
-                                                    <button
-                                                        type="button"
-                                                        role="combobox"
-                                                        aria-expanded={open}
-                                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        Select skills...
-                                                    </button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[300px] p-0" align="start">
-                                                    <Command>
-                                                        <CommandInput placeholder="Search skills..." />
-                                                        <CommandList>
-                                                            <CommandEmpty>No skill found.</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {allSkills.map((skill) => {
-                                                                    const isSelected = data.skills.some(i => i.id === skill.id);
-                                                                    return (
-                                                                    <CommandItem
-                                                                        key={skill.id}
-                                                                        onSelect={() => toggleSkill(skill)}
-                                                                    >
-                                                                        <div className="flex items-center justify-between w-full">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className={`w-4 h-4 border rounded flex items-center justify-center ${
-                                                                                        isSelected ? "bg-primary border-primary" : "border-input"
-                                                                                    }`}
-                                                                                >
-                                                                                    {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
-                                                                                </div>
-                                                                                <span>{skill.name}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </CommandItem>
-                                                                )})}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Settings */}
@@ -448,19 +303,6 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                                                 Current: {initialData.supervision_quota} of {initialData.supervision_quota} students
                                             </p>
                                         </div>
-                                        {/* <div className="space-y-2">
-                                            <Label>Availability</Label>
-                                            <div className="flex items-center gap-3 h-10">
-                                                <Switch
-                                                    checked={data.is_available}
-                                                    onCheckedChange={(checked) => setData('is_available', checked)}
-                                                    disabled={!isEditing}
-                                                />
-                                                <span className="text-sm text-muted-foreground">
-                                                    {data.is_available ? "Available for new students" : "Not accepting new students"}
-                                                </span>
-                                            </div>
-                                        </div> */}
                                     </div>
                                 </div>
                             </div>

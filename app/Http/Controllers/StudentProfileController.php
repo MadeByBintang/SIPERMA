@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-use App\Models\Skill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,10 +14,7 @@ class StudentProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Eager load data student dan skills
-        $student = $user->student()->with(['skills', 'supervisions.lecturer.user'])->first();
-
-        $all_skills = Skill::select('skill_id as id', 'name')->get();
+        $student = $user->student()->with(['supervisions.lecturer.user'])->first();
 
         $studentData = $student ? [
             'id' => $student->student_id,
@@ -26,11 +22,7 @@ class StudentProfileController extends Controller
             'nim' => $student->nim,
             'studyProgram' => 'Teknologi Informasi',
             'email' => $student->email,
-            'skills' => $student->skills->map(fn($s) => [
-                'id' => $s->skill_id,
-                'name' => $s->name,
-                'level' => $s->pivot->level
-            ])->toArray(),
+            'focus' => $student -> focus
         ] : null;
 
         $supervisors = $student ? $student->supervisions->map(function($sup) {
@@ -46,23 +38,49 @@ class StudentProfileController extends Controller
         return Inertia::render('StudentProfilePage', [
             'student' => $studentData,
             'supervisors' => $supervisors,
-            'allSkills' => $all_skills
         ]);
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
+        $student = $user->student;
+        $master  = $student->masterStudent;
 
-        $student = $user -> student;
+        $rules = [
+            'name'  => 'required|string|max:255',
+            'focus' => 'nullable|string|in:BIG DATA,MTI,JARINGAN',
+        ];
 
-        $skills = collect($request->skills)->mapWithKeys(function ($skill) {
-            return [$skill['id'] => ['level' => $skill['level'] ?? 1]];
-        })->toArray();
-        $student->skills()->sync($skills);
+        $old_email = $master->email;
+        $new_email = $request->input('email');
 
-        return redirect()->route('profile.student') -> with('success', 'Profile updated successfully');
+        if ($old_email != $new_email) {
+            $rules['email'] = 'required|string|max:255|unique:master_students,email';
+        } else {
+            $rules['email'] = 'required|string|max:255';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Update Student
+        $student->focus = $validated['focus'] ?? $student->focus;
+
+        $master->full_name = $validated['name'];
+        $master->email     = $validated['email'];
+
+        if ($student->isDirty()) {
+            $student->save();
+        }
+
+        if ($master->isDirty()) {
+            $master->save();
+        }
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
+
+
 
     public function updateAccount(Request $request)
     {

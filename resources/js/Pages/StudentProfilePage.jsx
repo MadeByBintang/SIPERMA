@@ -62,36 +62,34 @@ import {
     X,
 } from "lucide-react";
 
-export default function StudentProfilePage({student, supervisors = [], allSkills = [] }) {
+const FOCUS_LABELS = {
+    "BIG DATA": "Big Data",
+    "MTI": "Manajemen TI",
+    "JARINGAN": "Jaringan Komputer",
+    "": "Belum Menentukan Fokus"
+};
+
+export default function StudentProfilePage({student, supervisors = [] }) {
 
     const { auth } = usePage().props;
     const user = auth?.user || {};
 
     const [isEditing, setIsEditing] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [dropdownSkill, setDropdownSkill] = useState(null);
-
 
     const initialData = {
         name: student?.name || "Guest",
         nim: student?.nim || "-",
         studyProgram: student?.studyProgram || "-",
         email: student?.email || "-",
-        skills: Array.isArray(student?.skills)
-        ? student.skills.map(s => ({
-            id: s.id,
-            name: s.name,
-            level: s.level,
-        }))
-        : [],
+        focus: student?.focus || ""
     };
 
-    // 2. SETUP FORM INERTIA
-    const { data, setData, post, processing, reset, errors } = useForm({
-        skills: initialData.skills,
+    const { data, setData, processing, reset, errors } = useForm({
+        name: initialData.name,
+        email: initialData.email,
+        focus: initialData.focus,
     });
 
-    // Handlers
     const handleEdit = () => setIsEditing(true);
 
     const handleCancel = () => {
@@ -100,14 +98,11 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
     };
 
     const handleSave = () => {
-        // Gunakan POST ke route update (karena HTML form method spoofing)
-        // Pastikan route 'profile.student.update' ada di web.php
         router.post(route('profile.student.update'), {
             _method: 'post',
-            skills: data.skills.map(s => ({
-                id: s.id,
-                level: s.level ?? 1,
-            }))
+            name: data.name,
+            email: data.email,
+            focus: data.focus,
         }, {
             onSuccess: () => {
                 toast.success("Profile updated successfully");
@@ -119,31 +114,6 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
             }
         });
     };
-
-
-    const toggleSkill = (skill) => {
-        const exists = data.skills.find(i => i.id === skill.id);
-        if (exists) {
-            setData('skills', data.skills.filter(i => i.id !== skill.id));
-        } else {
-            const newSkillEntry = {
-                ...skill,
-                level: 1
-            };
-            setData('skills', [...data.skills, newSkillEntry]);
-        }
-    };
-
-
-
-    const removeSkill = (id) => {
-        setData('skills', data.skills.filter(i => i.id !== id));
-    };
-
-    const updateSkillLevel = (id, level) => {
-        setData('skills', data.skills.map(s => s.id === id ? {...s, level} : s));
-    };
-
 
 
     const getInitials = (name) => {
@@ -187,7 +157,6 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
         });
     };
 
-    // ---------------- PASSWORD STRENGTH ----------------
     const getPasswordStrength = (password) => {
         if (!password) return { strength: 0, label: "", color: "" };
         let strength = 0;
@@ -210,7 +179,6 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
             <Head title="Student Profile" />
             <div className="space-y-6">
 
-                {/* Profile Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Student Profile</CardTitle>
@@ -244,7 +212,14 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Full Name</Label>
-                                        <Input value={initialData.name} disabled className="bg-muted" />
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            disabled={!isEditing}
+                                            className={!isEditing ? "bg-muted" : "bg-background"}
+                                        />
+                                        {errors.name && <div className="text-red-500 text-xs">{errors.name}</div>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label>NIM</Label>
@@ -255,7 +230,15 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Email</Label>
-                                        <Input value={initialData.email} disabled className="bg-muted" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            disabled={!isEditing}
+                                            className={!isEditing ? "bg-muted" : "bg-background"}
+                                        />
+                                        {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Program Studi</Label>
@@ -263,121 +246,36 @@ export default function StudentProfilePage({student, supervisors = [], allSkills
                                     </div>
                                 </div>
 
-
-
-                                {/* Editable Field: skill Areas */}
                                 <div className="space-y-2">
-                                    <Label>Skill Areas</Label>
-                                    {/* <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[3rem]">
-                                        {data.skills.length > 0 ? (
-                                            data.skills.map((skill) => (
-                                                <Badge key={skill.id} variant="secondary" className="gap-1">
-                                                    {skill.name} {skill.level}
-                                                    {isEditing && (
-                                                        <button
-                                                            onClick={() => removeSkill(skill.id)}
-                                                            className="ml-1 hover:text-red-500"
-                                                            type="button"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    )}
-                                                </Badge>
-
-
-                                            ))
-                                        ) : (
-                                            <span className="text-sm text-muted-foreground self-center">No skills selected</span>
-                                        )}
-                                    </div> */}
-
-                                    <div className="flex flex-wrap gap-2">
-                                    {data.skills.map(skill => (
-                                        <div key={skill.id} className="relative">
-                                        <Badge
-                                            variant="secondary"
-                                            className="gap-1 cursor-pointer flex items-center"
-                                            onClick={() => setDropdownSkill(dropdownSkill === skill.id ? null : skill.id)}
+                                    <Label>Fokus Peminatan</Label>
+                                    {isEditing ? (
+                                        <Select
+                                            value={data.focus}
+                                            onValueChange={(val) => setData('focus', val)}
                                         >
-                                            {skill.name} (Lvl {skill.level})
-                                            {isEditing && (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); removeSkill(skill.id); }}
-                                                className="ml-1 hover:text-red-500"
-                                                type="button"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                            )}
-                                        </Badge>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select Focus Area" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none" className="text-muted-foreground italic">
+                                                    -- Belum Menentukan Fokus --
+                                                </SelectItem>
 
-                                        {/* Dropdown muncul hanya untuk badge yang diklik */}
-                                        {isEditing && dropdownSkill === skill.id && (
-                                            <div className="absolute z-10 mt-1 bg-white border border-gray-300 rounded shadow-md">
-                                            {[1,2,3,4,5].map(lvl => (
-                                                <div
-                                                key={lvl}
-                                                className={`px-3 py-1 cursor-pointer hover:bg-gray-100 ${skill.level === lvl ? 'font-bold' : ''}`}
-                                                onClick={() => {
-                                                    updateSkillLevel(skill.id, lvl);
-                                                    setDropdownSkill(null); // tutup dropdown
-                                                }}
-                                                >
-                                                Level {lvl}
-                                                </div>
-                                            ))}
-                                            </div>
-                                        )}
-                                        </div>
-                                    ))}
-                                    </div>
-
-
-                                    {isEditing && (
-                                        <div className="mt-2">
-                                            <Popover open={open} onOpenChange={setOpen}>
-                                                <PopoverTrigger asChild>
-                                                    <button
-                                                        type="button"
-                                                        role="combobox"
-                                                        aria-expanded={open}
-                                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        Select skills...
-                                                    </button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[300px] p-0" align="start">
-                                                    <Command>
-                                                        <CommandInput placeholder="Search skills..." />
-                                                        <CommandList>
-                                                            <CommandEmpty>No skill found.</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {allSkills.map((skill) => {
-                                                                    const isSelected = data.skills.some(i => i.id === skill.id);
-                                                                    return (
-                                                                    <CommandItem
-                                                                        key={skill.id}
-                                                                        onSelect={() => toggleSkill(skill)}
-                                                                    >
-                                                                        <div className="flex items-center justify-between w-full">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className={`w-4 h-4 border rounded flex items-center justify-center ${
-                                                                                        isSelected ? "bg-primary border-primary" : "border-input"
-                                                                                    }`}
-                                                                                >
-                                                                                    {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
-                                                                                </div>
-                                                                                <span>{skill.name}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </CommandItem>
-                                                                )})}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
+                                                <SelectItem value="BIG DATA">Big Data</SelectItem>
+                                                <SelectItem value="MTI">Manajemen TI</SelectItem>
+                                                <SelectItem value="JARINGAN">Jaringan</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <Input
+                                            value={FOCUS_LABELS[initialData.focus] || initialData.focus || ""}
+                                            disabled
+                                            className="bg-muted"
+                                        />
+                                    )}
+                                    {errors.focus && (
+                                        <div className="text-red-500 text-sm mt-1">
+                                            {errors.focus}
                                         </div>
                                     )}
                                 </div>

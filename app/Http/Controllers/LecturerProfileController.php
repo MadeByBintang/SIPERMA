@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-use App\Models\Skill;
 use App\Models\Supervision;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,27 +14,19 @@ class LecturerProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $lecturer = $user -> lecturer() -> with(['skills', 'supervisions.student.user']) -> first();
-        $all_skills = Skill::select('skill_id as id', 'name')->get();
+        $lecturer = $user -> lecturer() -> with(['supervisions.student.user']) -> first();
 
         $lecturerData = $lecturer ? [
             'name'              => $lecturer -> name,
             'nip'               => $lecturer -> nip,
             'email'             => $lecturer -> email,
+            'focus'             => $lecturer->focus,
             'supervision_quota' => $lecturer -> supervision_quota,
-
-            'skills' => $lecturer->skills->map(fn($s) => [
-                'id' => $s->skill_id,
-                'name' => $s->name,
-                'level' => $s->pivot->level
-            ])->toArray(),
         ] : null;
 
         $supervisedStudents = [];
 
         if ($lecturer) {
-            // Asumsi: supervision menghubungkan student_id dan lecturer_id
-            // Kita ambil data relasi student->user untuk dapat nama & NIM
             $supervisedStudents = Supervision::with(['student', 'activity'])
                 ->where('lecturer_id', $user->id) // Sesuaikan logika relasi ID Anda (apakah pakai user_id atau lecturer_id tabel terpisah)
                 ->where('supervision_status', 'active')
@@ -46,7 +36,7 @@ class LecturerProfileController extends Controller
                         'id' => $s->supervision_id,
                         'name' => $s->student->name ?? 'Mahasiswa',
                         'nim' => $s->student->username ?? '-', // Asumsi NIM ada di username
-                        'interest' => $s->activity->title ?? '-', // Judul project sebagai interest
+                        'title' => $s->activity->title ?? '-', // Judul project sebagai interest
                         'activityType' => ucfirst($s->activity->activity_type ?? 'Thesis'),
                         'startDate' => $s->assigned_date ? date('M Y', strtotime($s->assigned_date)) : '-',
                         'status' => ucfirst($s->supervision_status),
@@ -57,22 +47,45 @@ class LecturerProfileController extends Controller
         return Inertia::render('LecturerProfilePage', [
             'lecturer' => $lecturerData,
             'supervisedStudents' => $supervisedStudents,
-            'allSkills' => $all_skills
         ]);
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
+        $lecturer = $user->lecturer;
+        $master  = $lecturer->masterlecturer;
 
-        $lecturer = $user -> lecturer;
+        $rules = [
+            'name'  => 'required|string|max:255',
+            'focus' => 'nullable|string|in:BIG DATA,MTI,JARINGAN',
+        ];
 
-        $skills = collect($request->skills)->mapWithKeys(function ($skill) {
-            return [$skill['id'] => ['level' => $skill['level'] ?? 1]];
-        })->toArray();
-        $lecturer->skills()->sync($skills);
+        $old_email = $master->email;
+        $new_email = $request->input('email');
 
-        return redirect()->route('profile.lecturer') -> with('success', 'Profile updated successfully');
+        if ($old_email != $new_email) {
+            $rules['email'] = 'required|string|max:255|unique:master_lecturers,email';
+        } else {
+            $rules['email'] = 'required|string|max:255';
+        }
+
+        $validated = $request->validate($rules);
+
+        $lecturer->focus = $validated['focus'] ?? $lecturer->focus;
+
+        $master->full_name = $validated['name'];
+        $master->email     = $validated['email'];
+
+        if ($lecturer->isDirty()) {
+            $lecturer->save();
+        }
+
+        if ($master->isDirty()) {
+            $master->save();
+        }
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 
     public function updateAccount(Request $request)
