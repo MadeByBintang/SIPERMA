@@ -46,12 +46,7 @@ import MainLayout from "@/Layouts/MainLayout";
 import { Head, useForm } from "@inertiajs/react";
 
 // Recommended team members based on matching interests
-const TeamSelectionCard = ({
-    members,
-    selectedMembers,
-    onToggle,
-    getMatchColor,
-}) => (
+const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
     <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -71,7 +66,6 @@ const TeamSelectionCard = ({
                             <TableHead>Name</TableHead>
                             <TableHead>NIM</TableHead>
                             <TableHead>Interests</TableHead>
-                            <TableHead>Match Score</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -94,41 +88,15 @@ const TeamSelectionCard = ({
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-1 flex-wrap">
-                                            {/* {member.interests
-                                                .slice(0, 2)
-                                                .map((interest, idx) => ( */}
-                                                    <Badge
-                                                        // key={idx}
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        {member.interest}
-                                                    </Badge>
-                                                {/* ))} */}
-                                            {member.interests  && (
+                                            {member.interests && (
                                                 <Badge
                                                     variant="outline"
                                                     className="text-xs"
                                                 >
-                                                    +
                                                     {member.interests}
                                                 </Badge>
                                             )}
                                         </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">
-                                            {member.gpa}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            className={getMatchColor(
-                                                member.matchScore
-                                            )}
-                                        >
-                                            {member.matchScore}%
-                                        </Badge>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -187,7 +155,6 @@ export default function RegistrationPage({
         abstract: "",
         researchTopics: [],
         mainSupervisor: null,
-        assistantSupervisor: null,
 
         // Competition
         competitionName: "",
@@ -202,7 +169,6 @@ export default function RegistrationPage({
         supervisors,
         selectedId,
         onSelect,
-        getMatchColor,
         filterId,
         error,
     }) => {
@@ -231,20 +197,13 @@ export default function RegistrationPage({
                                     <TableHead>Name</TableHead>
                                     <TableHead>Expertise</TableHead>
                                     <TableHead>Quota</TableHead>
-                                    <TableHead>Match</TableHead>
+                                    <TableHead>Availability</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredList.length > 0 ? (
                                     filteredList.map((sup) => (
-                                        <TableRow
-                                            key={sup.id}
-                                            className={
-                                                sup.availability !== "Available"
-                                                    ? "opacity-50"
-                                                    : ""
-                                            }
-                                        >
+                                        <TableRow key={sup.id}>
                                             <TableCell>
                                                 <Checkbox
                                                     checked={
@@ -262,17 +221,13 @@ export default function RegistrationPage({
                                             <TableCell>{sup.name}</TableCell>
                                             <TableCell>
                                                 <div className="flex gap-1 flex-wrap">
-                                                    {/* {sup.expertise
-                                                        .slice(0, 2)
-                                                        .map((exp, i) => ( */}
-                                                            <Badge
-                                                                // key={i}
-                                                                variant="outline"
-                                                                className="text-xs"
-                                                            >
-                                                                {sup.expertise}
-                                                            </Badge>
-                                                        {/* ))} */}
+                                                    <Badge
+                                                        // key={i}
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {sup.expertise}
+                                                    </Badge>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -281,11 +236,11 @@ export default function RegistrationPage({
                                             </TableCell>
                                             <TableCell>
                                                 <Badge
-                                                    className={getMatchColor(
-                                                        sup.matchScore
+                                                    className={getAvailabilityColor(
+                                                        sup.availability
                                                     )}
                                                 >
-                                                    {sup.matchScore}%
+                                                    {sup.availability}
                                                 </Badge>
                                             </TableCell>
                                         </TableRow>
@@ -313,12 +268,6 @@ export default function RegistrationPage({
 
     const handleTabChange = (value) => {
         setData("activityType", value);
-    };
-
-    const getMatchColor = (score) => {
-        if (score >= 90) return "bg-green-100 text-green-700";
-        if (score >= 80) return "bg-blue-100 text-blue-700";
-        return "bg-yellow-100 text-yellow-700";
     };
 
     const getAvailabilityColor = (status) => {
@@ -544,16 +493,12 @@ export default function RegistrationPage({
                                 <div className="space-y-2">
                                     <Label>Your Interests</Label>
                                     <div className="flex gap-2">
-                                        {/* {studentInfo.interests.map( */}
-                                            {/* (interest, index) => ( */}
-                                                <Badge
-                                                    // key={studentInfo.interests}
-                                                    variant="secondary"
-                                                >
-                                                    {studentInfo.interests}
-                                                </Badge>
-                                            )
-                                        {/* )} */}
+                                        <Badge
+                                            // key={studentInfo.interests}
+                                            variant="secondary"
+                                        >
+                                            {studentInfo.interests}
+                                        </Badge>
                                     </div>
                                 </div>
                                 <div className="space-y-4 border p-4 rounded-md bg-muted/20">
@@ -793,7 +738,6 @@ export default function RegistrationPage({
                             members={recommendedTeamMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
-                            getMatchColor={getMatchColor}
                         />
 
                         <SupervisorSelectionCard
@@ -801,7 +745,6 @@ export default function RegistrationPage({
                             supervisors={recommendedSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
-                            getMatchColor={getMatchColor}
                             error={errors.supervisor}
                         />
 
@@ -827,8 +770,8 @@ export default function RegistrationPage({
                             <AlertTitle>Thesis Registration</AlertTitle>
                             <AlertDescription>
                                 Register for your thesis project. Select your
-                                research topics, and we'll recommend main and
-                                assistant supervisors based on your interests.
+                                research topics, and we'll recommend main
+                                supervisors based on your interests.
                             </AlertDescription>
                         </Alert>
 
@@ -971,318 +914,12 @@ export default function RegistrationPage({
                             </CardContent>
                         </Card>
 
-                        {/* Main Supervisor */}
-                        {/* <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <BookOpen className="w-5 h-5" />
-                                    Main Supervisor
-                                </CardTitle>
-                                <CardDescription>
-                                    Select your main thesis supervisor based on
-                                    expertise match
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="rounded-md border overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-12">
-                                                    Select
-                                                </TableHead>
-                                                <TableHead>Name</TableHead>
-                                                <TableHead>Expertise</TableHead>
-                                                <TableHead>Capacity</TableHead>
-                                                <TableHead>
-                                                    Availability
-                                                </TableHead>
-                                                <TableHead>
-                                                    Match Score
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {recommendedSupervisors.map(
-                                                (supervisor) => (
-                                                    <TableRow
-                                                        key={supervisor.id}
-                                                    >
-                                                        <TableCell>
-                                                            <Checkbox
-                                                                checked={
-                                                                    selectedMainSupervisor ===
-                                                                    supervisor.id
-                                                                }
-                                                                onCheckedChange={() =>
-                                                                    setSelectedMainSupervisor(
-                                                                        supervisor.id
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    supervisor.availability ===
-                                                                    "Not Available"
-                                                                }
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {supervisor.name}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex gap-1 flex-wrap">
-                                                                {supervisor.expertise
-                                                                    .slice(0, 2)
-                                                                    .map(
-                                                                        (
-                                                                            exp,
-                                                                            idx
-                                                                        ) => (
-                                                                            <Badge
-                                                                                key={
-                                                                                    idx
-                                                                                }
-                                                                                variant="outline"
-                                                                                className="text-xs"
-                                                                            >
-                                                                                {
-                                                                                    exp
-                                                                                }
-                                                                            </Badge>
-                                                                        )
-                                                                    )}
-                                                                {supervisor
-                                                                    .expertise
-                                                                    .length >
-                                                                    2 && (
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className="text-xs"
-                                                                    >
-                                                                        +
-                                                                        {supervisor
-                                                                            .expertise
-                                                                            .length -
-                                                                            2}
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-sm text-muted-foreground">
-                                                            {
-                                                                supervisor.currentStudents
-                                                            }{" "}
-                                                            /{" "}
-                                                            {
-                                                                supervisor.maxStudents
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getAvailabilityColor(
-                                                                    supervisor.availability
-                                                                )}
-                                                            >
-                                                                {
-                                                                    supervisor.availability
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getMatchColor(
-                                                                    supervisor.matchScore
-                                                                )}
-                                                            >
-                                                                {
-                                                                    supervisor.matchScore
-                                                                }
-                                                                %
-                                                            </Badge>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                                {selectedMainSupervisor && (
-                                    <div className="mt-4 p-3 bg-accent rounded-lg">
-                                        <p className="text-sm">
-                                            <CheckCircle2 className="w-4 h-4 inline mr-1" />
-                                            Main supervisor selected
-                                        </p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card> */}
-
-                        {/* Assistant Supervisor */}
-                        {/* <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <UserCheck className="w-5 h-5" />
-                                    Assistant Supervisor
-                                </CardTitle>
-                                <CardDescription>
-                                    Select your assistant thesis supervisor
-                                    (optional)
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="rounded-md border overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-12">
-                                                    Select
-                                                </TableHead>
-                                                <TableHead>Name</TableHead>
-                                                <TableHead>Expertise</TableHead>
-                                                <TableHead>Capacity</TableHead>
-                                                <TableHead>
-                                                    Availability
-                                                </TableHead>
-                                                <TableHead>
-                                                    Match Score
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {recommendedSupervisors
-                                                .filter(
-                                                    (s) =>
-                                                        s.id !==
-                                                        selectedMainSupervisor
-                                                )
-                                                .map((supervisor) => (
-                                                    <TableRow
-                                                        key={supervisor.id}
-                                                    >
-                                                        <TableCell>
-                                                            <Checkbox
-                                                                checked={
-                                                                    selectedAssistantSupervisor ===
-                                                                    supervisor.id
-                                                                }
-                                                                onCheckedChange={() =>
-                                                                    setSelectedAssistantSupervisor(
-                                                                        supervisor.id
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    supervisor.availability ===
-                                                                    "Not Available"
-                                                                }
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {supervisor.name}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex gap-1 flex-wrap">
-                                                                {supervisor.expertise
-                                                                    .slice(0, 2)
-                                                                    .map(
-                                                                        (
-                                                                            exp,
-                                                                            idx
-                                                                        ) => (
-                                                                            <Badge
-                                                                                key={
-                                                                                    idx
-                                                                                }
-                                                                                variant="outline"
-                                                                                className="text-xs"
-                                                                            >
-                                                                                {
-                                                                                    exp
-                                                                                }
-                                                                            </Badge>
-                                                                        )
-                                                                    )}
-                                                                {supervisor
-                                                                    .expertise
-                                                                    .length >
-                                                                    2 && (
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className="text-xs"
-                                                                    >
-                                                                        +
-                                                                        {supervisor
-                                                                            .expertise
-                                                                            .length -
-                                                                            2}
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-sm text-muted-foreground">
-                                                            {
-                                                                supervisor.currentStudents
-                                                            }{" "}
-                                                            /{" "}
-                                                            {
-                                                                supervisor.maxStudents
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getAvailabilityColor(
-                                                                    supervisor.availability
-                                                                )}
-                                                            >
-                                                                {
-                                                                    supervisor.availability
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                className={getMatchColor(
-                                                                    supervisor.matchScore
-                                                                )}
-                                                            >
-                                                                {
-                                                                    supervisor.matchScore
-                                                                }
-                                                                %
-                                                            </Badge>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                                {selectedAssistantSupervisor && (
-                                    <div className="mt-4 p-3 bg-accent rounded-lg">
-                                        <p className="text-sm">
-                                            <CheckCircle2 className="w-4 h-4 inline mr-1" />
-                                            Assistant supervisor selected
-                                        </p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card> */}
-
                         <SupervisorSelectionCard
                             title="Select Main Supervisor"
                             supervisors={recommendedSupervisors}
                             selectedId={data.mainSupervisor}
                             onSelect={(id) => setData("mainSupervisor", id)}
-                            getMatchColor={getMatchColor}
                             error={errors.mainSupervisor}
-                        />
-
-                        <SupervisorSelectionCard
-                            title="Select Assistant Supervisor (Optional)"
-                            supervisors={recommendedSupervisors}
-                            selectedId={data.assistantSupervisor}
-                            onSelect={(id) =>
-                                setData("assistantSupervisor", id)
-                            }
-                            getMatchColor={getMatchColor}
-                            filterId={data.mainSupervisor}
                         />
 
                         {/* Submit Button */}
@@ -1410,7 +1047,6 @@ export default function RegistrationPage({
                             members={recommendedTeamMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
-                            getMatchColor={getMatchColor}
                         />
 
                         <SupervisorSelectionCard
@@ -1418,7 +1054,6 @@ export default function RegistrationPage({
                             supervisors={recommendedSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
-                            getMatchColor={getMatchColor}
                             error={errors.supervisor}
                         />
 
