@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id('lecturer_id');
             $table->unsignedBigInteger('master_lecturer_id')->unique();
             $table->unsignedBigInteger('user_id')->unique();
+            $table->enum('focus', ['BIG DATA', 'MTI', 'JARINGAN'])->nullable();
             $table->integer('supervision_quota')->default(0);
 
             $table->foreign('master_lecturer_id')->references('master_lecturer_id')->on('master_lecturers');

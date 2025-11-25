@@ -18,15 +18,13 @@ class Lecturer extends Model
         'nip',
         'name',
         'email',
-        // 'academic_titles',
+        'expertise',
         'supervision_quota',
         'status'
     ];
 
     public function user()
     {
-        // Param 2: FK di tabel lecturers (user_id)
-        // Param 3: PK di tabel users (user_id)
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
@@ -51,16 +49,5 @@ class Lecturer extends Model
     public function supervisions()
     {
         return $this->hasMany(Supervision::class, 'lecturer_id', 'lecturer_id');
-    }
-
-    /**
-     * Relasi Many-to-Many ke Skill.
-     * DEFINISIKAN NAMA TABEL PIVOT 'lecturer_skills' SECARA EKSPLISIT (JAMAK)
-     */
-    public function skills()
-    {
-        return $this->belongsToMany(Skill::class, 'lecturer_skills', 'lecturer_id', 'skill_id')
-                    ->withPivot('level')
-                    ->withTimestamps();
     }
 }

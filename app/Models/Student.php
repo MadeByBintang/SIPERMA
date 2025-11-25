@@ -14,23 +14,20 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
-        'master_student_id', // Kunci ke data master
+        'master_student_id',
         'nim',
         'name',
+        'skill',
         'status',
     ];
 
-    // Relasi ke Master Data
     public function masterStudent()
     {
         return $this->belongsTo(MasterStudent::class, 'master_student_id', 'master_student_id');
     }
 
-    // Helper Accessor: Ambil Nama dari Master
     public function getNameAttribute()
     {
-        // Ambil dari master, jika null ambil dari kolom lokal (jika ada)
-
         return $this->masterStudent->full_name ?? $this->attributes['name'] ?? '-';
     }
 
@@ -38,27 +35,14 @@ class Student extends Model
         return $this -> masterStudent -> nim ?? '-';
     }
 
-    // Helper Accessor: Ambil Email dari Master
     public function getEmailAttribute()
     {
         return $this->masterStudent->email ?? '-';
     }
 
-    // ... relasi lain (user, skills, dll) tetap sama
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
-
-    public function skills()
-    {
-        return $this->belongsToMany(
-            Skill::class,
-            'student_skills',
-            'student_id',
-            'skill_id'
-            )->withPivot('level')
-            ->withTimestamps();
     }
 
     public function teamMembers() { return $this->hasMany(TeamMember::class, 'student_id', 'student_id'); }

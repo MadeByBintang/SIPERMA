@@ -3,10 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\MasterLecturer; // <-- Import Model YANG BENAR
-use Illuminate\Support\Facades\DB;
+use App\Models\MasterLecturer;
 
-class MasterLecturersSeeder extends Seeder // <-- Nama Kelas YANG BENAR
+class MasterLecturersSeeder extends Seeder
 {
     /**
      * Run the database seeds.
