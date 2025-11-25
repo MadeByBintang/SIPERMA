@@ -9,24 +9,29 @@ class TeamMember extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id'; 
+    protected $table = 'team_members';
 
-    public $timestamps = true; 
-    
+   
+    protected $primaryKey = 'team_member_id';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'team_id',
         'student_id',
-        'role_in_team',
-        'status', 
+        
     ];
-    
+
     public function team()
     {
-        return $this->belongsTo(Team::class, 'team_id', 'id'); 
+        
+        return $this->belongsTo(Team::class, 'team_id', 'team_id');
     }
+
 
     public function student()
     {
+        
         return $this->belongsTo(Student::class, 'student_id', 'student_id');
     }
 }

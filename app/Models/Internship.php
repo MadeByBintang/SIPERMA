@@ -9,6 +9,10 @@ class Internship extends Model
 {
     use HasFactory;
 
+    protected $table = 'internships';
+
+    protected $primaryKey = 'internship_id';
+
     protected $fillable = [
         'name',
         'address',
@@ -17,4 +21,10 @@ class Internship extends Model
         'owner_email',
         'owner_phone',
     ];
+
+    public function activities()
+    {
+       
+        return $this->hasMany(Activity::class, 'internship_id', 'internship_id');
+    }
 }

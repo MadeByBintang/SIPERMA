@@ -9,7 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // 1. Data Master Utama
+            
             RolesSeeder::class,
             MasterLecturersSeeder::class,
             MasterStudentsSeeder::class,
@@ -17,12 +17,11 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             InternshipSeeder::class,
 
-            // 2. Akun User (yang menghubungkan data)
             UserSeeder::class,
             FocusSeeder::class,
 
-            // 3. Data Alur Kerja (Workflow)
-            ActivitySeeder::class,     // <-- TAMBAHKAN INI
+           
+            ActivitiesSeeder::class,     // <-- TAMBAHKAN INI
             TeamSeeder::class,         // <-- TAMBAHKAN INI
             TeamMemberSeeder::class,   // <-- TAMBAHKAN INI
             SupervisionSeeder::class,  // <-- TAMBAHKAN INI
