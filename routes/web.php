@@ -36,29 +36,7 @@ Route::get('/admin/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:admin'])
     ->name('admin.dashboard');
 
-// --- ROUTE PROFIL (Semua Role) ---
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     // 1. Mahasiswa
-//     Route::get('/profile/student', [StudentProfileController::class, 'index'])
-//         ->name('profile.student');
 
-//     // 2. Dosen
-//     Route::get('/profile/lecturer', [LecturerProfileController::class, 'index'])
-//         ->name('profile.lecturer');
-
-//     Route::put('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
-//         ->name('profile.lecturer.update');
-
-//     // 3. Admin
-//     Route::get('/profile/admin', [AdminProfileController::class, 'index'])
-//         ->name('profile.admin');
-
-//     Route::post('/profile/admin/update', [AdminProfileController::class, 'update'])
-//         ->name('profile.update');
-
-//     Route::put('/password/update', [AdminProfileController::class, 'updatePassword'])
-//         ->name('password.update');
-// });
 
 Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
 
@@ -67,6 +45,9 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
 
     Route::post('/profile/student/update', [StudentProfileController::class, 'update'])
         ->name('profile.student.update');
+
+    Route::put('/profile/student/accountupdate', [StudentProfileController::class, 'updateAccount'])
+        ->name('profile.student.accountupdate');
 });
 
 Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
@@ -76,6 +57,9 @@ Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
 
     Route::post('/profile/lecturer/update', [LecturerProfileController::class, 'update'])
         ->name('profile.lecturer.update');
+
+    Route::put('/profile/lecturer/accountupdate', [LecturerProfileController::class, 'updateAccount'])
+        ->name('profile.lecturer.accountupdate');
 });
 
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
@@ -103,7 +87,7 @@ Route::get('/profile', function (Request $request) {
 })->middleware(['auth', 'verified'])->name('profile');
 
 // --- FITUR KHUSUS MAHASISWA ---
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
     // Registrasi (PKL/Skripsi/Lomba)
     Route::get('/registration', [RegistrationController::class, 'index'])
         ->name('registration');
@@ -124,7 +108,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // --- FITUR UMUM / DOSEN ---
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
     // Dosen bisa melihat ini, Mahasiswa juga mungkin (tergantung logic controller)
     Route::get('/relations', [RelationManagementController::class, 'index'])
         ->name('relations'); // Ini view untuk user biasa, beda dengan admin.relations
@@ -144,7 +128,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // --- FITUR KHUSUS ADMIN ---
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 
     // 1. User Management (LENGKAP dengan CRUD)
     Route::controller(UserManagementController::class)->group(function () {

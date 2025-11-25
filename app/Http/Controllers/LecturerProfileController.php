@@ -6,7 +6,9 @@ use Inertia\Inertia;
 use App\Models\Skill;
 use App\Models\Supervision;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LecturerProfileController extends Controller
 {
@@ -71,5 +73,44 @@ class LecturerProfileController extends Controller
         $lecturer->skills()->sync($skills);
 
         return redirect()->route('profile.lecturer') -> with('success', 'Profile updated successfully');
+    }
+
+    public function updateAccount(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $rules = [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ];
+
+        $old_username = $user -> username;
+        $new_username = $request -> input('username');
+
+        if ($old_username != $new_username){
+            $rules['username'] = ['required', 'string', 'max:255', 'unique:users,username'];
+        }
+        else {
+            $rules['username'] = 'required';
+        }
+
+        $validated = $request->validate($rules);
+
+
+        if ($old_username !== $new_username) {
+            $user -> username = $validated['username'];
+        }
+
+        if (!empty($validated['password'])) {
+            $user -> password = Hash::make($validated['password']);
+        }
+
+        if ($user->isDirty()) {
+            $user->save();
+            return redirect()->back()->with('success', 'Account updated successfully.');
+        }
+
+        return redirect()->back();
     }
 }

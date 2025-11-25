@@ -1,17 +1,17 @@
+// --- Core & Third Party Libraries ---
 import { useState } from "react";
-import { Head, usePage, useForm, router } from "@inertiajs/react"; // Tambahkan useForm
+import { Head, usePage, useForm, router } from "@inertiajs/react";
+import { toast } from "sonner";
+
+// --- Layouts ---
 import MainLayout from "@/Layouts/MainLayout";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/Components/ui/card";
+
+// --- UI Components (Forms & Inputs) ---
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Switch } from "@/Components/ui/switch";
 import {
     Select,
     SelectContent,
@@ -19,6 +19,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
+
+// --- UI Components (Display & Layout) ---
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/Components/ui/card";
+import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Separator } from "@/Components/ui/separator";
+import { Badge } from "@/Components/ui/badge";
+
+// --- UI Components (Overlays & Interaction) ---
 import {
     Popover,
     PopoverContent,
@@ -32,27 +46,26 @@ import {
     CommandItem,
     CommandList,
 } from "@/Components/ui/command";
-import { Badge } from "@/Components/ui/badge";
-import { Switch } from "@/Components/ui/switch";
-import { Edit2, Save, Check, X } from "lucide-react";
-import { toast } from "sonner";
 
-const expertiseOptions = [
-    "Machine Learning", "Data Science", "Artificial Intelligence", "Web Development",
-    "Mobile Development", "Cybersecurity", "Software Engineering", "Cloud Computing",
-    "Internet of Things", "Blockchain", "Computer Vision", "Natural Language Processing"
-];
+// --- Icons ---
+import {
+    AlertCircle,
+    Check,
+    CheckCircle2,
+    Edit2,
+    Eye,
+    EyeOff,
+    Lock,
+    Save,
+    Shield,
+    User,
+    X,
+} from "lucide-react";
 
-const academicTitleOptions = [
-    "S.Kom", "M.Kom", "M.T", "M.Sc", "Ph.D", "Dr.", "Prof."
-];
+
 
 function removeAcademicTitles(name) {
     if (!name) return "";
-    // Regex penjelasan:
-    // (^(\w+\.\s+)*) -> Menghapus gelar depan (misal: Dr. Ir. )
-    // | -> ATAU
-    // (,\s*([a-zA-Z\.]+))+$ -> Menghapus gelar belakang setelah koma (misal: , S.Kom, M.T)
     return name.replace(/(^(\w+\.\s+)*)|(,\s*([a-zA-Z\.]+))+$/g, "").trim();
 }
 
@@ -65,6 +78,9 @@ const getInitials = (name) => {
 };
 
 export default function LecturerProfilePage({lecturer, supervisedStudents = [], allSkills = []}) {
+
+    const { auth } = usePage().props;
+    const user = auth?.user || {};
 
     const initialData = {
         name: lecturer?.name || "Guest",
@@ -141,6 +157,57 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
     const updateSkillLevel = (id, level) => {
         setData('skills', data.skills.map(s => s.id === id ? {...s, level} : s));
     };
+
+    const {
+        data: accountData,
+        setData: setAccountData,
+        put: updateAccount,
+        processing: accountProcessing,
+        errors: accountErrors,
+        reset: resetAccount
+    } = useForm({
+        username: user?.username || "",
+        current_password: "",
+        password: "",
+        password_confirmation: "",
+    });
+
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+    const handleChangeAccount = (e) => {
+        e.preventDefault();
+        updateAccount(route("profile.lecturer.accountupdate"), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success("Account updated successfully!");
+                resetAccount("current_password", "password", "password_confirmation");
+
+                setAccountData({ username: page.props.auth.user.username });
+            },
+            onError: () => toast.error("Failed to update account."),
+        });
+    };
+
+    // ---------------- PASSWORD STRENGTH ----------------
+    const getPasswordStrength = (password) => {
+        if (!password) return { strength: 0, label: "", color: "" };
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.length >= 12) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+        if (strength <= 2) return { strength, label: "Weak", color: "bg-red-500" };
+        if (strength <= 3) return { strength, label: "Medium", color: "bg-orange-500" };
+        if (strength <= 4) return { strength, label: "Strong", color: "bg-green-500" };
+        return { strength, label: "Very Strong", color: "bg-green-600" };
+    };
+
+    const passwordStrength = getPasswordStrength(accountData.password);
 
     return (
         <MainLayout>
@@ -440,6 +507,130 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = [], 
                         </div>
                     </CardContent>
                 </Card>
+
+                <form onSubmit={handleChangeAccount}>
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-primary" />
+                                <CardTitle>Account</CardTitle>
+                            </div>
+                            <CardDescription>Update username or password</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    value={accountData.username}
+                                    onChange={(e) => setAccountData("username", e.target.value)}
+                                />
+                                {accountErrors.username && <div className="text-red-500 text-xs">{accountErrors.username}</div>}
+                            </div>
+
+                            <Separator />
+
+                            <div className="space-y-2">
+                                <Label htmlFor="current-password">Current Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="current-password"
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={accountData.current_password}
+                                        onChange={(e) => setAccountData("current_password", e.target.value)}
+                                        required
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    >
+                                        {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                {accountErrors.current_password && <div className="text-red-500 text-xs">{accountErrors.current_password}</div>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="new-password">New Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="new-password"
+                                        type={showNewPassword ? "text" : "password"}
+                                        value={accountData.password}
+                                        onChange={(e) => setAccountData("password", e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                    >
+                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                {accountData.password && (
+                                    <div className="mt-2">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                            <span>Strength:</span>
+                                            <span>{passwordStrength.label}</span>
+                                        </div>
+                                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all ${passwordStrength.color}`}
+                                                style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {accountErrors.password && <div className="text-red-500 text-xs">{accountErrors.password}</div>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="confirm-password">Confirm Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="confirm-password"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={accountData.password_confirmation}
+                                        onChange={(e) => setAccountData("password_confirmation", e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                {accountData.password_confirmation &&
+                                    accountData.password === accountData.password_confirmation && (
+                                        <div className="flex items-center gap-2 text-xs text-green-600">
+                                            <CheckCircle2 className="w-3 h-3" /> Passwords match
+                                        </div>
+                                    )}
+                                {accountData.password_confirmation &&
+                                    accountData.password !== accountData.password_confirmation && (
+                                        <div className="flex items-center gap-2 text-xs text-red-600">
+                                            <AlertCircle className="w-3 h-3" /> Passwords do not match
+                                        </div>
+                                    )}
+                                {accountErrors.password_confirmation && <div className="text-red-500 text-xs">{accountErrors.password_confirmation}</div>}
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <Button type="submit" className="gap-2" disabled={accountProcessing}>
+                                    <Lock className="w-4 h-4" /> Update Account
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </form>
             </div>
         </MainLayout>
     );

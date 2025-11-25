@@ -135,6 +135,7 @@ export default function Sidebar({ setMobileMenuOpen }) {
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                             {initial_name
                                 .split(" ")
+                                .slice(0, 2)
                                 .map((w) => w[0])
                                 .join("")
                                 .toUpperCase()}
