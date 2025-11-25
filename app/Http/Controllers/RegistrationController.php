@@ -8,7 +8,7 @@ use App\Models\Supervision;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\Activity;
-use App\Models\Institution; // Pastikan Model ini diimport
+use App\Models\Internship;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +26,7 @@ class RegistrationController extends Controller
         }
 
         // [BARU] Ambil Data Institusi untuk Dropdown Frontend
-        $institutions = Institution::select('id', 'name')->orderBy('name')->get();
+        $institutions = Internship::select('id', 'name')->orderBy('name')->get();
 
         // Ambil data Dosen
         $lecturers = Lecturer::with(['user', 'skills', 'masterLecturer'])
@@ -35,11 +35,11 @@ class RegistrationController extends Controller
                 return [
                     'id' => $lecturer->lecturer_id,
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
-                    'expertise' => $lecturer->skills->pluck('name')->toArray(), 
+                    'expertise' => $lecturer->skills->pluck('name')->toArray(),
                     'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
-                    'maxStudents' => $lecturer->quota ?? 8, 
+                    'maxStudents' => $lecturer->quota ?? 8,
                     'availability' => ($lecturer->supervisions()->count() < ($lecturer->quota ?? 8)) ? 'Available' : 'Full',
-                    'matchScore' => rand(70, 99), 
+                    'matchScore' => rand(70, 99),
                 ];
             });
 
@@ -49,7 +49,7 @@ class RegistrationController extends Controller
             ->get()
             ->map(function ($student) {
                 return [
-                    'id' => $student->student_id, 
+                    'id' => $student->student_id,
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->skills->pluck('name')->toArray(),
@@ -73,7 +73,7 @@ class RegistrationController extends Controller
     {
         $user = Auth::user();
         $student = $user->student;
-        
+
         if (!$student) return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
 
         $request->validate(['activityType' => 'required|in:pkl,skripsi,competition']);
@@ -94,13 +94,13 @@ class RegistrationController extends Controller
         }
     }
 
-    
+
     private function storeThesis($request, $student)
     {
         $request->validate([
             'title' => 'required|string',
             'abstract' => 'required|string',
-            'mainSupervisor' => 'required|exists:lecturers,lecturer_id', 
+            'mainSupervisor' => 'required|exists:lecturers,lecturer_id',
         ]);
 
         // 1. Create Activity dulu
@@ -122,7 +122,7 @@ class RegistrationController extends Controller
         ]);
     }
 
-    
+
     private function storeTeamActivity($request, $student)
     {
         $typeString = $request->activityType === 'pkl' ? 'PKL' : 'Competition';
@@ -145,7 +145,7 @@ class RegistrationController extends Controller
                 ]);
 
                 // Create Institution Baru
-                $newInst = Institution::firstOrCreate(
+                $newInst = Internship::firstOrCreate(
                     ['name' => $request->newInstitutionName],
                     [
                     'sector' => $request->newInstitutionSector,
@@ -154,7 +154,7 @@ class RegistrationController extends Controller
                     'owner_email' => $request->newOwnerEmail,
                     'owner_phone' => $request->newOwnerPhone,
                 ]);
-                
+
                 $institutionId = $newInst->id;
 
             } else {
@@ -178,14 +178,14 @@ class RegistrationController extends Controller
             'start_date' => now(),
             'institution_id' => $institutionId, // Masukkan ID (Baru atau Lama)
         ]);
-        
+
         // 2. Create Team
         $team = Team::create([
             'name' => $activity->title,
             'type' => $typeString,
-            'leader_id' => $student->user_id, 
+            'leader_id' => $student->user_id,
             'supervisor_id' => $request->supervisor,
-            'activity_id' => $activity->activity_id, 
+            'activity_id' => $activity->activity_id,
             'description' => $activity->description,
             'status' => 'pending',
         ]);
@@ -205,7 +205,7 @@ class RegistrationController extends Controller
                     'team_id' => $team->team_id,
                     'student_id' => $memberId,
                     'role_in_team' => 'Member',
-                    'member_status' => 'pending', 
+                    'member_status' => 'pending',
                 ]);
             }
         }
