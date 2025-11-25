@@ -73,14 +73,16 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
                             members.map((member) => (
                                 <TableRow key={member.id}>
                                     <TableCell>
-                                        <Checkbox
-                                            checked={selectedMembers.includes(
-                                                member.id
-                                            )}
-                                            onCheckedChange={() =>
-                                                onToggle(member.id)
-                                            }
-                                        />
+                                        <div className="flex justify-end pr-5">
+                                            <Checkbox
+                                                checked={selectedMembers.includes(
+                                                    member.id
+                                                )}
+                                                onCheckedChange={() =>
+                                                    onToggle(member.id)
+                                                }
+                                            />
+                                        </div>
                                     </TableCell>
                                     <TableCell>{member.name}</TableCell>
                                     <TableCell className="text-muted-foreground">
@@ -177,7 +179,7 @@ export default function RegistrationPage({
             : supervisors;
 
         return (
-            <Card className={error ? "border-red-500" : ""}>
+            <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <BookOpen className="w-5 h-5" /> {title}
@@ -197,7 +199,6 @@ export default function RegistrationPage({
                                     <TableHead>Name</TableHead>
                                     <TableHead>Expertise</TableHead>
                                     <TableHead>Quota</TableHead>
-                                    <TableHead>Availability</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -205,18 +206,17 @@ export default function RegistrationPage({
                                     filteredList.map((sup) => (
                                         <TableRow key={sup.id}>
                                             <TableCell>
-                                                <Checkbox
-                                                    checked={
-                                                        selectedId === sup.id
-                                                    }
-                                                    onCheckedChange={() =>
-                                                        onSelect(sup.id)
-                                                    }
-                                                    disabled={
-                                                        sup.availability !==
-                                                        "Available"
-                                                    }
-                                                />
+                                                <div className="flex justify-end pr-5">
+                                                    <Checkbox
+                                                        checked={
+                                                            selectedId ===
+                                                            sup.id
+                                                        }
+                                                        onCheckedChange={() =>
+                                                            onSelect(sup.id)
+                                                        }
+                                                    />
+                                                </div>
                                             </TableCell>
                                             <TableCell>{sup.name}</TableCell>
                                             <TableCell>
@@ -233,15 +233,6 @@ export default function RegistrationPage({
                                             <TableCell>
                                                 {sup.currentStudents}/
                                                 {sup.maxStudents}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    className={getAvailabilityColor(
-                                                        sup.availability
-                                                    )}
-                                                >
-                                                    {sup.availability}
-                                                </Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -268,12 +259,6 @@ export default function RegistrationPage({
 
     const handleTabChange = (value) => {
         setData("activityType", value);
-    };
-
-    const getAvailabilityColor = (status) => {
-        if (status === "Available") return "bg-green-100 text-green-700";
-        if (status === "Limited") return "bg-yellow-100 text-yellow-700";
-        return "bg-red-100 text-red-700";
     };
 
     const handleTeamMemberToggle = (id) => {
@@ -741,7 +726,7 @@ export default function RegistrationPage({
                         />
 
                         <SupervisorSelectionCard
-                            title="Select Supervisor"
+                            title="Recommended PKL Supervisors"
                             supervisors={recommendedSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
@@ -915,7 +900,7 @@ export default function RegistrationPage({
                         </Card>
 
                         <SupervisorSelectionCard
-                            title="Select Main Supervisor"
+                            title="Recommended Thesis Supervisors"
                             supervisors={recommendedSupervisors}
                             selectedId={data.mainSupervisor}
                             onSelect={(id) => setData("mainSupervisor", id)}
@@ -1050,7 +1035,7 @@ export default function RegistrationPage({
                         />
 
                         <SupervisorSelectionCard
-                            title="Select Supervisor"
+                            title="Recommended Competition Supervisors"
                             supervisors={recommendedSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
