@@ -32,7 +32,6 @@ export default function Navbar({ setMobileMenuOpen }) {
         { href: "/matching", label: "Matching" },
         { href: "/timeline", label: "Timeline" },
         { href: "/relations", label: "Relations" },
-        { href: "/reports", label: "Reports" },
     ];
 
     const lecturerMenu = [
@@ -42,7 +41,6 @@ export default function Navbar({ setMobileMenuOpen }) {
         { href: "/matching", label: "Matching" },
         { href: "/timeline", label: "Timeline" },
         { href: "/relations", label: "Relations" },
-        { href: "/reports", label: "Reports" },
     ];
 
     const adminMenu = [

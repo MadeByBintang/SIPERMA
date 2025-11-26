@@ -5,7 +5,7 @@ import { Users, UserCheck, GitBranch, Clock } from "lucide-react";
 import MainLayout from "@/Layouts/MainLayout";
 
 export default function Dashboard({ auth, stats, activities }) {
-    const userRole = auth?.user?.role_name || "student";
+    const userRole = auth?.user?.role_name || "mahasiswa";
 
     // 1. DEFENSIVE CODING: Cek jika data stats belum ada (biar gak blank)
     if (!stats) {
@@ -63,7 +63,7 @@ export default function Dashboard({ auth, stats, activities }) {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{stat.value}</div>
+                                    <div className="text-2xl    ">{stat.value}</div>
                                 </CardContent>
                             </Card>
                         );

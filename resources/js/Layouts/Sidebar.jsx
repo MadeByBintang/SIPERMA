@@ -51,7 +51,6 @@ export default function Sidebar({ setMobileMenuOpen }) {
         { href: "/matching", label: "Matching", icon: Users },
         { href: "/timeline", label: "Timeline & Progress", icon: TrendingUp },
         { href: "/relations", label: "Relations", icon: GitBranch },
-        { href: "/reports", label: "Reports", icon: FileText },
     ];
 
     const lecturerMenu = [
@@ -61,7 +60,6 @@ export default function Sidebar({ setMobileMenuOpen }) {
         { href: "/matching", label: "Matching", icon: Users },
         { href: "/timeline", label: "Timeline & Progress", icon: TrendingUp },
         { href: "/relations", label: "Relations", icon: GitBranch },
-        { href: "/reports", label: "Reports", icon: FileText },
     ];
 
     const adminMenu = [

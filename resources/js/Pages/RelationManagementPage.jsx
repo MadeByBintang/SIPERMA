@@ -93,34 +93,6 @@ export default function RelationManagementPage({
     // Form State
     const [formData, setFormData] = useState({});
 
-    // --- HANDLERS CRUD ---
-
-    const handleAdd = () => {
-        setFormData({
-            relationType: relationType, // Default sesuai tab aktif
-            student_id: "",
-            lecturer_id: "",
-            activity_type: "Thesis",
-            title: "",
-            status: "active",
-        });
-        setIsAddDialogOpen(true);
-    };
-
-    const handleEdit = (relation) => {
-        setSelectedRelation(relation);
-        setFormData({
-            title: relation.thesisTitle || relation.activityName,
-            status: relation.status,
-        });
-        setIsEditDialogOpen(true);
-    };
-
-    const handleDelete = (relation) => {
-        setSelectedRelation(relation);
-        setIsDeleteDialogOpen(true);
-    };
-
     const handleViewDetails = (relation) => {
         setSelectedRelation(relation);
         setIsDetailDialogOpen(true);
@@ -390,11 +362,6 @@ export default function RelationManagementPage({
                                     }
                                 />
                             </div>
-                            <div>
-                                <Button onClick={handleAdd} className="gap-2">
-                                    <Plus className="w-4 h-4" /> Add Relation
-                                </Button>
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -580,29 +547,6 @@ export default function RelationManagementPage({
                                                                 }
                                                             >
                                                                 <Eye className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() =>
-                                                                    handleEdit(
-                                                                        rel
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="text-red-500"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        rel
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
