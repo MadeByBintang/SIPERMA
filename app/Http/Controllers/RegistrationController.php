@@ -26,7 +26,7 @@ class RegistrationController extends Controller
         }
 
         // [BARU] Ambil Data Institusi untuk Dropdown Frontend
-        $institutions = Internship::select('id', 'name')->orderBy('name')->get();
+        $institutions = Internship::select('internship_id', 'name')->orderBy('name')->get();
 
         // Ambil data Dosen
         $lecturers = Lecturer::with(['user', 'masterLecturer'])

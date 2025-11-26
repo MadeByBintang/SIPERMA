@@ -529,9 +529,9 @@ export default function RegistrationPage({
                                                             (inst) => (
                                                                 <SelectItem
                                                                     key={
-                                                                        inst.id
+                                                                        inst.internship_id
                                                                     }
-                                                                    value={inst.id.toString()}
+                                                                    value={inst.internship_id.toString()}
                                                                 >
                                                                     {inst.name}
                                                                 </SelectItem>
