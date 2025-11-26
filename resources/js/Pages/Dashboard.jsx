@@ -63,7 +63,7 @@ export default function Dashboard({ auth, stats, activities }) {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl    ">{stat.value}</div>
+                                    <div className="text-2xl">{stat.value}</div>
                                 </CardContent>
                             </Card>
                         );

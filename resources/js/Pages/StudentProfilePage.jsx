@@ -351,59 +351,6 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                     </CardContent>
                 </Card>
 
-                {/* Supervisors History Card */}
-                {/*<Card>
-                    <CardHeader>
-                        <CardTitle>Supervision History</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {supervisors.length > 0 ? (
-                                supervisors.map((supervisor) => (
-                                    <div
-                                        key={supervisor.id}
-                                        className="flex items-center justify-between p-4 border border-border rounded-lg"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <Avatar>
-                                                <AvatarFallback className="bg-primary text-primary-foreground">
-                                                    {getInitials(
-                                                        supervisor.name
-                                                    )}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1">
-                                                <h4 className="font-medium">
-                                                    {supervisor.name}
-                                                </h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {supervisor.expertise}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    {supervisor.period}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <Badge
-                                            variant={
-                                                supervisor.status === "Active"
-                                                    ? "default"
-                                                    : "secondary"
-                                            }
-                                        >
-                                            {supervisor.status}
-                                        </Badge>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-                                    <p>No supervision history found.</p>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>*/}
-
                 <form onSubmit={handleChangeAccount}>
                     <Card>
                         <CardHeader>
