@@ -155,24 +155,22 @@ class ApprovalCenterController extends Controller
         $supervision = Supervision::findOrFail($id);
 
         $user = Auth::user();
-        if ($user->role_name === 'lecturer' && $user->lecturer->lecturer_id !== $supervision->lecturer_id) {
+        if ($user->role_name === 'dosen' && $user->lecturer->lecturer_id !== $supervision->lecturer_id) {
             abort(403, 'Unauthorized');
         }
 
-        $status = $request->action === 'approve' ? 'active' : 'rejected';
+        $status = $request->action === 'approve' ? 'approved' : 'rejected';
 
-        // 1. Update Status Supervisi
         $supervision->update([
             'supervision_status' => $status,
+            'notes'             => $request -> notes
         ]);
 
-        // 2. [BARU] Simpan Log Aktivitas (Menggunakan activity_id)
-        if ($supervision->activity_id) {
+        if ($supervision->activity_id && $status == 'approved') {
             ActivityLog::create([
-                'activity_id' => $supervision->activity_id, // <--- KOLOM BARU
-                'user_id' => $user->id,                     // ID Dosen
-                'action_type' => ucfirst($status),          // Approved / Rejected
-                'progress_note' => $request->notes ?? "Supervision request was {$status} by lecturer.",
+                'activity_id' => $supervision->activity_id,
+                'action_type' => ucfirst($status),
+                'progress_note' => "Supervision request was {$status} by lecturer.",
                 'log_date' => now(),
             ]);
         }

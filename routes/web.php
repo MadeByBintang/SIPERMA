@@ -120,6 +120,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/approval', [ApprovalCenterController::class, 'index'])
         ->name('approval');
 
+    Route::put('/approval/update/{id}', [ApprovalCenterController::class, 'update'])
+        ->name('approval.update');
+
     Route::get('/reports/export/pdf', [\App\Http\Controllers\ReportsController::class, 'exportPdf'])
         ->middleware('auth')
         ->name('reports.export.pdf');
