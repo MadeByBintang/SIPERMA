@@ -225,6 +225,12 @@ class RegistrationController extends Controller
             'member_status' => 'active',
         ]);
 
+        if ($request->has('teamMembers') && is_array($request->teamMembers)) {
+            if (count($request->teamMembers) > 3) {
+                return redirect()->back()->with('error', 'Maksimal 4 anggota termasuk ketua.');
+            }
+        }
+
         // 4. Create Members (Invited)
         if ($request->has('teamMembers') && is_array($request->teamMembers)) {
             foreach ($request->teamMembers as $memberId) {

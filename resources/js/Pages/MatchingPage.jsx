@@ -33,15 +33,12 @@ import { Separator } from "@/Components/ui/separator";
 
 const FOCUS_LABELS = {
     "BIG DATA": "Big Data",
-    "MTI": "Manajemen TI",
-    "JARINGAN": "Jaringan",
-    "": "Belum Menentukan Fokus"
+    MTI: "Manajemen TI",
+    JARINGAN: "Jaringan",
+    "": "Belum Menentukan Fokus",
 };
 
-export default function MatchingPage({
-    user,
-    matches = [],
-}) {
+export default function MatchingPage({ user, matches = [] }) {
     const userRole = user.role_name;
 
     const [filterFocus, setFilterFocus] = useState("all");
@@ -50,7 +47,6 @@ export default function MatchingPage({
     const [recommendationType, setRecommendationType] = useState(
         userRole === "dosen" ? "students" : "students"
     );
-
 
     const handleViewDetails = (match) => {
         setSelectedMatch(match);
@@ -78,15 +74,15 @@ export default function MatchingPage({
             <Head title="Matching" />
             <div className="space-y-6">
                 {/* Info Alert */}
-                {/* <Alert>
+                <Alert>
                     <Info className="h-4 w-4" />
                     <AlertTitle>Matching Algorithm</AlertTitle>
                     <AlertDescription>
                         {userRole === "dosen"
-                            ? "Saya Dosen. Our system recommends students whose interests align with your expertise. Match scores above 90% indicate highly compatible pairings for supervision."
-                            : "Saya Mahasiswa. Our system matches students with lecturers based on interest alignment, expertise compatibility, and availability. Match scores above 90% indicate highly compatible pairings."}
+                            ? "Our system recommends students whose interests align with your expertise. Match scores above 90% indicate highly compatible pairings for supervision."
+                            : "Our system matches students with lecturers based on interest alignment, expertise compatibility, and availability. Match scores above 90% indicate highly compatible pairings."}
                     </AlertDescription>
-                </Alert> */}
+                </Alert>
 
                 {/* Matching Results Table */}
                 <Card>
@@ -128,13 +124,23 @@ export default function MatchingPage({
                                         <SelectValue placeholder="Filter by status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Focus</SelectItem>
+                                        <SelectItem value="all">
+                                            All Focus
+                                        </SelectItem>
 
-                                        <SelectItem value="BIG DATA">Big Data</SelectItem>
-                                        <SelectItem value="MTI">Manajemen TI</SelectItem>
-                                        <SelectItem value="JARINGAN">Jaringan</SelectItem>
+                                        <SelectItem value="BIG DATA">
+                                            Big Data
+                                        </SelectItem>
+                                        <SelectItem value="MTI">
+                                            Manajemen TI
+                                        </SelectItem>
+                                        <SelectItem value="JARINGAN">
+                                            Jaringan
+                                        </SelectItem>
 
-                                        <SelectItem value="none">Belum ada Fokus</SelectItem>
+                                        <SelectItem value="none">
+                                            Belum ada Fokus
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -172,26 +178,36 @@ export default function MatchingPage({
                                         value={filterFocus}
                                         onValueChange={setFilterFocus}
                                     >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Focus</SelectItem>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Filter by status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">
+                                                All Focus
+                                            </SelectItem>
 
-                                        <SelectItem value="BIG DATA">Big Data</SelectItem>
-                                        <SelectItem value="MTI">Manajemen TI</SelectItem>
-                                        <SelectItem value="JARINGAN">Jaringan</SelectItem>
+                                            <SelectItem value="BIG DATA">
+                                                Big Data
+                                            </SelectItem>
+                                            <SelectItem value="MTI">
+                                                Manajemen TI
+                                            </SelectItem>
+                                            <SelectItem value="JARINGAN">
+                                                Jaringan
+                                            </SelectItem>
 
-                                        <SelectItem value="none">Belum ada Fokus</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                            <SelectItem value="none">
+                                                Belum ada Fokus
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border overflow-x-auto">
-                            <Table>
+                        <div className="rounded-md border max-h-64 overflow-y-auto">
+                            <Table className="table-auto w-full">
                                 <TableHeader>
                                     <TableRow>
                                         {recommendationType === "students" ? (
@@ -224,20 +240,18 @@ export default function MatchingPage({
                                                         <TableCell>
                                                             <div>
                                                                 <p>
-                                                                    {
-                                                                        match.name
-                                                                    }
+                                                                    {match.name}
                                                                 </p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        match.uid
-                                                                    }
+                                                                    {match.uid}
                                                                 </p>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             {
-                                                                FOCUS_LABELS[match.focus]
+                                                                FOCUS_LABELS[
+                                                                    match.focus
+                                                                ]
                                                             }
                                                         </TableCell>
                                                         <TableCell className="text-right">
@@ -259,20 +273,18 @@ export default function MatchingPage({
                                                         <TableCell>
                                                             <div>
                                                                 <p>
-                                                                    {
-                                                                        match.name
-                                                                    }
+                                                                    {match.name}
                                                                 </p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        match.uid
-                                                                    }
+                                                                    {match.uid}
                                                                 </p>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             {
-                                                                FOCUS_LABELS[match.focus]
+                                                                FOCUS_LABELS[
+                                                                    match.focus
+                                                                ]
                                                             }
                                                         </TableCell>
                                                         <TableCell className="text-right">
@@ -321,13 +333,12 @@ export default function MatchingPage({
 
                         {selectedMatch && (
                             <div className="space-y-6">
-
-
                                 {/* Info Grid */}
                                 <div className="ggrid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
                                     <div className="space-y-4">
                                         <h4 className="flex items-center gap-2 font-medium border-b pb-2">
-                                            {selectedMatch.type === "lecturer" ? (
+                                            {selectedMatch.type ===
+                                            "lecturer" ? (
                                                 <BookOpen className="w-4 h-4" />
                                             ) : (
                                                 <GraduationCap className="w-4 h-4" />
@@ -341,44 +352,38 @@ export default function MatchingPage({
                                                 <p className="text-sm text-muted-foreground">
                                                     Name
                                                 </p>
-                                                <p>
-                                                    {
-                                                        selectedMatch.name
-                                                    }
-                                                </p>
+                                                <p>{selectedMatch.name}</p>
                                             </div>
                                             <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {
-                                                            selectedMatch.type === 'student' ? 'NIM' : 'NIP'
-                                                        }
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            selectedMatch.uid
-                                                        }
-                                                    </p>
-                                                </div>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {selectedMatch.type ===
+                                                    "student"
+                                                        ? "NIM"
+                                                        : "NIP"}
+                                                </p>
+                                                <p>{selectedMatch.uid}</p>
+                                            </div>
                                             <div>
                                                 <p className="text-sm text-muted-foreground">
                                                     Email
                                                 </p>
                                                 <p className="flex items-center gap-1 text-sm">
                                                     <Mail className="w-3 h-3" />
-                                                    {
-                                                        selectedMatch.email
-                                                    }
+                                                    {selectedMatch.email}
                                                 </p>
                                             </div>
                                             <div>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {selectedMatch.type === 'lecturer'
+                                                    {selectedMatch.type ===
+                                                    "lecturer"
                                                         ? "Expertise"
                                                         : "Interests"}
                                                 </p>
                                                 <Badge>
                                                     {
-                                                        FOCUS_LABELS[selectedMatch.focus]
+                                                        FOCUS_LABELS[
+                                                            selectedMatch.focus
+                                                        ]
                                                     }
                                                 </Badge>
                                             </div>

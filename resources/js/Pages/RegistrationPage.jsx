@@ -81,6 +81,12 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
                                             checked={selectedMembers.includes(
                                                 member.id
                                             )}
+                                            disabled={
+                                                selectedMembers.length >= 3 &&
+                                                !selectedMembers.includes(
+                                                    member.id
+                                                )
+                                            }
                                             onCheckedChange={() =>
                                                 onToggle(member.id)
                                             }
@@ -127,11 +133,11 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
 export default function RegistrationPage({
     studentInfo,
     allSupervisors,
-    filteredSupervisors,
+    // filteredSupervisors,
     allMembers,
-    filteredMembers,
+    // filteredMembers,
     institutions = [],
-    userFocus,
+    // userFocus,
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         activityType: "pkl",
@@ -202,7 +208,7 @@ export default function RegistrationPage({
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border max-h-64 overflow-y-auto">
-                        <Table className="table-auto">
+                        <Table className="table-auto w-full">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-16">
@@ -275,17 +281,28 @@ export default function RegistrationPage({
 
     const handleTabChange = (value) => {
         setData("activityType", value);
+
+        if (value === "pkl") {
+            setData("competitionTeam", []);
+        } else if (value === "competition") {
+            setData("teamMembers", []);
+        }
     };
 
     const handleTeamMemberToggle = (id) => {
-        const currentMembers = data.teamMembers;
-        if (currentMembers.includes(id)) {
+        const field =
+            data.activityType === "pkl" ? "teamMembers" : "competitionTeam";
+
+        const current = data[field];
+
+        if (current.includes(id)) {
             setData(
-                "teamMembers",
-                currentMembers.filter((mId) => mId !== id)
+                field,
+                current.filter((mId) => mId !== id)
             );
         } else {
-            setData("teamMembers", [...currentMembers, id]);
+            if (current.length >= 3) return; // maksimal 4 termasuk leader
+            setData(field, [...current, id]);
         }
     };
 
@@ -1042,7 +1059,7 @@ export default function RegistrationPage({
 
                         <TeamSelectionCard
                             members={filteredCompMembers}
-                            selectedMembers={data.teamMembers}
+                            selectedMembers={data.competitionTeam}
                             onToggle={handleTeamMemberToggle}
                         />
 

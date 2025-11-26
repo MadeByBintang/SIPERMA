@@ -14,11 +14,6 @@ class MasterLecturersSeeder extends Seeder
     {
         $lecturers = [
             [
-                'nip' => '197608052003121004',
-                'full_name' => 'JUHRIYANSYAH DALLE',
-                'email' => 'j.dalle@ulm.ac.id'
-            ],
-            [
                 'nip' => '198205082008011010',
                 'full_name' => 'EKA SETYA WIJAYA',
                 'email' => 'ekasw@ulm.ac.id'

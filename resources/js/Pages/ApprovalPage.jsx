@@ -10,12 +10,7 @@ import {
 } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import {
     Select,
     SelectContent,
@@ -77,9 +72,12 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     // --- HELPERS ---
     const getStatusColor = (status) => {
         switch (status) {
-            case "approved": return "bg-green-100 text-green-700 border-green-200";
-            case "rejected": return "bg-red-100 text-red-700 border-red-200";
-            default: return "bg-yellow-100 text-yellow-700 border-yellow-200";
+            case "approved":
+                return "bg-green-100 text-green-700 border-green-200";
+            case "rejected":
+                return "bg-red-100 text-red-700 border-red-200";
+            default:
+                return "bg-yellow-100 text-yellow-700 border-yellow-200";
         }
     };
 
@@ -130,36 +128,49 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const handleSubmitAction = () => {
         if (!selectedRequest) return;
 
-        router.put(route('approval.update', selectedRequest.id), {
-            action: actionType, // 'approve' atau 'reject'
-            notes: responseNote
-        }, {
-            onSuccess: () => {
-                toast.success(`Request ${actionType}d successfully`);
-                setIsActionDialogOpen(false);
-                setIsDialogOpen(false);
-                setSelectedRequest(null);
-                setResponseNote("");
+        router.put(
+            route("approval.update", selectedRequest.id),
+            {
+                action: actionType, // 'approve' atau 'reject'
+                notes: responseNote,
             },
-            onError: () => toast.error("Failed to process request")
-        });
+            {
+                onSuccess: () => {
+                    toast.success(`Request ${actionType}d successfully`);
+                    setIsActionDialogOpen(false);
+                    setIsDialogOpen(false);
+                    setSelectedRequest(null);
+                    setResponseNote("");
+                },
+                onError: () => toast.error("Failed to process request"),
+            }
+        );
     };
 
     // --- FILTERING ---
     const pendingRequests = localRequests.filter((r) => r.status === "pending");
-    const approvedRequests = localRequests.filter((r) => r.status === "approved");
-    const rejectedRequests = localRequests.filter((r) => r.status === "rejected");
+    const approvedRequests = localRequests.filter(
+        (r) => r.status === "approved"
+    );
+    const rejectedRequests = localRequests.filter(
+        (r) => r.status === "rejected"
+    );
 
     const getFilteredRequests = () => {
         switch (activeTab) {
-            case "pending": return { requests: pendingRequests, showActions: true };
-            case "approved": return { requests: approvedRequests, showActions: false };
-            case "rejected": return { requests: rejectedRequests, showActions: false };
-            default: return { requests: localRequests, showActions: false };
+            case "pending":
+                return { requests: pendingRequests, showActions: true };
+            case "approved":
+                return { requests: approvedRequests, showActions: false };
+            case "rejected":
+                return { requests: rejectedRequests, showActions: false };
+            default:
+                return { requests: localRequests, showActions: false };
         }
     };
 
-    const { requests: displayedRequests, showActions: showTabActions } = getFilteredRequests();
+    const { requests: displayedRequests, showActions: showTabActions } =
+        getFilteredRequests();
 
     // --- RENDER TABLE ---
     const renderRequestsTable = (requests, showActions) => {
@@ -182,7 +193,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             {/* <TableHead>Type</TableHead> */}
                             <TableHead>Submitted</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -190,18 +203,28 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <TableRow key={request.id}>
                                 <TableCell>
                                     <div>
-                                        <p className="font-medium">{request.individualStudentName}</p>
-                                        <p className="text-xs text-muted-foreground">{request.individualStudentNim}</p>
+                                        <p className="font-medium">
+                                            {request.individualStudentName}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {request.individualStudentNim}
+                                        </p>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-start gap-2">
                                         <div className="mt-1 text-muted-foreground">
-                                            {getActivityIcon(request.activityType)}
+                                            {getActivityIcon(
+                                                request.activityType
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="line-clamp-1 font-medium">{request.activityName}</p>
-                                            <p className="text-xs text-muted-foreground">{request.activityType}</p>
+                                            <p className="line-clamp-1 font-medium">
+                                                {request.activityName}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {request.activityType}
+                                            </p>
                                         </div>
                                     </div>
                                 </TableCell>
@@ -217,15 +240,29 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge className={`gap-1 capitalize ${getStatusColor(request.status)}`} variant="outline">
-                                        {getStatusIcon(request.status)} {request.status}
+                                    <Badge
+                                        className={`gap-1 capitalize ${getStatusColor(
+                                            request.status
+                                        )}`}
+                                        variant="outline"
+                                    >
+                                        {getStatusIcon(request.status)}{" "}
+                                        {request.status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1 md:gap-2 flex-wrap">
-                                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(request)}>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewDetails(request)
+                                            }
+                                        >
                                             <Eye className="w-3 h-3 md:mr-1" />
-                                            <span className="hidden md:inline">View</span>
+                                            <span className="hidden md:inline">
+                                                View
+                                            </span>
                                         </Button>
                                     </div>
                                 </TableCell>
@@ -254,12 +291,22 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Pending Requests</CardTitle>
+                            <CardTitle className="text-sm">
+                                Pending Requests
+                            </CardTitle>
                             <Clock className="w-4 h-4 text-yellow-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{pendingRequests.length}</div>
-                            <p className="text-xs text-muted-foreground">Awaiting your review</p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {pendingRequests.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Awaiting your review
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -268,8 +315,16 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <CheckCircle2 className="w-4 h-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{approvedRequests.length}</div>
-                            <p className="text-xs text-muted-foreground">Accepted requests</p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {approvedRequests.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Accepted requests
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -278,8 +333,16 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <XCircle className="w-4 h-4 text-red-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{rejectedRequests.length}</div>
-                            <p className="text-xs text-muted-foreground">Declined requests</p>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {rejectedRequests.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Declined requests
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -289,7 +352,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                     <Alert>
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
-                            You have {pendingRequests.length} pending request(s) that require your attention.
+                            You have {pendingRequests.length} pending request(s)
+                            that require your attention.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -298,36 +362,71 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                 <Card>
                     <CardHeader>
                         <CardTitle>Requests List</CardTitle>
-                        <CardDescription>Manage all student requests</CardDescription>
+                        <CardDescription>
+                            Manage all student requests for PKL, Thesis, and
+                            Competition activities
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Tabs value={activeTab} onValueChange={setActiveTab}>
-                             {/* Mobile Dropdown */}
-                             <div className="md:hidden mb-4">
-                                <Select value={activeTab} onValueChange={setActiveTab}>
-                                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                            {/* Mobile Dropdown */}
+                            <div className="md:hidden mb-4">
+                                <Select
+                                    value={activeTab}
+                                    onValueChange={setActiveTab}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All ({approvalRequests.length})</SelectItem>
-                                        <SelectItem value="pending">Pending ({pendingRequests.length})</SelectItem>
-                                        <SelectItem value="approved">Approved ({approvedRequests.length})</SelectItem>
-                                        <SelectItem value="rejected">Rejected ({rejectedRequests.length})</SelectItem>
+                                        <SelectItem value="all">
+                                            All ({approvalRequests.length})
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            Pending ({pendingRequests.length})
+                                        </SelectItem>
+                                        <SelectItem value="approved">
+                                            Approved ({approvedRequests.length})
+                                        </SelectItem>
+                                        <SelectItem value="rejected">
+                                            Rejected ({rejectedRequests.length})
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             {/* Desktop Tabs */}
                             <TabsList className="hidden md:grid w-full grid-cols-4 mb-6">
-                                <TabsTrigger value="all">All ({approvalRequests.length})</TabsTrigger>
-                                <TabsTrigger value="pending" className="gap-2"><Clock className="w-4 h-4"/> Pending ({pendingRequests.length})</TabsTrigger>
-                                <TabsTrigger value="approved" className="gap-2"><CheckCircle2 className="w-4 h-4"/> Approved ({approvedRequests.length})</TabsTrigger>
-                                <TabsTrigger value="rejected" className="gap-2"><XCircle className="w-4 h-4"/> Rejected ({rejectedRequests.length})</TabsTrigger>
+                                <TabsTrigger value="all">
+                                    All ({approvalRequests.length})
+                                </TabsTrigger>
+                                <TabsTrigger value="pending" className="gap-2">
+                                    <Clock className="w-4 h-4" /> Pending (
+                                    {pendingRequests.length})
+                                </TabsTrigger>
+                                <TabsTrigger value="approved" className="gap-2">
+                                    <CheckCircle2 className="w-4 h-4" />{" "}
+                                    Approved ({approvedRequests.length})
+                                </TabsTrigger>
+                                <TabsTrigger value="rejected" className="gap-2">
+                                    <XCircle className="w-4 h-4" /> Rejected (
+                                    {rejectedRequests.length})
+                                </TabsTrigger>
                             </TabsList>
 
                             {/* Content */}
-                            <TabsContent value="all">{renderRequestsTable(approvalRequests, false)}</TabsContent>
-                            <TabsContent value="pending">{renderRequestsTable(pendingRequests, true)}</TabsContent>
-                            <TabsContent value="approved">{renderRequestsTable(approvedRequests, false)}</TabsContent>
-                            <TabsContent value="rejected">{renderRequestsTable(rejectedRequests, false)}</TabsContent>
+                            <TabsContent value="all">
+                                {renderRequestsTable(approvalRequests, false)}
+                            </TabsContent>
+                            <TabsContent value="pending">
+                                {renderRequestsTable(pendingRequests, true)}
+                            </TabsContent>
+                            <TabsContent value="approved">
+                                {renderRequestsTable(approvedRequests, false)}
+                            </TabsContent>
+                            <TabsContent value="rejected">
+                                {renderRequestsTable(rejectedRequests, false)}
+                            </TabsContent>
                         </Tabs>
                     </CardContent>
                 </Card>
@@ -337,7 +436,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Request Details</DialogTitle>
-                            <DialogDescription>Review complete information</DialogDescription>
+                            <DialogDescription>
+                                Review complete information
+                            </DialogDescription>
                         </DialogHeader>
 
                         {selectedRequest && (
@@ -385,25 +486,48 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                         Student Information
                                     </h4>
 
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-
-                                    <div>
-                                        <p className="text-muted-foreground">Student Name</p>
-                                        <p className="font-medium">{selectedRequest.individualStudentName}</p>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-muted-foreground">
+                                                Student Name
+                                            </p>
+                                            <p className="font-medium">
+                                                {
+                                                    selectedRequest.individualStudentName
+                                                }
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-muted-foreground">
+                                                NIM
+                                            </p>
+                                            <p>
+                                                {
+                                                    selectedRequest.individualStudentNim
+                                                }
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-muted-foreground">
+                                                Email
+                                            </p>
+                                            <p>
+                                                {
+                                                    selectedRequest.individualStudentEmail
+                                                }
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <p className="text-muted-foreground">
+                                                Interest Area
+                                            </p>
+                                            <p>
+                                                {
+                                                    selectedRequest.individualStudentFocus
+                                                }
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-muted-foreground">NIM</p>
-                                        <p>{selectedRequest.individualStudentNim}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-muted-foreground">Email</p>
-                                        <p>{selectedRequest.individualStudentEmail}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <p className="text-muted-foreground">Interest Area</p>
-                                        <p>{selectedRequest.individualStudentFocus}</p>
-                                    </div>
-                                </div>
                                 </div>
 
                                 <Separator />
@@ -445,31 +569,37 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             </div>
                                         )}
 
-                                        {selectedRequest.teamMembers  && selectedRequest.teamMembers.length > 0 && (
-                                            <div className="space-y-1 col-span-2">
-                                                <p className="text-sm text-muted-foreground">
-                                                    Team Members
-                                                </p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {selectedRequest.teamMembers.map(
-                                                        (member, idx) => (
-                                                            <Badge
-                                                                key={idx}
-                                                                variant="secondary"
-                                                            >
-                                                                {member}
-                                                            </Badge>
-                                                        )
-                                                    )}
+                                        {selectedRequest.teamMembers &&
+                                            selectedRequest.teamMembers.length >
+                                                0 && (
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Team Members
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {selectedRequest.teamMembers.map(
+                                                            (member, idx) => (
+                                                                <Badge
+                                                                    key={idx}
+                                                                    variant="secondary"
+                                                                >
+                                                                    {member}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <p className="text-sm text-muted-foreground">Description</p>
-                                    <p className="text-sm bg-muted p-3 rounded-md">{selectedRequest.activityDescription}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Description
+                                    </p>
+                                    <p className="text-sm bg-muted p-3 rounded-md">
+                                        {selectedRequest.activityDescription}
+                                    </p>
                                 </div>
 
                                 {selectedRequest.notes && (
@@ -525,40 +655,78 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                 </Dialog>
 
                 {/* Action Dialog (Approve/Reject) */}
-                <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
+                <Dialog
+                    open={isActionDialogOpen}
+                    onOpenChange={setIsActionDialogOpen}
+                >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{actionType === "approve" ? "Approve Request" : "Reject Request"}</DialogTitle>
+                            <DialogTitle>
+                                {actionType === "approve"
+                                    ? "Approve Request"
+                                    : "Reject Request"}
+                            </DialogTitle>
                             <DialogDescription>
-                                {actionType === "approve" ? "Add notes (optional)" : "Please provide a reason for rejection *"}
+                                {actionType === "approve"
+                                    ? "Add notes (optional)"
+                                    : "Please provide a reason for rejection *"}
                             </DialogDescription>
                         </DialogHeader>
 
                         <div className="space-y-4 py-2">
                             <div className="p-3 bg-muted rounded-lg text-sm">
-                                <p className="font-medium">{selectedRequest?.studentName}</p>
-                                <p className="text-muted-foreground">{selectedRequest?.activityName}</p>
+                                <p className="font-medium">
+                                    {selectedRequest?.studentName}
+                                </p>
+                                <p className="text-muted-foreground">
+                                    {selectedRequest?.activityName}
+                                </p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notes</Label>
                                 <Textarea
                                     id="notes"
-                                    placeholder={actionType === "approve" ? "Notes..." : "Reason for rejection..."}
+                                    placeholder={
+                                        actionType === "approve"
+                                            ? "Notes..."
+                                            : "Reason for rejection..."
+                                    }
                                     value={responseNote}
-                                    onChange={(e) => setResponseNote(e.target.value)}
+                                    onChange={(e) =>
+                                        setResponseNote(e.target.value)
+                                    }
                                 />
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsActionDialogOpen(false)}>Cancel</Button>
                             <Button
-                                variant={actionType === "approve" ? "default" : "destructive"}
-                                className={actionType === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
-                                onClick={handleSubmitAction}
-                                disabled={actionType === "reject" && !responseNote.trim()}
+                                variant="outline"
+                                onClick={() => setIsActionDialogOpen(false)}
                             >
-                                Confirm {actionType === "approve" ? "Approval" : "Rejection"}
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={
+                                    actionType === "approve"
+                                        ? "default"
+                                        : "destructive"
+                                }
+                                className={
+                                    actionType === "approve"
+                                        ? "bg-green-600 hover:bg-green-700"
+                                        : ""
+                                }
+                                onClick={handleSubmitAction}
+                                disabled={
+                                    actionType === "reject" &&
+                                    !responseNote.trim()
+                                }
+                            >
+                                Confirm{" "}
+                                {actionType === "approve"
+                                    ? "Approval"
+                                    : "Rejection"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
