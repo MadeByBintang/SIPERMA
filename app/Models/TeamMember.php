@@ -19,7 +19,8 @@ class TeamMember extends Model
     protected $fillable = [
         'team_id',
         'student_id',
-
+        'role_in_team',
+        'member_status',
     ];
 
     public function team()
@@ -35,7 +36,8 @@ class TeamMember extends Model
         return $this->belongsTo(Student::class, 'student_id', 'student_id');
     }
 
-    
-
-
+    public function user()
+    {
+        return $this->hasOneThrough(User::class, Student::class, 'student_id', 'user_id', 'student_id', 'user_id');
+    }
 }

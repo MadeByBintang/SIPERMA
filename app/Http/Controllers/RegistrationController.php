@@ -183,11 +183,11 @@ class RegistrationController extends Controller
                     ]
                 );
 
-                $institutionId = $newInst->id;
+                $institutionId = $newInst->internship_id;
             } else {
                 // Jika memilih instansi lama, validasi ID-nya
                 $request->validate([
-                    'institution_id' => 'required|exists:institutions,id',
+                    'institution_id' => 'required|exists:internships,internship_id',
                 ]);
                 $institutionId = $request->institution_id;
             }
@@ -208,12 +208,12 @@ class RegistrationController extends Controller
 
         // 2. Create Team
         $team = Team::create([
-            'name' => $activity->title,
-            'type' => $typeString,
-            'leader_id' => $student->user_id,
-            'activity_id' => $activity->activity_id,
-            'description' => $activity->description,
-            'status' => 'pending',
+            'team_name'      => $activity->title,
+            'leader_id'      => $student->user_id,
+            'supervisor_id'  => $request->supervisor,
+            'activity_id'    => $activity->activity_id,
+            'description'    => $activity->description,
+            'status'         => 'pending',
         ]);
 
         // 3. Create Member (Leader)

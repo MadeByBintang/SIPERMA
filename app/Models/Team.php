@@ -20,7 +20,7 @@ class Team extends Model
         'team_name',
         'activity_id',
         'leader_id',
-        'type',
+        'supervisor_id',
         'description',
         'status',
         'progress',
@@ -44,7 +44,7 @@ class Team extends Model
 
     public function supervisor()
     {
-        return $this->belongsTo(Lecturer::class, 'lecturer_id');
+        return $this->belongsTo(Lecturer::class, 'supervisor_id', 'lecturer_id');
     }
 
     public function activity()
