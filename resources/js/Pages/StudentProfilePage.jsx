@@ -352,7 +352,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                 </Card>
 
                 {/* Supervisors History Card */}
-                <Card>
+                {/*<Card>
                     <CardHeader>
                         <CardTitle>Supervision History</CardTitle>
                     </CardHeader>
@@ -402,7 +402,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                             )}
                         </div>
                     </CardContent>
-                </Card>
+                </Card>*/}
 
                 <form onSubmit={handleChangeAccount}>
                     <Card>

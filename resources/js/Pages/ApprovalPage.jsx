@@ -130,7 +130,6 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const handleSubmitAction = () => {
         if (!selectedRequest) return;
 
-        // Kirim ke route update di ApprovalCenterController
         router.put(route('approval.update', selectedRequest.id), {
             action: actionType, // 'approve' atau 'reject'
             notes: responseNote

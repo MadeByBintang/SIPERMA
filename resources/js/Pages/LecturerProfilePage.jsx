@@ -311,7 +311,7 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = []})
                 </Card>
 
                 {/* Supervised Students List (Data dari DB) */}
-                <Card>
+                {/*<Card>
                     <CardHeader>
                         <CardTitle>Currently Supervised Students</CardTitle>
                     </CardHeader>
@@ -348,7 +348,7 @@ export default function LecturerProfilePage({lecturer, supervisedStudents = []})
                             )}
                         </div>
                     </CardContent>
-                </Card>
+                </Card>*/}
 
                 <form onSubmit={handleChangeAccount}>
                     <Card>
