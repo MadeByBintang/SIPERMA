@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import MainLayout from "@/Layouts/MainLayout";
 import { Head, useForm } from "@inertiajs/react";
 
+const FOCUS_LABELS = ["BIG DATA", "MTI", "JARINGAN"];
 // Recommended team members based on matching interests
 const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
     <Card>
@@ -58,7 +59,8 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="rounded-md border overflow-x-auto">
+            <div className="rounded-md border">
+                {/* header tetap fixed */}
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -68,70 +70,71 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
                             <TableHead>Interests</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
-                        {members.length > 0 ? (
-                            members.map((member) => (
-                                <TableRow key={member.id}>
-                                    <TableCell>
-                                        <div className="flex justify-end pr-5">
-                                            <Checkbox
-                                                checked={selectedMembers.includes(
-                                                    member.id
+                </Table>
+
+                {/* bagian body saja yang scroll */}
+                <div className="max-h-64 overflow-y-auto">
+                    <Table>
+                        <TableBody>
+                            {members.length > 0 ? (
+                                members.map((member) => (
+                                    <TableRow key={member.id}>
+                                        <TableCell>
+                                            <div className="flex justify-end pr-5">
+                                                <Checkbox
+                                                    checked={selectedMembers.includes(
+                                                        member.id
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        onToggle(member.id)
+                                                    }
+                                                />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{member.name}</TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {member.nim}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-1 flex-wrap">
+                                                {member.interests && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {member.interests}
+                                                    </Badge>
                                                 )}
-                                                onCheckedChange={() =>
-                                                    onToggle(member.id)
-                                                }
-                                            />
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{member.name}</TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {member.nim}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-1 flex-wrap">
-                                            {member.interests && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                >
-                                                    {member.interests}
-                                                </Badge>
-                                            )}
-                                        </div>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="text-center py-4 text-muted-foreground"
+                                    >
+                                        No recommended members found.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={5}
-                                    className="text-center py-4 text-muted-foreground"
-                                >
-                                    No recommended members found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-            {selectedMembers.length > 0 && (
-                <div className="mt-4 p-3 bg-accent rounded-lg">
-                    <p className="text-sm">
-                        <CheckCircle2 className="w-4 h-4 inline mr-1" />
-                        {selectedMembers.length} team member(s) selected
-                    </p>
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
-            )}
+            </div>
         </CardContent>
     </Card>
 );
 
 export default function RegistrationPage({
     studentInfo,
-    recommendedTeamMembers = [],
-    recommendedSupervisors = [],
+    allSupervisors,
+    filteredSupervisors,
+    allMembers,
+    filteredMembers,
     institutions = [],
+    userFocus,
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         activityType: "pkl",
@@ -165,6 +168,18 @@ export default function RegistrationPage({
         competitionSupervisor: null,
     });
 
+    const filteredThesisSup = allSupervisors.filter((s) =>
+        data.researchTopics.includes(s.expertise)
+    );
+
+    const filteredCompSup = allSupervisors.filter(
+        (s) => s.expertise === data.competitionField
+    );
+
+    const filteredCompMembers = allMembers.filter(
+        (m) => m.interests === data.competitionField
+    );
+
     // Recommended supervisors based on matching expertise
     const SupervisorSelectionCard = ({
         title,
@@ -189,7 +204,7 @@ export default function RegistrationPage({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border overflow-x-auto">
+                    <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -201,53 +216,59 @@ export default function RegistrationPage({
                                     <TableHead>Quota</TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {filteredList.length > 0 ? (
-                                    filteredList.map((sup) => (
-                                        <TableRow key={sup.id}>
-                                            <TableCell>
-                                                <div className="flex justify-end pr-5">
-                                                    <Checkbox
-                                                        checked={
-                                                            selectedId ===
-                                                            sup.id
-                                                        }
-                                                        onCheckedChange={() =>
-                                                            onSelect(sup.id)
-                                                        }
-                                                    />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{sup.name}</TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-1 flex-wrap">
-                                                    <Badge
-                                                        // key={i}
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        {sup.expertise}
-                                                    </Badge>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {sup.currentStudents}/
-                                                {sup.maxStudents}
+                        </Table>
+                        <div className="max-h-64 overflow-y-auto">
+                            <Table>
+                                <TableBody>
+                                    {filteredList.length > 0 ? (
+                                        filteredList.map((sup) => (
+                                            <TableRow key={sup.id}>
+                                                <TableCell>
+                                                    <div className="flex justify-end pr-5">
+                                                        <Checkbox
+                                                            checked={
+                                                                selectedId ===
+                                                                sup.id
+                                                            }
+                                                            onCheckedChange={() =>
+                                                                onSelect(sup.id)
+                                                            }
+                                                        />
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sup.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        <Badge
+                                                            // key={i}
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {sup.expertise}
+                                                        </Badge>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sup.currentStudents}/
+                                                    {sup.maxStudents}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={5}
+                                                className="text-center py-4 text-muted-foreground"
+                                            >
+                                                No supervisors found.
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={5}
-                                            className="text-center py-4 text-muted-foreground"
-                                        >
-                                            No supervisors found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
                     {error && (
                         <p className="text-red-500 text-xs mt-2">{error}</p>
@@ -274,34 +295,10 @@ export default function RegistrationPage({
     };
 
     // Available research topics
-    const researchTopics = [
-        "Machine Learning",
-        "Deep Learning",
-        "Natural Language Processing",
-        "Computer Vision",
-        "Data Science",
-        "Big Data Analytics",
-        "Artificial Intelligence",
-        "Web Development",
-        "Mobile Development",
-        "Cybersecurity",
-        "Internet of Things",
-        "Cloud Computing",
-    ];
+    const researchTopics = FOCUS_LABELS;
 
     // Competition fields
-    const competitionFields = [
-        "Machine Learning",
-        "Data Science",
-        "Web Development",
-        "Mobile Development",
-        "UI/UX Design",
-        "Cybersecurity",
-        "IoT & Robotics",
-        "Game Development",
-        "Business Innovation",
-        "Social Impact",
-    ];
+    const competitionFields = FOCUS_LABELS;
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -322,15 +319,18 @@ export default function RegistrationPage({
     };
 
     const toggleResearchTopic = (topic) => {
-        setData("researchTopics", (prev) =>
-            prev.includes(topic)
-                ? prev.filter((t) => t !== topic)
-                : [...prev, topic]
-        );
+        const currentTopics = data.researchTopics || [];
+        if (currentTopics.includes(topic)) {
+            // jika diklik lagi, hapus topik
+            setData("researchTopics", []);
+        } else {
+            // pilih topik baru, langsung ganti array dengan 1 item
+            setData("researchTopics", [topic]);
+        }
     };
 
     const removeResearchTopic = (topic) => {
-        setData("researchTopics", (prev) => prev.filter((t) => t !== topic));
+        setData("researchTopics", []);
     };
 
     return (
@@ -687,14 +687,6 @@ export default function RegistrationPage({
                                                         placeholder="contact@company.com"
                                                     />
                                                 </div>
-                                                {/*<div className="space-y-1">
-                                                            <Label>Phone (Optional)</Label>
-                                                            <Input
-                                                                value={data.newOwnerPhone}
-                                                                onChange={e => setData('newOwnerPhone', e.target.value)}
-                                                                placeholder="0812..."
-                                                            />
-                                                        </div>*/}
                                             </div>
                                         </div>
                                     )}
@@ -720,14 +712,14 @@ export default function RegistrationPage({
                         </Card>
 
                         <TeamSelectionCard
-                            members={recommendedTeamMembers}
+                            members={allMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
                         />
 
                         <SupervisorSelectionCard
                             title="Recommended PKL Supervisors"
-                            supervisors={recommendedSupervisors}
+                            supervisors={allSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
                             error={errors.supervisor}
@@ -839,57 +831,56 @@ export default function RegistrationPage({
                             </CardContent>
                         </Card>
 
-                        {/* Research Topics */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Research Topics</CardTitle>
                                 <CardDescription>
-                                    Select multiple research topics related to
-                                    your thesis
+                                    Select a research topic related to your
+                                    thesis
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>Select Topics</Label>
-                                    <Select onValueChange={toggleResearchTopic}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose research topics..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {researchTopics.map((topic) => (
-                                                <SelectItem
-                                                    key={topic}
-                                                    value={topic}
-                                                >
-                                                    {topic}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {data.researchTopics.length > 0 && (
+                                {data.researchTopics.length === 0 ? (
+                                    // Dropdown muncul jika belum ada topik yang dipilih
                                     <div className="space-y-2">
-                                        <Label>Selected Topics</Label>
+                                        <Label>Select Topic</Label>
+                                        <Select
+                                            onValueChange={toggleResearchTopic}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Choose research topic..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {researchTopics.map((topic) => (
+                                                    <SelectItem
+                                                        key={topic}
+                                                        value={topic}
+                                                    >
+                                                        {topic}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ) : (
+                                    // Tampilkan badge saat sudah memilih topik
+                                    <div className="space-y-2">
+                                        <Label>Selected Topic</Label>
                                         <div className="flex flex-wrap gap-2">
                                             {data.researchTopics.map(
                                                 (topic) => (
                                                     <Badge
                                                         key={topic}
                                                         variant="secondary"
-                                                        className="gap-1"
+                                                        className="gap-1 cursor-pointer"
+                                                        onClick={() =>
+                                                            removeResearchTopic(
+                                                                topic
+                                                            )
+                                                        }
                                                     >
                                                         {topic}
-                                                        <button
-                                                            onClick={() =>
-                                                                removeResearchTopic(
-                                                                    topic
-                                                                )
-                                                            }
-                                                            className="ml-1 hover:bg-muted rounded-full"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
+                                                        <X className="w-3 h-3 ml-1" />
                                                     </Badge>
                                                 )
                                             )}
@@ -901,7 +892,7 @@ export default function RegistrationPage({
 
                         <SupervisorSelectionCard
                             title="Recommended Thesis Supervisors"
-                            supervisors={recommendedSupervisors}
+                            supervisors={filteredThesisSup}
                             selectedId={data.mainSupervisor}
                             onSelect={(id) => setData("mainSupervisor", id)}
                             error={errors.mainSupervisor}
@@ -982,6 +973,7 @@ export default function RegistrationPage({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                {/* Competition Name */}
                                 <div className="space-y-2">
                                     <Label htmlFor="comp-title">
                                         Competition Name/Activity
@@ -998,45 +990,70 @@ export default function RegistrationPage({
                                         }
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="comp-field">
-                                        Competition Field
-                                    </Label>
-                                    <Select
-                                        value={data.competitionField}
-                                        onValueChange={(val) =>
-                                            setData(
+
+                                {/* Competition Field */}
+                                {!data.competitionField ? (
+                                    // Dropdown muncul jika belum ada pilihan
+                                    <div className="space-y-2">
+                                        <Label htmlFor="comp-field">
+                                            Competition Field
+                                        </Label>
+                                        <Select
+                                            value=""
+                                            onValueChange={(val) =>
                                                 setData("competitionField", val)
-                                            )
-                                        }
-                                    >
-                                        <SelectTrigger id="comp-field">
-                                            <SelectValue placeholder="Select competition field..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {competitionFields.map((field) => (
-                                                <SelectItem
-                                                    key={field}
-                                                    value={field}
-                                                >
-                                                    {field}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                            }
+                                        >
+                                            <SelectTrigger id="comp-field">
+                                                <SelectValue placeholder="Select competition field..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {competitionFields.map(
+                                                    (field) => (
+                                                        <SelectItem
+                                                            key={field}
+                                                            value={field}
+                                                        >
+                                                            {field}
+                                                        </SelectItem>
+                                                    )
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ) : (
+                                    // Tampilkan badge saat sudah memilih
+                                    <div className="space-y-2">
+                                        <Label>Competition Field</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            <Badge
+                                                variant="secondary"
+                                                className="gap-1 cursor-pointer"
+                                                onClick={() =>
+                                                    setData(
+                                                        "competitionField",
+                                                        ""
+                                                    )
+                                                }
+                                            >
+                                                {data.competitionField}
+                                                <X className="w-3 h-3 ml-1" />
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
                         <TeamSelectionCard
-                            members={recommendedTeamMembers}
+                            members={filteredCompMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
                         />
 
                         <SupervisorSelectionCard
                             title="Recommended Competition Supervisors"
-                            supervisors={recommendedSupervisors}
+                            supervisors={filteredCompSup}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
                             error={errors.supervisor}

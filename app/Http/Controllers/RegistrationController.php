@@ -25,11 +25,13 @@ class RegistrationController extends Controller
             return redirect()->route('dashboard')->with('error', 'Halaman khusus mahasiswa.');
         }
 
-        // [BARU] Ambil Data Institusi untuk Dropdown Frontend
-        $institutions = Internship::select('internship_id', 'name')->orderBy('name')->get();
+        $userFocus = $currentStudent->focus;
 
-        // Ambil data Dosen
-        $lecturers = Lecturer::with(['user', 'masterLecturer'])
+        $institutions = Internship::select('internship_id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        $allLecturers = Lecturer::with(['user', 'masterLecturer'])
             ->get()
             ->map(function ($lecturer) {
                 return [
@@ -37,14 +39,24 @@ class RegistrationController extends Controller
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
                     'expertise' => $lecturer->focus,
                     'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
-                    'maxStudents' => $lecturer->quota ?? 8,
-                    'availability' => ($lecturer->supervisions()->count() < ($lecturer->quota ?? 8)) ? 'Available' : 'Full',
-                    'matchScore' => rand(70, 99),
+                    'maxStudents' => $lecturer->supervisions_quota ?? 0,
                 ];
             });
 
-        // Data Mahasiswa (Calon Teman Tim)
-        $students = Student::with(['user'])
+        $filteredLecturers = Lecturer::with(['user', 'masterLecturer'])
+            ->where('focus', $userFocus)
+            ->get()
+            ->map(function ($lecturer) {
+                return [
+                    'id' => $lecturer->lecturer_id,
+                    'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
+                    'expertise' => $lecturer->focus,
+                    'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
+                    'maxStudents' => $lecturer->supervisions_quota ?? 0,
+                ];
+            });
+
+        $allStudents = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
             ->get()
             ->map(function ($student) {
@@ -53,7 +65,19 @@ class RegistrationController extends Controller
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->focus,
-                    'matchScore' => rand(70, 99),
+                ];
+            });
+
+        $filteredStudents = Student::with(['user'])
+            ->where('student_id', '!=', $currentStudent->student_id)
+            ->where('focus', $userFocus)
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'id' => $student->student_id,
+                    'name' => $student->name ?? $student->user->name,
+                    'nim' => $student->nim,
+                    'interests' => $student->focus,
                 ];
             });
 
@@ -63,9 +87,12 @@ class RegistrationController extends Controller
                 'nim' => $currentStudent->nim,
                 'interests' => $currentStudent->focus,
             ],
-            'recommendedTeamMembers' => $students,
-            'recommendedSupervisors' => $lecturers,
-            'institutions' => $institutions, // Kirim ke Frontend
+            'allSupervisors' => $allLecturers,
+            'filteredSupervisors' => $filteredLecturers,
+            'allMembers' => $allStudents,
+            'filteredMembers' => $filteredStudents,
+            'institutions' => $institutions,
+            'userFocus' => $userFocus,
         ]);
     }
 
@@ -148,15 +175,15 @@ class RegistrationController extends Controller
                 $newInst = Internship::firstOrCreate(
                     ['name' => $request->newInstitutionName],
                     [
-                    'sector' => $request->newInstitutionSector,
-                    'address' => $request->newInstitutionAddress,
-                    'owner_name' => $request->newOwnerName,
-                    'owner_email' => $request->newOwnerEmail,
-                    'owner_phone' => $request->newOwnerPhone,
-                ]);
+                        'sector' => $request->newInstitutionSector,
+                        'address' => $request->newInstitutionAddress,
+                        'owner_name' => $request->newOwnerName,
+                        'owner_email' => $request->newOwnerEmail,
+                        'owner_phone' => $request->newOwnerPhone,
+                    ]
+                );
 
                 $institutionId = $newInst->id;
-
             } else {
                 // Jika memilih instansi lama, validasi ID-nya
                 $request->validate([
