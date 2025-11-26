@@ -125,7 +125,6 @@ class AdminRelationsController extends Controller
                     'name' => $request->title,
                     'type' => $request->activity_type,
                     'leader_id' => \App\Models\Student::find($request->student_id)->user_id, 
-                    'supervisor_id' => $request->lecturer_id,
                     'activity_id' => $activity->activity_id,
                     'status' => 'active',
                     'description' => 'Created by Admin',

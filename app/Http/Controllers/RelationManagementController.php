@@ -18,26 +18,25 @@ class RelationManagementController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
+
         $lecturerId = $user->lecturer->lecturer_id ?? null;
         $studentId = $user->student->student_id ?? null;
 
         // --- 1. DATA TIM (PKL & LOMBA) ---
         $studentStudentRelations = collect();
-        
+
         // Query dasar untuk Team
         $teamQuery = Team::with(['members.student.user', 'supervisor.user', 'leader.student.user']);
 
         // Filter berdasarkan Role
         if ($studentId) {
-            $teamQuery->whereHas('members', function($q) use ($studentId) {
+            $teamQuery->whereHas('members', function ($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             });
         } elseif ($lecturerId) {
-            $teamQuery->where('supervisor_id', $lecturerId);
         }
 
-        $studentStudentRelations = $teamQuery->orderBy('team_id', 'desc') 
+        $studentStudentRelations = $teamQuery->orderBy('team_id', 'desc')
             ->get()
             ->map(function ($team) {
                 $members = $team->members->map(function ($member) {
@@ -59,7 +58,7 @@ class RelationManagementController extends Controller
                 return [
                     'id' => 'team_' . $team->team_id, // Prefix ID
                     'real_id' => $team->team_id,
-                    'activityType' => ucfirst($team->type ?? 'Competition'), 
+                    'activityType' => ucfirst($team->type ?? 'Competition'),
                     'activityName' => $team->team_name ?? $team->name,
                     'teamMembers' => $members->toArray(),
                     'supervisorName' => $team->supervisor->user->name ?? $team->supervisor->name ?? 'Belum Ada Pembimbing',
@@ -69,9 +68,8 @@ class RelationManagementController extends Controller
                     'status' => $this->mapStatus($team->status),
                     'location' => $team->location ?? 'Kampus',
                     'description' => $team->description ?? '-',
-                    
+
                     // Data ID untuk Edit (Raw)
-                    'supervisor_id' => $team->supervisor_id,
                     'leader_id' => $team->leader_id,
                 ];
             });
@@ -93,7 +91,7 @@ class RelationManagementController extends Controller
                 return [
                     'id' => 'sup_' . $item->supervision_id,
                     'real_id' => $item->supervision_id,
-                    'activityType' => ucfirst($item->activity->activity_type ?? 'Thesis'), 
+                    'activityType' => ucfirst($item->activity->activity_type ?? 'Thesis'),
                     'thesisTitle' => $item->activity->title ?? $item->notes ?? 'Untitled',
                     'studentName' => $item->student->user->name ?? $item->student->name ?? '-',
                     'studentNIM' => $item->student->nim ?? '-',
@@ -102,7 +100,7 @@ class RelationManagementController extends Controller
                     'startDate' => $item->assigned_date ? Carbon::parse($item->assigned_date)->format('Y-m-d') : null,
                     'status' => $this->mapStatus($item->supervision_status),
                     'description' => $item->notes ?? '-',
-                    
+
                     // Data ID untuk Edit
                     'student_id' => $item->student_id,
                     'lecturer_id' => $item->lecturer_id,
@@ -111,13 +109,13 @@ class RelationManagementController extends Controller
 
         // [PENTING] Ambil List untuk Dropdown Create
         $studentsList = \App\Models\Student::with('user')->get()->map(fn($s) => [
-            'id' => $s->student_id, 
-            'name' => $s->user->name ?? $s->name, 
+            'id' => $s->student_id,
+            'name' => $s->user->name ?? $s->name,
             'nim' => $s->nim
         ]);
-        
+
         $lecturersList = \App\Models\Lecturer::with('user')->get()->map(fn($l) => [
-            'id' => $l->lecturer_id, 
+            'id' => $l->lecturer_id,
             'name' => $l->user->name ?? $l->name
         ]);
 
@@ -166,7 +164,6 @@ class RelationManagementController extends Controller
                     'name' => $request->title,
                     'type' => $request->activity_type,
                     'leader_id' => \App\Models\Student::find($request->student_id)->user_id,
-                    'supervisor_id' => $request->lecturer_id, // Boleh null kalau mandiri
                     'activity_id' => $activity->activity_id,
                     'status' => 'active',
                 ]);
@@ -197,11 +194,10 @@ class RelationManagementController extends Controller
                 $realId = str_replace('sup_', '', $id);
                 $supervision = Supervision::findOrFail($realId);
                 $supervision->update(['supervision_status' => $request->status]);
-                
+
                 if ($request->title && $supervision->activity) {
                     $supervision->activity->update(['title' => $request->title]);
                 }
-
             } elseif (str_starts_with($id, 'team_')) {
                 $realId = str_replace('team_', '', $id);
                 $team = Team::findOrFail($realId);
@@ -226,7 +222,6 @@ class RelationManagementController extends Controller
                 $supervision = Supervision::findOrFail($realId);
                 if ($supervision->activity) $supervision->activity->delete();
                 $supervision->delete();
-
             } elseif (str_starts_with($id, 'team_')) {
                 $realId = str_replace('team_', '', $id);
                 $team = Team::findOrFail($realId);
@@ -239,7 +234,8 @@ class RelationManagementController extends Controller
         return redirect()->back()->with('success', 'Relation deleted successfully');
     }
 
-    private function mapStatus($status) {
+    private function mapStatus($status)
+    {
         $s = strtolower($status ?? '');
         if (in_array($s, ['active', 'approved', 'ongoing'])) return 'active';
         if (in_array($s, ['pending', 'proposal'])) return 'pending';
@@ -247,7 +243,8 @@ class RelationManagementController extends Controller
         return 'rejected';
     }
 
-    private function getTypeId($typeString) {
+    private function getTypeId($typeString)
+    {
         $s = strtolower($typeString);
         if (str_contains($s, 'thesis')) return 1;
         if (str_contains($s, 'pkl')) return 2;

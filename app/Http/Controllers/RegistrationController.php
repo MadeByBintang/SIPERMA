@@ -211,7 +211,6 @@ class RegistrationController extends Controller
             'name' => $activity->title,
             'type' => $typeString,
             'leader_id' => $student->user_id,
-            'supervisor_id' => $request->supervisor,
             'activity_id' => $activity->activity_id,
             'description' => $activity->description,
             'status' => 'pending',
