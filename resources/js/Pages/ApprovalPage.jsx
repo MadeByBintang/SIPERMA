@@ -61,7 +61,7 @@ import { toast } from "sonner";
 // 1. TERIMA DATA DARI CONTROLLER
 export default function ApprovalPage({ approvalRequests = [] }) {
     const [localRequests, setLocalRequests] = useState(approvalRequests);
-    
+
     // Sinkronisasi state jika props berubah
     useEffect(() => {
         setLocalRequests(approvalRequests);
@@ -83,11 +83,26 @@ export default function ApprovalPage({ approvalRequests = [] }) {
         }
     };
 
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "approved":
+                return <CheckCircle2 className="w-4 h-4" />;
+            case "rejected":
+                return <XCircle className="w-4 h-4" />;
+            case "pending":
+                return <Clock className="w-4 h-4" />;
+        }
+    };
+
     const getActivityIcon = (type) => {
-        const t = type ? type.toLowerCase() : '';
-        if (t.includes("pkl")) return <BookOpen className="w-4 h-4" />;
-        if (t.includes("thesis")) return <FileText className="w-4 h-4" />;
-        return <Award className="w-4 h-4" />;
+        switch (type) {
+            case "PKL":
+                return <BookOpen className="w-4 h-4" />;
+            case "Tugas Akhir":
+                return <FileText className="w-4 h-4" />;
+            case "Lomba":
+                return <Award className="w-4 h-4" />;
+        }
     };
 
     // --- HANDLERS ---
@@ -165,7 +180,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                         <TableRow>
                             <TableHead>Student</TableHead>
                             <TableHead>Activity</TableHead>
-                            <TableHead>Type</TableHead>
+                            {/* <TableHead>Type</TableHead> */}
                             <TableHead>Submitted</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -176,8 +191,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <TableRow key={request.id}>
                                 <TableCell>
                                     <div>
-                                        <p className="font-medium">{request.studentName}</p>
-                                        <p className="text-xs text-muted-foreground">{request.studentNIM}</p>
+                                        <p className="font-medium">{request.individualStudentName}</p>
+                                        <p className="text-xs text-muted-foreground">{request.individualStudentNim}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell>
@@ -191,11 +206,11 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                     <Badge variant="outline" className="capitalize">
                                         {request.requestType}
                                     </Badge>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                         <Calendar className="w-3 h-3" />
@@ -204,7 +219,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                 </TableCell>
                                 <TableCell>
                                     <Badge className={`gap-1 capitalize ${getStatusColor(request.status)}`} variant="outline">
-                                        {request.status}
+                                        {getStatusIcon(request.status)} {request.status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -213,29 +228,6 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             <Eye className="w-3 h-3 md:mr-1" />
                                             <span className="hidden md:inline">View</span>
                                         </Button>
-                                        
-                                        {/* Tombol Aksi Hanya Muncul Jika Status Pending */}
-                                        {request.status === 'pending' && (
-                                            <>
-                                                <Button 
-                                                    variant="default" 
-                                                    size="sm" 
-                                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                                    onClick={() => handleApproveClick(request)}
-                                                >
-                                                    <CheckCircle2 className="w-3 h-3 md:mr-1" />
-                                                    <span className="hidden md:inline">Approve</span>
-                                                </Button>
-                                                <Button 
-                                                    variant="destructive" 
-                                                    size="sm"
-                                                    onClick={() => handleRejectClick(request)}
-                                                >
-                                                    <XCircle className="w-3 h-3 md:mr-1" />
-                                                    <span className="hidden md:inline">Reject</span>
-                                                </Button>
-                                            </>
-                                        )}
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -353,61 +345,180 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between p-4 bg-accent rounded-lg">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Status</p>
-                                        <Badge className={`gap-1 mt-1 capitalize ${getStatusColor(selectedRequest.status)}`}>
-                                            {selectedRequest.status}
+                                        <p className="text-sm text-muted-foreground">
+                                            Request Status
+                                        </p>
+                                        <Badge
+                                            className={`gap-1 mt-1 ${getStatusColor(
+                                                selectedRequest.status
+                                            )}`}
+                                        >
+                                            {getStatusIcon(
+                                                selectedRequest.status
+                                            )}
+                                            {selectedRequest.status
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                selectedRequest.status.slice(1)}
                                         </Badge>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm text-muted-foreground">Submitted Date</p>
-                                        <p className="text-sm font-medium">{selectedRequest.submittedDate}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Submitted Date
+                                        </p>
+                                        <p className="text-sm">
+                                            {new Date(
+                                                selectedRequest.submittedDate
+                                            ).toLocaleDateString("en-US", {
+                                                month: "long",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
+                                        </p>
                                     </div>
                                 </div>
 
                                 <Separator />
 
+                                <div className="space-y-3">
+                                    <h4 className="flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        Student Information
+                                    </h4>
+
                                 <div className="grid grid-cols-2 gap-4 text-sm">
+
                                     <div>
                                         <p className="text-muted-foreground">Student Name</p>
-                                        <p className="font-medium">{selectedRequest.studentName}</p>
+                                        <p className="font-medium">{selectedRequest.individualStudentName}</p>
                                     </div>
                                     <div>
                                         <p className="text-muted-foreground">NIM</p>
-                                        <p>{selectedRequest.studentNIM}</p>
+                                        <p>{selectedRequest.individualStudentNim}</p>
                                     </div>
                                     <div>
                                         <p className="text-muted-foreground">Email</p>
-                                        <p>{selectedRequest.studentEmail}</p>
+                                        <p>{selectedRequest.individualStudentEmail}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-muted-foreground">GPA</p>
-                                        <Badge variant="secondary">{selectedRequest.studentGPA}</Badge>
-                                    </div>
-                                     <div className="col-span-2">
+                                    <div className="col-span-2">
                                         <p className="text-muted-foreground">Interest Area</p>
-                                        <p>{selectedRequest.studentInterest}</p>
+                                        <p>{selectedRequest.individualStudentFocus}</p>
                                     </div>
+                                </div>
                                 </div>
 
                                 <Separator />
 
-                                <div className="space-y-2">
-                                    <p className="text-sm text-muted-foreground">Activity</p>
-                                    <p className="font-medium">{selectedRequest.activityName}</p>
-                                    <Badge variant="outline">{selectedRequest.activityType}</Badge>
+                                <div className="space-y-3">
+                                    <h4 className="flex items-center gap-2">
+                                        {getActivityIcon(
+                                            selectedRequest.activityType
+                                        )}
+                                        Activity Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-muted-foreground">
+                                                Activity Type
+                                            </p>
+                                            <Badge variant="outline">
+                                                {selectedRequest.activityType}
+                                            </Badge>
+                                        </div>
+                                        <div className="space-y-1 col-span-2">
+                                            <p className="text-sm text-muted-foreground">
+                                                Activity Name
+                                            </p>
+                                            <p>
+                                                {selectedRequest.activityName}
+                                            </p>
+                                        </div>
+                                        {selectedRequest.companyName && (
+                                            <div className="space-y-1 col-span-2">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Company/Organization
+                                                </p>
+                                                <p>
+                                                    {
+                                                        selectedRequest.companyName
+                                                    }
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {selectedRequest.teamMembers  && selectedRequest.teamMembers.length > 0 && (
+                                            <div className="space-y-1 col-span-2">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Team Members
+                                                </p>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {selectedRequest.teamMembers.map(
+                                                        (member, idx) => (
+                                                            <Badge
+                                                                key={idx}
+                                                                variant="secondary"
+                                                            >
+                                                                {member}
+                                                            </Badge>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <p className="text-sm text-muted-foreground">Description</p>
-                                    <p className="text-sm bg-muted p-3 rounded-md">{selectedRequest.description}</p>
+                                    <p className="text-sm bg-muted p-3 rounded-md">{selectedRequest.activityDescription}</p>
                                 </div>
 
+                                {selectedRequest.notes && (
+                                    <>
+                                        <Separator />
+                                        <div className="space-y-3">
+                                            <h4>Review Notes</h4>
+                                            <div className="p-3 bg-muted rounded-md">
+                                                <p className="text-sm">
+                                                    {selectedRequest.notes}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
                                 {/* Tombol Aksi di dalam Detail */}
-                                {selectedRequest.status === 'pending' && (
-                                    <div className="flex justify-end gap-2 pt-4">
-                                        <Button variant="destructive" onClick={() => { setIsDialogOpen(false); handleRejectClick(selectedRequest); }}>Reject</Button>
-                                        <Button className="bg-green-600 hover:bg-green-700" onClick={() => { setIsDialogOpen(false); handleApproveClick(selectedRequest); }}>Approve</Button>
-                                    </div>
+                                {selectedRequest.status === "pending" && (
+                                    <>
+                                        <Separator />
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <Button
+                                                className="flex-1 gap-2"
+                                                onClick={() => {
+                                                    setIsDialogOpen(false);
+                                                    handleApproveClick(
+                                                        selectedRequest
+                                                    );
+                                                }}
+                                            >
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Approve Request
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                className="flex-1 gap-2"
+                                                onClick={() => {
+                                                    setIsDialogOpen(false);
+                                                    handleRejectClick(
+                                                        selectedRequest
+                                                    );
+                                                }}
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                Reject Request
+                                            </Button>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -423,7 +534,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                 {actionType === "approve" ? "Add notes (optional)" : "Please provide a reason for rejection *"}
                             </DialogDescription>
                         </DialogHeader>
-                        
+
                         <div className="space-y-4 py-2">
                             <div className="p-3 bg-muted rounded-lg text-sm">
                                 <p className="font-medium">{selectedRequest?.studentName}</p>
@@ -431,8 +542,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notes</Label>
-                                <Textarea 
-                                    id="notes" 
+                                <Textarea
+                                    id="notes"
                                     placeholder={actionType === "approve" ? "Notes..." : "Reason for rejection..."}
                                     value={responseNote}
                                     onChange={(e) => setResponseNote(e.target.value)}
@@ -442,7 +553,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
 
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsActionDialogOpen(false)}>Cancel</Button>
-                            <Button 
+                            <Button
                                 variant={actionType === "approve" ? "default" : "destructive"}
                                 className={actionType === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
                                 onClick={handleSubmitAction}

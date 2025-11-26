@@ -11,42 +11,138 @@ use Carbon\Carbon;
 
 class ApprovalCenterController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     /** @var \App\Models\User $user */
+    //     $user = Auth::user();
+    //     $approvalRequests = collect();
+
+    //     if ($user->role_name === 'lecturer' && $user->lecturer) {
+    //         $approvalRequests = Supervision::with(['student.user', 'activity'])
+    //             ->where('lecturer_id', $user->lecturer->lecturer_id)
+    //             ->orderBy('supervision_id', 'desc')
+    //             ->get()
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'id' => $item->supervision_id,
+    //                     'studentName' => $item->student->user->name ?? $item->student->name ?? 'Unknown',
+    //                     'studentNIM' => $item->student->nim ?? '-',
+    //                     'studentEmail' => $item->student->user->email ?? '-',
+    //                     'studentInterest' => $item->student->interest_field ?? 'General',
+    //                     'activityType' => ucfirst($item->activity->activity_type ?? 'Activity'),
+    //                     'activityName' => $item->activity->title ?? 'Untitled Project',
+    //                     'companyName' => null,
+    //                     'requestType' => 'supervision',
+    //                     'submittedDate' => $item->assigned_date ? Carbon::parse($item->assigned_date)->format('Y-m-d') : now()->format('Y-m-d'),
+    //                     'status' => strtolower($item->supervision_status ?? 'pending'),
+    //                     'description' => $item->notes ?? 'No description provided.',
+    //                     'notes' => null,
+    //                     'proposalDocument' => null,
+    //                 ];
+    //             });
+    //     }
+
+    //     return Inertia::render('ApprovalPage', [
+    //         'approvalRequests' => $approvalRequests
+    //     ]);
+    // }
+
     public function index(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $approvalRequests = collect();
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        if ($user->role_name === 'lecturer' && $user->lecturer) {
-            $approvalRequests = Supervision::with(['student.user', 'activity'])
-                ->where('lecturer_id', $user->lecturer->lecturer_id)
-                ->orderBy('supervision_id', 'desc')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'id' => $item->supervision_id,
-                        'studentName' => $item->student->user->name ?? $item->student->name ?? 'Unknown',
-                        'studentNIM' => $item->student->nim ?? '-',
-                        'studentEmail' => $item->student->user->email ?? '-',
-                        // GPA SUDAH DIHAPUS
-                        'studentInterest' => $item->student->interest_field ?? 'General',
-                        'activityType' => ucfirst($item->activity->activity_type ?? 'Activity'),
-                        'activityName' => $item->activity->title ?? 'Untitled Project',
-                        'companyName' => null,
-                        'requestType' => 'supervision',
-                        'submittedDate' => $item->assigned_date ? Carbon::parse($item->assigned_date)->format('Y-m-d') : now()->format('Y-m-d'),
-                        'status' => strtolower($item->supervision_status ?? 'pending'),
-                        'description' => $item->notes ?? 'No description provided.',
-                        'notes' => null,
-                        'proposalDocument' => null,
-                    ];
-                });
-        }
-
+    // Jika bukan dosen → kosongkan saja
+    if ($user->role_name !== 'dosen' || !$user->lecturer) {
         return Inertia::render('ApprovalPage', [
-            'approvalRequests' => $approvalRequests
+            'approvalRequests' => collect()
         ]);
     }
+
+    $lecturerId = $user->lecturer->lecturer_id;
+
+    // Ambil semua supervision + relasi yang dibutuhkan
+    $supervisions = Supervision::with([
+            'student.user',              // mahasiswa pengaju individu (kalau ada)
+            'lecturer.user',             // dosen pembimbing
+            'activity.internship.name', // untuk ambil tempat magang PKL
+            'team.members.user',         // anggota tim + data user
+        ])
+        ->where('lecturer_id', $lecturerId)
+        ->orderBy('supervision_id', 'desc')
+        ->get()
+        ->map(function ($item) {
+
+            /* ===== TEAM HANDLING ===== */
+            $teamName = null;
+            $teamMembers = [];
+
+            if ($item->team) {
+                // Nama tim
+                $teamName = $item->team->team_name ?? '-';
+
+                // Urutkan leader berdasarkan pivot id
+                $sortedMembers = $item->team->members
+                    ->sortBy('pivot.id')
+                    ->values();
+
+                // Konversi ke nama student
+                $teamMembers = $sortedMembers->map(function ($m) {
+                    return [
+                        'name'  => $m->user->name ?? $m->full_name ?? 'Unknown',
+                        'nim'   => $m->user->nim,
+                        'email' => $m->user->email ?? '-',
+                    ];
+                });
+            }
+
+            /* ===== INTERNSHIP COMPANY ===== */
+            $companyName = null;
+            if ($item->activity->activity_type === 'pkl') {
+                $companyName = $item->activity->internship->company->company_name
+                    ?? 'Unknown Company';
+            }
+
+            return [
+                /* ===== SUPERVISION ===== */
+                'id' => $item->supervision_id,
+                'status' => ($item->supervision_status ?? 'Pending'),
+                'submittedDate' => $item->assigned_date
+                    ? Carbon::parse($item->assigned_date)->format('Y-m-d')
+                    : now()->format('Y-m-d'),
+                'notes' => $item->notes ?? null,
+
+                /* ===== LECTURER ===== */
+                'lecturerName' => $item->lecturer->name ?? 'Unknown',
+                'lecturerEmail' => $item->lecturer->email ?? '-',
+
+                /* ===== ACTIVITY ===== */
+                'activityType' => $item->activity->activityType->type_name ?? '-',
+                'activityName' => $item->activity->title ?? 'Untitled Project',
+                'activityDescription' => $item->activity->description ?? '-',
+                'companyName' => $companyName,
+
+                 /* ===== STUDENT / TEAM ===== */
+                'isTeam' => $item->team_id !== null,
+                'teamName' => $teamName,
+                'teamMembers' => $teamMembers,
+
+                /* individu */
+                'individualStudentName'  => $item->student->name  ?? null,
+                'individualStudentEmail' => $item->student->email ?? null,
+                'individualStudentNim'   => $item->student->nim ?? null,
+                'individualStudentFocus' => $item->student->focus ?? null,
+
+                /* request type untuk frontend */
+                'requestType' => 'supervision',
+            ];
+        });
+
+    return Inertia::render('ApprovalPage', [
+        'approvalRequests' => $supervisions
+    ]);
+}
+
 
     // Handle Approve/Reject
     public function update(Request $request, $id)
