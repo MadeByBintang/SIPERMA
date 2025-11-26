@@ -31,7 +31,7 @@ class ApprovalCenterController extends Controller
             'student.user',              // mahasiswa pengaju individu (kalau ada)
             'lecturer.user',             // dosen pembimbing
             'activity.internship.name', // untuk ambil tempat magang PKL
-            'team.members.user',         // anggota tim + data user
+            'team.members.student.masterStudent',         // anggota tim + data user
         ])
         ->where('lecturer_id', $lecturerId)
         ->orderBy('supervision_id', 'desc')
@@ -54,9 +54,9 @@ class ApprovalCenterController extends Controller
                 // Konversi ke nama student
                 $teamMembers = $sortedMembers->map(function ($m) {
                     return [
-                        'name'  => $m->user->name ?? $m->full_name ?? 'Unknown',
-                        'nim'   => $m->user->nim,
-                        'email' => $m->user->email ?? '-',
+                        'name'  => $m->student->name ?? $m->full_name ?? 'Unknown',
+                        'nim'   => $m->student->nim,
+                        'email' => $m->student->email ?? '-',
                     ];
                 });
             }
@@ -134,7 +134,7 @@ class ApprovalCenterController extends Controller
         if ($supervision->activity_id && $status == 'approved') {
             ActivityLog::create([
                 'activity_id' => $supervision->activity_id,
-                'action_type' => ucfirst($status),
+                // 'action_type' => ucfirst($status),
                 'progress_note' => "Supervision request was {$status} by lecturer.",
                 'log_date' => now(),
             ]);

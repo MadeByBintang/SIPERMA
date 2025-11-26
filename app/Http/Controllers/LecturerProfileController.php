@@ -14,39 +14,26 @@ class LecturerProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $lecturer = $user -> lecturer() -> with(['supervisions.student.user']) -> first();
+        $lecturer = $user->lecturer()
+        ->with([
+            'supervisions' => function ($q) {
+                $q->where('supervision_status', 'approved')
+                  ->with(['student.user']);
+            }
+        ])
+        ->first();
 
         $lecturerData = $lecturer ? [
             'name'              => $lecturer -> name,
             'nip'               => $lecturer -> nip,
             'email'             => $lecturer -> email,
             'focus'             => $lecturer->focus,
+            'current_supervision'   => $lecturer -> supervisions->count(),
             'supervision_quota' => $lecturer -> supervision_quota,
         ] : null;
 
-        $supervisedStudents = [];
-
-        if ($lecturer) {
-            $supervisedStudents = Supervision::with(['student', 'activity'])
-                ->where('lecturer_id', $user->id) // Sesuaikan logika relasi ID Anda (apakah pakai user_id atau lecturer_id tabel terpisah)
-                ->where('supervision_status', 'active')
-                ->get()
-                ->map(function ($s) {
-                    return [
-                        'id' => $s->supervision_id,
-                        'name' => $s->student->name ?? 'Mahasiswa',
-                        'nim' => $s->student->username ?? '-', // Asumsi NIM ada di username
-                        'title' => $s->activity->title ?? '-', // Judul project sebagai interest
-                        'activityType' => ucfirst($s->activity->activity_type ?? 'Thesis'),
-                        'startDate' => $s->assigned_date ? date('M Y', strtotime($s->assigned_date)) : '-',
-                        'status' => ucfirst($s->supervision_status),
-                    ];
-                });
-        }
-
         return Inertia::render('LecturerProfilePage', [
             'lecturer' => $lecturerData,
-            'supervisedStudents' => $supervisedStudents,
         ]);
     }
 

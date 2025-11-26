@@ -569,6 +569,17 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             </div>
                                         )}
 
+                                        {selectedRequest.teamName && (
+                                            <div className="space-y-1">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Team Name
+                                                </p>
+                                                <p>
+                                                    {selectedRequest.teamName}
+                                                </p>
+                                            </div>
+                                        )}
+
                                         {selectedRequest.teamMembers &&
                                             selectedRequest.teamMembers.length >
                                                 0 && (
@@ -583,7 +594,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                                                     key={idx}
                                                                     variant="secondary"
                                                                 >
-                                                                    {member}
+                                                                    {member.name}
                                                                 </Badge>
                                                             )
                                                         )}

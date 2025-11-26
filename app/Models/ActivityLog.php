@@ -19,7 +19,7 @@ class ActivityLog extends Model
         'activity_id',
         'log_date',
         'progress_note',
-        'action_type',
+        // 'action_type',
     ];
 
     // 3. Casting tipe data
@@ -27,10 +27,10 @@ class ActivityLog extends Model
         'log_date' => 'datetime',
     ];
 
-  
+
     public function activity()
     {
-       
+
         return $this->belongsTo(Activity::class, 'activity_id', 'activity_id');
     }
 }

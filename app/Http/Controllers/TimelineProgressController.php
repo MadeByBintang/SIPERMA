@@ -7,32 +7,132 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Supervision;
 use App\Models\Team;
+use App\Models\Lecturer;
 use App\Models\ActivityLog;
 use Carbon\Carbon;
 
 class TimelineProgressController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $roleName = $user->role_name; 
-        
-        $activities = [];
-        $supervisedStudents = [];
+        $roleName = $user->role_name;
 
-        if ($roleName === 'student' && $user->student) {
-            $activities = $this->getStudentActivities($user->student);
-        } elseif ($roleName === 'lecturer' && $user->lecturer) {
-            $supervisedStudents = $this->getSupervisedStudents($user->lecturer);
+        if ($roleName === 'dosen') {
+            return Inertia::render('TimelineProgressPage', [
+                'user'          => $user,
+                'supervisions' => $this -> indexLecture($user->lecturer)
+            ]);
         }
-
-        return Inertia::render('TimelineProgressPage', [
-            'userRole' => $roleName,
-            'studentActivities' => $activities, 
-            'supervisedStudents' => $supervisedStudents,
-        ]);
     }
+
+    private function indexLecture(Lecturer $lecturer){
+        $supervisions = Supervision::with([
+                'student.user',
+                'lecturer.user',
+                'activity.internship.name',
+                'activity.logs',
+                'team.members.student.masterStudent',
+            ])
+            ->where('lecturer_id', $lecturer -> lecturer_id)
+            ->orderBy('supervision_id', 'desc')
+            ->get()
+            ->map(function ($item) {
+
+                /* ===== TEAM HANDLING ===== */
+                $teamName = null;
+                $teamMembers = [];
+
+                if ($item->team) {
+                    // Nama tim
+                    $teamName = $item->team->team_name ?? '-';
+
+                    // Urutkan leader berdasarkan pivot id
+                    $sortedMembers = $item->team->members
+                        ->sortBy('pivot.id')
+                        ->values();
+
+                    // Konversi ke nama student
+                    $teamMembers = $sortedMembers->map(function ($m) {
+                        return [
+                            'name'  => $m->student->name ?? $m->full_name ?? 'Unknown',
+                            'nim'   => $m->student->nim,
+                            'email' => $m->student->email ?? '-',
+                        ];
+                    });
+                }
+
+                /* ===== INTERNSHIP COMPANY ===== */
+                $companyName = null;
+                if ($item->activity->activity_type === 'pkl') {
+                    $companyName = $item->activity->internship->company->company_name
+                        ?? 'Unknown Company';
+                }
+
+                $activityLogs = $item->activity->logs->map(function ($log) {
+                    return [
+                        'id'          => $log->log_id,
+                        'activity_id' => $log->activity_id,
+                        'log_date'    => $log->log_date->format('Y-m-d H:i') ?? '-',
+                        'description' => $log->progress_note ?? '-',
+                    ];
+                });
+
+                $latestLog = $item->activity->logs
+                    ->sortByDesc('log_date')
+                    ->first();
+
+                return [
+                    /* ===== SUPERVISION ===== */
+                    'id' => $item->supervision_id,
+                    'status' => $item->supervision_status === 'approved'
+                        ? 'on progress'
+                        : ($item->supervision_status ?? 'pending'),
+
+                    'startDate' => $item->activity->start_date
+                        ? Carbon::parse($item->activity->start_date)->format('Y-m-d')
+                        : "",
+                    'endDate' => $item->activity->end_date
+                        ? Carbon::parse($item->activity->end_date)->format('Y-m-d')
+                        : "",
+                    'notes' => $item->notes ?? null,
+
+                    /* ===== LECTURER ===== */
+                    'lecturerName' => $item->lecturer->name ?? 'Unknown',
+                    'lecturerEmail' => $item->lecturer->email ?? '-',
+
+                    /* ===== ACTIVITY ===== */
+                    'activityType' => $item->activity->activityType->type_name ?? '-',
+                    'activityName' => $item->activity->title ?? 'Untitled Project',
+                    'activityDescription' => $item->activity->description ?? '-',
+                    'companyName' => $companyName,
+
+                    /* ===== STUDENT / TEAM ===== */
+                    'isTeam' => $item->team_id !== null,
+                    'teamName' => $teamName,
+                    'teamMembers' => $teamMembers,
+
+                    /* individu */
+                    'individualStudentName'  => $item->student->name  ?? null,
+                    'individualStudentEmail' => $item->student->email ?? null,
+                    'individualStudentNim'   => $item->student->nim ?? null,
+                    'individualStudentFocus' => $item->student->focus ?? null,
+
+                    'activityLogs' => $activityLogs,
+
+                    'lastUpdate' => $latestLog
+                        ? $latestLog->log_date->format('Y-m-d H:i')
+                        : null,
+
+                    /* request type untuk frontend */
+                    'requestType' => 'supervision',
+                ];
+            });
+
+        return $supervisions;
+    }
+
 
     private function getStudentActivities($student)
     {
@@ -98,7 +198,7 @@ class TimelineProgressController extends Controller
                     'activityType' => ucfirst($s->activity->activity_type ?? 'Thesis'),
                     'activityName' => $s->activity->title ?? $s->notes ?? 'Untitled',
                     'overallProgress' => (int) ($s->progress_percentage ?? 0),
-                    'currentPhase' => 'Research', 
+                    'currentPhase' => 'Research',
                     'status' => $this->mapStatus($s->supervision_status),
                     'lastUpdate' => now()->format('Y-m-d'),
                     'timeline' => $this->formatLogs($s->activity),
@@ -153,7 +253,7 @@ class TimelineProgressController extends Controller
 {
     /** @var \App\Models\User $user */
     $user = Auth::user();
-    
+
     // 1. Validasi Input
     $request->validate([
         'activity_id' => 'required|integer', // ID Activity yang menjadi induk log
@@ -167,7 +267,7 @@ class TimelineProgressController extends Controller
         'user_id' => $user->id,
         'log_date' => now(),
         'progress_note' => $request->progress_note,
-        'action_type' => 'Progress Update', 
+        'action_type' => 'Progress Update',
         'status_after' => $request->status, // Menyimpan status saat log ini dibuat
     ]);
 
