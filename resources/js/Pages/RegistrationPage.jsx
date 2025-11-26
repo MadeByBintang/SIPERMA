@@ -59,69 +59,66 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="rounded-md border">
-                {/* header tetap fixed */}
-                <Table>
+            <div className="rounded-md border max-h-64 overflow-y-auto">
+                <Table className="table-auto w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-12">Select</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>NIM</TableHead>
-                            <TableHead>Interests</TableHead>
+                            <TableHead className="w-16">Select</TableHead>
+                            <TableHead className="min-w-40">Name</TableHead>
+                            <TableHead className="min-w-32">NIM</TableHead>
+                            <TableHead className="min-w-48">
+                                Interests
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
-                </Table>
 
-                {/* bagian body saja yang scroll */}
-                <div className="max-h-64 overflow-y-auto">
-                    <Table>
-                        <TableBody>
-                            {members.length > 0 ? (
-                                members.map((member) => (
-                                    <TableRow key={member.id}>
-                                        <TableCell>
-                                            <div className="flex justify-end pr-5">
-                                                <Checkbox
-                                                    checked={selectedMembers.includes(
-                                                        member.id
-                                                    )}
-                                                    onCheckedChange={() =>
-                                                        onToggle(member.id)
-                                                    }
-                                                />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{member.name}</TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {member.nim}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-1 flex-wrap">
-                                                {member.interests && (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        {member.interests}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={5}
-                                        className="text-center py-4 text-muted-foreground"
-                                    >
-                                        No recommended members found.
+                    <TableBody>
+                        {members.length > 0 ? (
+                            members.map((member) => (
+                                <TableRow key={member.id}>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={selectedMembers.includes(
+                                                member.id
+                                            )}
+                                            onCheckedChange={() =>
+                                                onToggle(member.id)
+                                            }
+                                        />
+                                    </TableCell>
+
+                                    <TableCell>{member.name}</TableCell>
+
+                                    <TableCell className="text-muted-foreground">
+                                        {member.nim}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <div className="flex gap-1 flex-wrap">
+                                            {member.interests && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs"
+                                                >
+                                                    {member.interests}
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={5}
+                                    className="text-center py-4 text-muted-foreground"
+                                >
+                                    No recommended members found.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </CardContent>
     </Card>
@@ -204,72 +201,70 @@ export default function RegistrationPage({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
-                        <Table>
+                    <div className="rounded-md border max-h-64 overflow-y-auto">
+                        <Table className="table-auto">
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-12">
+                                    <TableHead className="w-16">
                                         Select
                                     </TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Expertise</TableHead>
-                                    <TableHead>Quota</TableHead>
+                                    <TableHead className="min-w-40">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="min-w-40">
+                                        Expertise
+                                    </TableHead>
+                                    <TableHead className="min-w-24">
+                                        Quota
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
-                        </Table>
-                        <div className="max-h-64 overflow-y-auto">
-                            <Table>
-                                <TableBody>
-                                    {filteredList.length > 0 ? (
-                                        filteredList.map((sup) => (
-                                            <TableRow key={sup.id}>
-                                                <TableCell>
-                                                    <div className="flex justify-end pr-5">
-                                                        <Checkbox
-                                                            checked={
-                                                                selectedId ===
-                                                                sup.id
-                                                            }
-                                                            onCheckedChange={() =>
-                                                                onSelect(sup.id)
-                                                            }
-                                                        />
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {sup.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-1 flex-wrap">
-                                                        <Badge
-                                                            // key={i}
-                                                            variant="outline"
-                                                            className="text-xs"
-                                                        >
-                                                            {sup.expertise}
-                                                        </Badge>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {sup.currentStudents}/
-                                                    {sup.maxStudents}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={5}
-                                                className="text-center py-4 text-muted-foreground"
-                                            >
-                                                No supervisors found.
+
+                            <TableBody>
+                                {filteredList.length > 0 ? (
+                                    filteredList.map((sup) => (
+                                        <TableRow key={sup.id}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={
+                                                        selectedId === sup.id
+                                                    }
+                                                    onCheckedChange={() =>
+                                                        onSelect(sup.id)
+                                                    }
+                                                />
+                                            </TableCell>
+                                            <TableCell>{sup.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-1 flex-wrap">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {sup.expertise}
+                                                    </Badge>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {sup.currentStudents}/
+                                                {sup.maxStudents}
                                             </TableCell>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={5}
+                                            className="text-center py-4 text-muted-foreground"
+                                        >
+                                            No supervisors found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
                     </div>
+
                     {error && (
                         <p className="text-red-500 text-xs mt-2">{error}</p>
                     )}
