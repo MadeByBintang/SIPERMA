@@ -21,6 +21,8 @@ import {
     Lock,
     Eye,
     EyeOff,
+    Edit2,
+    X,
     CheckCircle2,
     AlertCircle,
 } from "lucide-react";
@@ -39,6 +41,14 @@ export default function AdminProfilePage({ admin }) {
         full_name: adminData?.full_name || "",
         email: adminData?.email || "",
     });
+    const [isEditing, setIsEditing] = useState(false);
+    
+    const handleEdit = () => setIsEditing(true);
+
+    const handleCancel = () => {
+        reset();
+        setIsEditing(false);
+    };
 
     const handleSaveProfile = (e) => {
         e.preventDefault();
@@ -149,81 +159,88 @@ export default function AdminProfilePage({ admin }) {
                 </Card>
 
                 {/* ----------- PROFILE FORM ----------- */}
-                <form onSubmit={handleSaveProfile}>
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-5 h-5 text-primary" />
-                                        <CardTitle>
-                                            Personal Information
-                                        </CardTitle>
-                                    </div>
-                                    <CardDescription>
-                                        Update your personal details
-                                    </CardDescription>
-                                </div>
-                                {isDirty && (
-                                    <div className="flex items-center gap-2">
-                                        <AlertCircle className="w-4 h-4 text-orange-500" />
-                                        <span className="text-sm text-orange-500">
-                                            Unsaved changes
-                                        </span>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Admin Profile</CardTitle>
+                        {!isEditing ? (
+                            <Button
+                                onClick={handleEdit}
+                                variant="outline"
+                                className="gap-2"
+                            >
+                                <Edit2 className="w-4 h-4" /> Edit
+                            </Button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Button
+                                    onClick={() => {
+                                        reset(); // reset ke initial data
+                                        setIsEditing(false);
+                                    }}
+                                    variant="outline"
+                                    className="gap-2"
+                                >
+                                    <X className="w-4 h-4" /> Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleSaveProfile}
+                                    className="gap-2"
+                                    disabled={processing}
+                                >
+                                    <Save className="w-4 h-4" />{" "}
+                                    {processing ? "Saving..." : "Save"}
+                                </Button>
+                            </div>
+                        )}
+                    </CardHeader>
+
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Full Name</Label>
+                                <Input
+                                    value={data.full_name}
+                                    onChange={(e) =>
+                                        setData("full_name", e.target.value)
+                                    }
+                                    disabled={!isEditing}
+                                    className={
+                                        !isEditing
+                                            ? "bg-muted"
+                                            : "bg-background"
+                                    }
+                                />
+                                {errors.full_name && (
+                                    <div className="text-red-500 text-xs">
+                                        {errors.full_name}
                                     </div>
                                 )}
                             </div>
-                        </CardHeader>
 
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="full-name">Full Name</Label>
-                                    <Input
-                                        id="full-name"
-                                        value={data.full_name}
-                                        onChange={(e) =>
-                                            setData("full_name", e.target.value)
-                                        }
-                                    />
-                                    {errors.full_name && (
-                                        <div className="text-red-500 text-xs">
-                                            {errors.full_name}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email Address</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        onChange={(e) =>
-                                            setData("email", e.target.value)
-                                        }
-                                    />
-                                    {errors.email && (
-                                        <div className="text-red-500 text-xs">
-                                            {errors.email}
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="space-y-2">
+                                <Label>Email</Label>
+                                <Input
+                                    type="email"
+                                    value={data.email}
+                                    onChange={(e) =>
+                                        setData("email", e.target.value)
+                                    }
+                                    disabled={!isEditing}
+                                    className={
+                                        !isEditing
+                                            ? "bg-muted"
+                                            : "bg-background"
+                                    }
+                                />
+                                {errors.email && (
+                                    <div className="text-red-500 text-xs">
+                                        {errors.email}
+                                    </div>
+                                )}
                             </div>
-
-                            <div className="flex justify-end pt-4">
-                                <Button
-                                    type="submit"
-                                    className="gap-2"
-                                    disabled={processing || !isDirty}
-                                >
-                                    <Save className="w-4 h-4" />
-                                    {processing ? "Saving..." : "Save Profile"}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </form>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* ----------- ACCOUNT FORM ----------- */}
                 <form onSubmit={handleChangeAccount}>
