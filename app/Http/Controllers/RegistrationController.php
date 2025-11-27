@@ -122,38 +122,32 @@ class RegistrationController extends Controller
     }
 
 
-    private function storeThesis($request, $student)
-    {
+    private function storeThesis($request, $student){
         $request->validate([
             'title' => 'required|string',
             'abstract' => 'required|string',
             'mainSupervisor' => 'required|exists:lecturers,lecturer_id',
         ]);
 
-        // 1. Create Activity dulu
         $activity = Activity::create([
-            'activity_type_id' => 1, // Asumsi ID 1 = Skripsi
+            'activity_type_id' => 1,
             'title' => $request->title,
             'description' => $request->abstract,
             'start_date' => now(),
         ]);
 
-        // 2. Create Supervision
         Supervision::create([
             'student_id' => $student->student_id,
             'lecturer_id' => $request->mainSupervisor,
             'activity_id' => $activity->activity_id,
             'supervision_status' => 'pending',
             'assigned_date' => now(),
-            'notes' => "Title: {$request->title}\nAbstract: {$request->abstract}",
         ]);
     }
 
-
     private function storeTeamActivity($request, $student)
     {
-        $typeString = $request->activityType === 'pkl' ? 'PKL' : 'Competition';
-        $typeId = $request->activityType === 'pkl' ? 2 : 3; // Asumsi ID 2=PKL, 3=Competition
+        $typeId = $request->activityType === 'pkl' ? 2 : 3;
 
         // --- LOGIKA BARU UNTUK MENANGANI INSTANSI ---
         $institutionId = null;
@@ -231,15 +225,6 @@ class RegistrationController extends Controller
         }
 
         // 4. Create Members (Invited)
-        if ($request->has('teamMembers') && is_array($request->teamMembers)) {
-            foreach ($request->teamMembers as $memberId) {
-                TeamMember::create([
-                    'team_id' => $team->team_id,
-                    'student_id' => $memberId,
-                    'role_in_team' => 'Member',
-                    'member_status' => 'pending',
-                ]);
-            }
-        }
+
     }
 }

@@ -134,7 +134,6 @@ class ApprovalCenterController extends Controller
         if ($supervision->activity_id && $status == 'approved') {
             ActivityLog::create([
                 'activity_id' => $supervision->activity_id,
-                // 'action_type' => ucfirst($status),
                 'progress_note' => "Supervision request was {$status} by lecturer.",
                 'log_date' => now(),
             ]);

@@ -182,11 +182,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         ->middleware(['auth', 'role:admin'])
         ->name('system-reports.export-pdf');
 
-
-    Route::post('/timeline/update-log', [\App\Http\Controllers\TimelineProgressController::class, 'updateLog'])
-        ->middleware(['auth', 'verified'])
-        ->name('timeline.progress.update');
-
     Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
 });
 

@@ -58,8 +58,6 @@ export default function TimelineProgressPage({
 
     const userRole = user?.role?.role_name;
 
-    // Catatan: Saya mengasumsikan properti timeline pada objek sv diubah menjadi `sv.timeline`
-    // agar sesuai dengan kode Anda yang dimodifikasi di input.
     const studentActivities = supervisions?.map(sv => ({
         id: sv.id,
         activityType: sv.activityType,
@@ -71,6 +69,7 @@ export default function TimelineProgressPage({
         status: sv.status,
         timeline: sv.timeline?.map(log => ({
             id: log.id,
+            activity_id: log.activity_id,
             description: log.description,
             dueDate: log.log_date,
         })) ?? []
@@ -89,6 +88,7 @@ export default function TimelineProgressPage({
         teamMembers:sv.teamMembers,
         timeline: sv.activityLogs?.map(log => ({
             id: log.id,
+            activity_id: log.activity_id,
             description: log.description,
             dueDate: log.log_date,
         })) ?? []
@@ -139,7 +139,7 @@ export default function TimelineProgressPage({
     };
 
     const handleSaveUpdate = () => {
-        const activityId = selectedActivity?.id;
+        const activityId = selectedActivity?.timeline[0].activity_id;
 
         if (!activityId) {
             console.error("Activity ID is missing for update.");
@@ -188,7 +188,7 @@ export default function TimelineProgressPage({
             return;
         }
 
-        router.patch(route('timeline.complete', activityToComplete.id), {
+        router.patch(route('timeline.complete', activityToComplete.timeline[0].activity_id), {
             status: 'completed',
         }, {
             preserveScroll: true,
@@ -311,16 +311,14 @@ export default function TimelineProgressPage({
                                                         }
                                                     )}{" "}
                                                     -{" "}
-                                                    {new Date(
-                                                        activity.endDate
-                                                    ).toLocaleDateString(
-                                                        "en-US",
-                                                        {
+                                                    {activity.endDate
+                                                        ? new Date(activity.endDate).toLocaleDateString("en-US", {
                                                             month: "short",
                                                             day: "numeric",
                                                             year: "numeric",
-                                                        }
-                                                    )}
+                                                        })
+                                                        : "Present"
+                                                    }
                                                 </div>
                                             </div>
                                         </div>

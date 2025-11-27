@@ -133,11 +133,8 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
 export default function RegistrationPage({
     studentInfo,
     allSupervisors,
-    // filteredSupervisors,
     allMembers,
-    // filteredMembers,
     institutions = [],
-    // userFocus,
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         activityType: "pkl",
@@ -301,15 +298,12 @@ export default function RegistrationPage({
                 current.filter((mId) => mId !== id)
             );
         } else {
-            if (current.length >= 3) return; // maksimal 4 termasuk leader
+            if (current.length >= 3) return;
             setData(field, [...current, id]);
         }
     };
 
-    // Available research topics
     const researchTopics = FOCUS_LABELS;
-
-    // Competition fields
     const competitionFields = FOCUS_LABELS;
 
     const handleSubmit = (e) => {
