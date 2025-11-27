@@ -19,10 +19,8 @@ class ActivityLog extends Model
         'activity_id',
         'log_date',
         'progress_note',
-        // 'action_type',
     ];
 
-    // 3. Casting tipe data
     protected $casts = [
         'log_date' => 'datetime',
     ];

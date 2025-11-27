@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Supervision;
+use Carbon\Carbon;
 use App\Models\Team;
+use Inertia\Inertia;
+use App\Models\Student;
+use App\Models\Activity;
 use App\Models\Lecturer;
 use App\Models\ActivityLog;
-use Carbon\Carbon;
+use App\Models\Supervision;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TimelineProgressController extends Controller
 {
-    public function index()
-    {
+    public function index(){
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $roleName = $user->role_name;
@@ -23,6 +25,12 @@ class TimelineProgressController extends Controller
             return Inertia::render('TimelineProgressPage', [
                 'user'          => $user,
                 'supervisions' => $this -> indexLecture($user->lecturer)
+            ]);
+        }
+        else if ($roleName === 'mahasiswa') {
+            return Inertia::render('TimelineProgressPage', [
+                'user'        => $user,
+                'supervisions' => $this -> indexStudent($user -> student)
             ]);
         }
     }
@@ -133,156 +141,119 @@ class TimelineProgressController extends Controller
         return $supervisions;
     }
 
-
-    private function getStudentActivities($student)
-    {
-        $list = collect();
-
-        // 1. AMBIL DARI SUPERVISION (Thesis/PKL Individu)
-        // Eager load 'activity.logs' agar efisien
-        $supervisions = Supervision::with(['lecturer.user', 'activity.logs'])
-            ->where('student_id', $student->student_id)
-            ->get();
-
-        foreach ($supervisions as $s) {
-            $list->push([
-                'id' => 'sup_' . $s->supervision_id,
-                'activityType' => ucfirst($s->activity->activity_type ?? 'Thesis'),
-                'activityName' => $s->activity->title ?? $s->notes ?? 'Untitled Project',
-                'supervisor' => $s->lecturer->user->name ?? $s->lecturer->name ?? '-',
-                'startDate' => $s->assigned_date ? Carbon::parse($s->assigned_date)->format('Y-m-d') : null,
-                'endDate' => $s->end_date,
-                'status' => $this->mapStatus($s->supervision_status),
-                'overallProgress' => (int) ($s->progress_percentage ?? 0),
-                // PERBAIKAN: Ambil Log dari Database
-                'timeline' => $this->formatLogs($s->activity),
-            ]);
-        }
-
-        // 2. AMBIL DARI TEAM (Competition/PKL Tim)
-        $teams = Team::with(['supervisor.user', 'activity.logs'])
-            ->whereHas('members', function($q) use ($student) {
-                $q->where('student_id', $student->student_id);
+    private function indexStudent(Student $student) {
+        // Ambil semua supervision: langsung & melalui tim
+        $supervisions = Supervision::with([
+                'student.user',
+                'lecturer.user',
+                'activity.internship.company',
+                'activity.activityType',
+                'activity.logs',
+                'team.members.student',
+            ])
+            ->where('student_id', $student->student_id) // supervision langsung
+            ->orWhereHas('team.members', function($query) use ($student) {
+                $query->where('student_id', $student->student_id); // supervision via tim
             })
+            ->orderBy('supervision_id', 'desc')
             ->get();
 
-        foreach ($teams as $t) {
-            $list->push([
-                'id' => 'team_' . $t->team_id,
-                'activityType' => ucfirst($t->type ?? 'Competition'),
-                'activityName' => $t->team_name ?? $t->name,
-                'supervisor' => $t->supervisor->user->name ?? $t->supervisor->name ?? '-',
-                'startDate' => $t->created_at ? $t->created_at->format('Y-m-d') : null,
-                'endDate' => $t->competition_date,
-                'status' => $this->mapStatus($t->status),
-                'overallProgress' => (int) ($t->progress ?? 0),
-                // PERBAIKAN: Ambil Log dari Database
-                'timeline' => $this->formatLogs($t->activity),
-            ]);
-        }
+        // Mapping ke StudentActivity
+        $studentActivities = $supervisions->map(function($sv) use ($student) {
 
-        return $list;
-    }
+            // Tentukan apakah mahasiswa ini bagian dari tim
+            $isTeamMember = $sv->team && $sv->team->members->contains(fn($m) => $m->student_id == $student->student_id);
 
-    private function getSupervisedStudents($lecturer)
-    {
-        // Supervision (Thesis/PKL)
-        $supervisions = Supervision::with(['student.user', 'activity.logs'])
-            ->where('lecturer_id', $lecturer->lecturer_id)
-            ->get()
-            ->map(function ($s) {
-                 return [
-                    'id' => 'sup_' . $s->supervision_id,
-                    'studentName' => $s->student->user->name ?? $s->student->name,
-                    'studentNIM' => $s->student->nim,
-                    'activityType' => ucfirst($s->activity->activity_type ?? 'Thesis'),
-                    'activityName' => $s->activity->title ?? $s->notes ?? 'Untitled',
-                    'overallProgress' => (int) ($s->progress_percentage ?? 0),
-                    'currentPhase' => 'Research',
-                    'status' => $this->mapStatus($s->supervision_status),
-                    'lastUpdate' => now()->format('Y-m-d'),
-                    'timeline' => $this->formatLogs($s->activity),
-                ];
-            });
+            // Ambil nama tim & anggota tim jika ada
+            $teamName = $sv->team->team_name ?? null;
+            $teamMembers = [];
+            if ($sv->team) {
+                $teamMembers = $sv->team->members->map(fn($m) => [
+                    'name' => $m->student->name ?? $m->full_name ?? 'Unknown',
+                    'nim' => $m->student->nim,
+                    'email' => $m->student->email ?? '-',
+                ]);
+            }
 
-        // Teams (Competition)
-        $teams = Team::with(['leader.student.user', 'members', 'activity.logs'])
-            ->where('supervisor_id', $lecturer->lecturer_id)
-            ->get()
-            ->map(function ($t) {
-                 return [
-                    'id' => 'team_' . $t->team_id,
-                    'studentName' => $t->leader->student->user->name ?? 'Team Leader',
-                    'studentNIM' => $t->leader->student->nim ?? '-',
-                    'activityType' => ucfirst($t->type ?? 'Competition'),
-                    'activityName' => $t->team_name ?? $t->name,
-                    'overallProgress' => (int) ($t->progress ?? 0),
-                    'currentPhase' => 'Execution',
-                    'status' => $this->mapStatus($t->status),
-                    'lastUpdate' => $t->updated_at ? $t->updated_at->format('Y-m-d') : now()->format('Y-m-d'),
-                    'timeline' => $this->formatLogs($t->activity),
-                ];
-            });
-
-        return $supervisions->concat($teams)->values();
-    }
-
-    // Helper Baru: Format Log dari Database untuk Frontend
-    private function formatLogs($activity)
-    {
-        if (!$activity || !$activity->logs || $activity->logs->isEmpty()) {
-            return [];
-        }
-
-        return $activity->logs
-            ->sortByDesc('log_date') // Urutkan dari terbaru
-            ->values()
-            ->map(function($log, $index) {
+            // Timeline logs
+            $timeline = $sv->activity->logs->map(function ($log) {
                 return [
-                    'id' => $log->log_id,
-                    'title' => ucfirst($log->action_type ?? 'Update'),
-                    'status' => 'completed', // Asumsi semua log yang tersimpan sudah terjadi
-                    'date' => $log->log_date ? Carbon::parse($log->log_date)->format('Y-m-d') : '-',
-                    'description' => $log->progress_note,
+                    'id'          => $log->log_id,
+                    'activity_id' => $log->activity_id,
+                    'log_date'    => $log->log_date->format('Y-m-d H:i') ?? '-',
+                    'description' => $log->progress_note ?? '-',
                 ];
-            })
-            ->toArray();
+            });
+
+
+            return [
+                'id' => $sv->supervision_id,
+                'activityType' => $sv->activity->activityType->type_name ?? '-',
+                'activityName' => $sv->activity->title ?? 'Untitled Project',
+                'supervisor' => $sv->lecturer->name ?? 'Unknown',
+                'startDate' => $sv->activity->start_date
+                            ? Carbon::parse($sv->activity->start_date)->format('Y-m-d')
+                            : "",
+                'endDate' => $sv->activity->end_date
+                    ? Carbon::parse($sv->activity->end_date)->format('Y-m-d')
+                    : "",
+                'status' => $sv->supervision_status === 'approved' ? 'on progress' : ($sv->supervision_status ?? 'pending'),
+                'timeline' => $timeline,
+                'isTeam' => $isTeamMember,
+                'teamName' => $teamName,
+                'teamMembers' => $teamMembers,
+
+            ];
+        });
+
+        return $studentActivities;
     }
 
     public function updateLog(Request $request)
-{
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
-
-    // 1. Validasi Input
-    $request->validate([
-        'activity_id' => 'required|integer', // ID Activity yang menjadi induk log
-        'status' => 'required|in:pending,in-progress,completed',
-        'progress_note' => 'required|string|max:1000',
-    ]);
-
-    // 2. Simpan Log Baru
-    ActivityLog::create([
-        'activity_id' => $request->activity_id,
-        'user_id' => $user->id,
-        'log_date' => now(),
-        'progress_note' => $request->progress_note,
-        'action_type' => 'Progress Update',
-        'status_after' => $request->status, // Menyimpan status saat log ini dibuat
-    ]);
-
-    // Opsional: Update progress_percentage di tabel Activity/Supervision induk
-    // Asumsi: Anda bisa mendapatkan Supervision ID dari Activity ID
-    // Contoh: Activity::find($request->activity_id)->supervision->update(['progress_percentage' => $request->progress_percentage]);
-
-    return redirect()->back()->with('success', 'Progress log recorded successfully!');
-}
-
-    private function mapStatus($status)
     {
-        $s = strtolower($status ?? '');
-        if (in_array($s, ['approved', 'active', 'ongoing', 'in progress'])) return 'In Progress';
-        if (in_array($s, ['completed', 'finished'])) return 'Completed';
-        return 'Pending';
+        /** @var \App\Models\User $user */
+        $validated = $request->validate([
+            'activity_id' => ['required', 'integer', 'exists:activities,activity_id'],
+            'description' => ['required', 'string', 'max:500'],
+            'log_date' => ['nullable', 'date'],
+        ]);
+
+        try {
+            $activity = Activity::findOrFail($validated['activity_id']);
+
+            // 3. Buat Activity Log Baru
+            $log = ActivityLog::create([
+                'activity_id' => $validated['activity_id'],
+                'progress_note' => $validated['description'],
+                'log_date' => $validated['log_date'] ?? Carbon::now()->toDateString(),
+            ]);
+
+            $activity->updated_at = Carbon::now();
+            $activity->save();
+
+            return back()->with('success', 'Progress log has been added successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to store activity log: ' . $e->getMessage());
+
+            // Response error
+            return back()->withErrors(['submission' => 'Failed to save progress due to a server error.']);
+        }
+    }
+
+    public function completeActivity(Request $request, String $activity_id)
+    {
+        $activity = Activity::findOrFail($activity_id);
+
+        if ($activity -> lecturer_id !== Auth::user() -> lecturer -> lecture_id) {
+            abort(403, 'Anda tidak memiliki otorisasi untuk menyelesaikan aktivitas ini.');
+        }
+
+        $supervisions = Supervision::where('activity_id', $activity->activity_id)->firstOrFail();
+
+        $supervisions->supervision_status = 'completed';
+        $supervisions->save();
+
+        return back()->with('success', 'Activity berhasil ditandai sebagai Selesai.');
     }
 }

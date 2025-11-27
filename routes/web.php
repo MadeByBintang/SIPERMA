@@ -104,9 +104,18 @@ Route::middleware(['auth', 'verified', 'role:mahasiswa'])->group(function () {
 Route::get('/matching', [MatchingController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('matching');
+
 Route::get('/timeline', [TimelineProgressController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('timeline.progress');
+
+Route::post('/timeline/updatelog', [TimelineProgressController::class, 'updatelog'])
+    ->middleware(['auth', 'verified', 'role:mahasiswa'])
+    ->name('timeline.updatelog');
+
+Route::patch('/timeline/{activity}/complete', [TimelineProgressController::class, 'completeActivity'])
+    ->middleware(['auth', 'verified', 'role:dosen'])
+    ->name('timeline.complete');
 
 // --- FITUR UMUM / DOSEN ---
 Route::middleware(['auth', 'verified'])->group(function () {

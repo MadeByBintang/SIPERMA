@@ -1,5 +1,5 @@
-import { useState, usePage } from "react";
-import { Head } from "@inertiajs/react";
+import { useState } from "react";
+import { Head, router } from "@inertiajs/react";
 import MainLayout from "../Layouts/MainLayout";
 import {
     Card,
@@ -49,20 +49,27 @@ export default function TimelineProgressPage({
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-    const [selectedTimelineItem, setSelectedTimelineItem] = useState(null);
+
+    // selectedTimelineItem tidak lagi dibutuhkan karena kita mengupdate activity secara keseluruhan
+    // const [selectedTimelineItem, setSelectedTimelineItem] = useState(null);
+
     const [updateNote, setUpdateNote] = useState("");
     const [updateStatus, setUpdateStatus] = useState ("");
 
     const userRole = user?.role?.role_name;
 
+    // Catatan: Saya mengasumsikan properti timeline pada objek sv diubah menjadi `sv.timeline`
+    // agar sesuai dengan kode Anda yang dimodifikasi di input.
     const studentActivities = supervisions?.map(sv => ({
+        id: sv.id,
         activityType: sv.activityType,
         activityName: sv.activityName,
+        supervisor: sv.supervisor,
         lecturerName: sv.lecturerName,
         startDate: sv.startDate,
         endDate: sv.endDate,
         status: sv.status,
-        timeline: sv.activityLogs?.map(log => ({
+        timeline: sv.timeline?.map(log => ({
             id: log.id,
             description: log.description,
             dueDate: log.log_date,
@@ -87,20 +94,6 @@ export default function TimelineProgressPage({
         })) ?? []
     })) ?? [];
 
-
-
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "completed":
-                return "bg-green-100 text-green-700";
-            case "on progress":
-                return "bg-blue-100 text-blue-700";
-            default:
-                return "bg-gray-100 text-gray-700";
-        }
-    };
-
     const getActivityStatusColor = (status) => {
         switch (status) {
             case "completed":
@@ -123,42 +116,116 @@ export default function TimelineProgressPage({
         }
     };
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case "completed":
-                return <CheckCircle2 className="w-4 h-4 text-green-600" />;
-            case "on progress":
-                return <Clock className="w-4 h-4 text-blue-600" />;
-            default:
-                return <Clock className="w-4 h-4 text-gray-400" />;
-        }
-    };
-
     const handleViewDetails = (activity) => {
         setSelectedActivity(activity);
+        setSelectedStudent(null);
         setIsDialogOpen(true);
     };
 
     const handleViewStudentProgress = (student) => {
         setSelectedStudent(student);
+        setSelectedActivity(null);
         setIsDialogOpen(true);
     };
 
+    const handleUpdateProgress = (activity) => {
+        if (!activity) return;
 
+        setUpdateNote("");
+        setUpdateStatus(activity.status || "on progress");
 
-    const handleUpdateProgress = (item) => {
-        setSelectedTimelineItem(item);
-        setUpdateNote(item.notes || "");
-        setUpdateStatus(item.status);
+        setIsDialogOpen(false);
         setIsUpdateDialogOpen(true);
     };
 
     const handleSaveUpdate = () => {
-        // Save update logic would go here
-        console.log("Saving update:", { updateNote, updateStatus });
-        setIsUpdateDialogOpen(false);
-        setSelectedTimelineItem(null);
-        setUpdateNote("");
+        const activityId = selectedActivity?.id;
+
+        if (!activityId) {
+            console.error("Activity ID is missing for update.");
+            return;
+        }
+
+        const data = {
+            activity_id: activityId,
+            log_date: new Date().toISOString().slice(0, 10),
+            description: updateNote,
+        };
+
+        console.log("Saving new progress log via Inertia POST:", data);
+
+        router.post(route(`timeline.updatelog`), data, {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log("Activity log saved successfully!");
+                router.reload({ only: ['supervisions'] });
+                toast("Log progres berhasil ditambahkan!");
+            },
+            onError: (errors) => {
+                console.error("Error saving activity log:", errors);
+                toast("Failed to save progress. Check console for details.");
+            },
+
+            onFinish: () => {
+                // Lakukan pembersihan state setelah request (berhasil atau gagal)
+                setIsUpdateDialogOpen(false);
+                setUpdateNote("");
+                setUpdateStatus("");
+
+                // Tutup dialog update dan buka kembali dialog detail
+                setIsDialogOpen(true);
+            }
+        });
+    };
+
+    const handleCompleteActivity = () => {
+    // Menggunakan selectedStudent karena ini adalah tampilan Dosen
+        const activityToComplete = selectedStudent;
+
+        if (!activityToComplete || activityToComplete.status === 'completed') return;
+
+        if (!confirm(`Are you sure you want to mark activity "${activityToComplete.activityName}" as Completed?`)) {
+            return;
+        }
+
+        router.patch(route('timeline.complete', activityToComplete.id), {
+            status: 'completed',
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log("Activity marked as completed.");
+                router.reload({ only: ['supervisions'] });
+            },
+            onError: (errors) => {
+                console.error("Error completing activity:", errors);
+                alert("Failed to mark activity as completed. Check console for details.");
+            },
+            onFinish: () => {
+                setIsDialogOpen(false);
+            }
+        });
+    };
+
+    const renderLecturerActionButtons = () => {
+        if (!selectedStudent) return null;
+
+        const isCompleted = selectedStudent.status === 'completed';
+
+        return (
+            <>
+                {/* Tombol Completed - Hanya muncul jika belum completed */}
+                {!isCompleted && (
+                    <Button
+                        variant="default"
+                        onClick={handleCompleteActivity}
+                        className="bg-green-600 hover:bg-green-700 gap-2"
+                    >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Mark as Completed
+                    </Button>
+                )}
+            </>
+        );
     };
 
     // Render student view
@@ -303,8 +370,8 @@ export default function TimelineProgressPage({
                                             studentActivities.filter(
                                                 (a) =>
                                                     a.status ===
-                                                        "In Progress" ||
-                                                    a.status === "On Progress"
+                                                        "completed" ||
+                                                    a.status === "on progress"
                                             ).length
                                         }
                                     </span>
@@ -338,34 +405,6 @@ export default function TimelineProgressPage({
                             </div>
                         </CardContent>
                     </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Average Progress
-                            </CardTitle>
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-1">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {Math.round(
-                                            studentActivities.reduce(
-                                                (sum, a) =>
-                                                    sum + a.overallProgress,
-                                                0
-                                            ) / studentActivities.length
-                                        )}
-                                        %
-                                    </span>
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Across all activities
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </div>
 
                 {/* Activity Cards */}
@@ -377,12 +416,12 @@ export default function TimelineProgressPage({
                     )}
                     {renderActivityCard(
                         thesisActivities,
-                        "Thesis",
+                        "Tugas Akhir",
                         "No thesis activities yet"
                     )}
                     {renderActivityCard(
                         competitionActivities,
-                        "Competition",
+                        "Lomba",
                         "No competition activities yet"
                     )}
                 </div>
@@ -747,32 +786,12 @@ export default function TimelineProgressPage({
                                             })}
                                         </p>
                                     </div>
-                                    {/* <div className="space-y-1">
-                                        <p className="text-sm text-muted-foreground">
-                                            Overall Progress
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <Progress
-                                                value={
-                                                    selectedActivity.overallProgress
-                                                }
-                                                className="h-2 flex-1"
-                                            />
-                                            <span className="text-sm">
-                                                {
-                                                    selectedActivity.overallProgress
-                                                }
-                                                %
-                                            </span>
-                                        </div>
-                                    </div> */}
                                 </div>
 
                                 <Separator />
 
                                 {/* Timeline */}
                                 <div className="space-y-4">
-                                    <h4>Timeline Milestones</h4>
                                     <div className="space-y-4">
                                         {selectedActivity.timeline.map(
                                             (item, index) => (
@@ -780,66 +799,21 @@ export default function TimelineProgressPage({
                                                     key={item.id}
                                                     className="flex gap-4"
                                                 >
-                                                    <div className="flex flex-col items-center">
-                                                        <div
-                                                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                                                item.status ===
-                                                                "completed"
-                                                                    ? "bg-green-100"
-                                                                    : item.status ===
-                                                                      "on progress"
-                                                                    ? "bg-blue-100"
-                                                                    : "bg-gray-100"
-                                                            }`}
-                                                        >
-                                                            {getStatusIcon(
-                                                                item.status
-                                                            )}
-                                                        </div>
-                                                        {index <
-                                                            selectedActivity
-                                                                .timeline
-                                                                .length -
-                                                                1 && (
-                                                            <div
-                                                                className={`w-0.5 h-full min-h-16 ${
-                                                                    item.status ===
-                                                                    "completed"
-                                                                        ? "bg-green-300"
-                                                                        : "bg-gray-200"
-                                                                }`}
-                                                            />
-                                                        )}
-                                                    </div>
                                                     <div className="flex-1 pb-8">
                                                         <div className="p-4 border rounded-lg space-y-3">
                                                             <div className="flex items-start justify-between gap-4">
                                                                 <div className="flex-1">
-                                                                    <p>
-                                                                        {
-                                                                            item.title
-                                                                        }
-                                                                    </p>
                                                                     <p className="text-sm text-muted-foreground">
                                                                         {
                                                                             item.description
                                                                         }
                                                                     </p>
                                                                 </div>
-                                                                <Badge
-                                                                    className={getStatusColor(
-                                                                        item.status
-                                                                    )}
-                                                                >
-                                                                    {
-                                                                        item.status
-                                                                    }
-                                                                </Badge>
                                                             </div>
                                                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                                 <div className="flex items-center gap-1">
                                                                     <Calendar className="w-3 h-3" />
-                                                                    Due:{" "}
+                                                                    At:{" "}
                                                                     {new Date(
                                                                         item.dueDate
                                                                     ).toLocaleDateString(
@@ -852,57 +826,8 @@ export default function TimelineProgressPage({
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            {item.progress >
-                                                                0 && (
-                                                                <div className="space-y-1">
-                                                                    <div className="flex items-center justify-between text-sm">
-                                                                        <span className="text-muted-foreground">
-                                                                            Progress
-                                                                        </span>
-                                                                        <span>
-                                                                            {
-                                                                                item.progress
-                                                                            }
-                                                                            %
-                                                                        </span>
-                                                                    </div>
-                                                                    <Progress
-                                                                        value={
-                                                                            item.progress
-                                                                        }
-                                                                        className="h-1.5"
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            {item.notes && (
-                                                                <div className="p-3 bg-muted rounded-md">
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        Notes:
-                                                                    </p>
-                                                                    <p className="text-sm">
-                                                                        {
-                                                                            item.notes
-                                                                        }
-                                                                    </p>
-                                                                </div>
-                                                            )}
-                                                            {userRole ===
-                                                                "mahasiswa" && (
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="gap-2"
-                                                                    onClick={() =>
-                                                                        handleUpdateProgress(
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Plus className="w-3 h-3" />
-                                                                    Update
-                                                                    Progress
-                                                                </Button>
-                                                            )}
+                                                            {/* TOMBOL UPDATE PROGRESS LAMA DIHAPUS DARI SINI */}
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -966,26 +891,6 @@ export default function TimelineProgressPage({
                                             {selectedStudent.activityType}
                                         </Badge>
                                     </div>
-
-                                    {/* <div className="space-y-1">
-                                        <p className="text-sm text-muted-foreground">
-                                            Overall Progress
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <Progress
-                                                value={
-                                                    selectedStudent.overallProgress
-                                                }
-                                                className="h-2 flex-1"
-                                            />
-                                            <span className="text-sm">
-                                                {
-                                                    selectedStudent.overallProgress
-                                                }
-                                                %
-                                            </span>
-                                        </div>
-                                    </div> */}
                                 </div>
 
                                 <Separator />
@@ -1037,7 +942,23 @@ export default function TimelineProgressPage({
                             </div>
                         )}
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            {/* TOMBOL UPDATE PROGRESS BARU DITEMPATKAN DI SINI */}
+                            {userRole ===
+                                "mahasiswa" && (
+                                    <Button
+                                        variant="default" // Mengubah ke default agar lebih menonjol
+                                        className="gap-2"
+                                        onClick={() =>
+                                            // Memanggil fungsi baru dengan selectedActivity
+                                            handleUpdateProgress(selectedActivity)
+                                        }
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Update Progress
+                                    </Button>
+                                )}
+                            {userRole === "dosen" && selectedStudent && renderLecturerActionButtons()}
                             <Button onClick={() => setIsDialogOpen(false)}>
                                 Close
                             </Button>
@@ -1052,34 +973,12 @@ export default function TimelineProgressPage({
                 >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Update Progress</DialogTitle>
+                            <DialogTitle>Add New Progress Log</DialogTitle>
                             <DialogDescription>
-                                {selectedTimelineItem?.title}
+                                Activity: {selectedActivity?.activityName}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={updateStatus}
-                                    onValueChange={setUpdateStatus}
-                                >
-                                    <SelectTrigger id="status">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="pending">
-                                            Pending
-                                        </SelectItem>
-                                        <SelectItem value="on progress">
-                                            On Progress
-                                        </SelectItem>
-                                        <SelectItem value="completed">
-                                            Completed
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Progress Notes</Label>
                                 <Textarea
@@ -1095,12 +994,15 @@ export default function TimelineProgressPage({
                             <div className="flex justify-end gap-2">
                                 <Button
                                     variant="outline"
-                                    onClick={() => setIsUpdateDialogOpen(false)}
+                                    onClick={() => {
+                                        setIsUpdateDialogOpen(false);
+                                        setIsDialogOpen(true);
+                                    }}
                                 >
                                     Cancel
                                 </Button>
                                 <Button onClick={handleSaveUpdate}>
-                                    Save Update
+                                    Save Log
                                 </Button>
                             </div>
                         </div>
