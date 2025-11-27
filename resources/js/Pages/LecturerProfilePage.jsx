@@ -81,7 +81,6 @@ const FOCUS_LABELS = {
     "BIG DATA": "Big Data",
     MTI: "Manajemen TI",
     JARINGAN: "Jaringan",
-    "": "Belum Menentukan Fokus",
 };
 
 export default function LecturerProfilePage({
@@ -321,14 +320,6 @@ export default function LecturerProfilePage({
                                                     <SelectValue placeholder="Select Focus Area" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem
-                                                        value="none"
-                                                        className="text-muted-foreground italic"
-                                                    >
-                                                        -- Belum Menentukan
-                                                        Fokus --
-                                                    </SelectItem>
-
                                                     <SelectItem value="BIG DATA">
                                                         Big Data
                                                     </SelectItem>
