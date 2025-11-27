@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Log;
 
 class TimelineProgressController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $roleName = $user->role_name;
@@ -24,26 +25,26 @@ class TimelineProgressController extends Controller
         if ($roleName === 'dosen') {
             return Inertia::render('TimelineProgressPage', [
                 'user'          => $user,
-                'supervisions' => $this -> indexLecture($user->lecturer)
+                'supervisions' => $this->indexLecture($user->lecturer)
             ]);
-        }
-        else if ($roleName === 'mahasiswa') {
+        } else if ($roleName === 'mahasiswa') {
             return Inertia::render('TimelineProgressPage', [
                 'user'        => $user,
-                'supervisions' => $this -> indexStudent($user -> student)
+                'supervisions' => $this->indexStudent($user->student)
             ]);
         }
     }
 
-    private function indexLecture(Lecturer $lecturer){
+    private function indexLecture(Lecturer $lecturer)
+    {
         $supervisions = Supervision::with([
-                'student.user',
-                'lecturer.user',
-                'activity.internship.name',
-                'activity.logs',
-                'team.members.student.masterStudent',
-            ])
-            ->where('lecturer_id', $lecturer -> lecturer_id)
+            'student.user',
+            'lecturer.user',
+            'activity.internship.name',
+            'activity.logs',
+            'team.members.student.masterStudent',
+        ])
+            ->where('lecturer_id', $lecturer->lecturer_id)
             ->orderBy('supervision_id', 'desc')
             ->get()
             ->map(function ($item) {
@@ -141,25 +142,31 @@ class TimelineProgressController extends Controller
         return $supervisions;
     }
 
-    private function indexStudent(Student $student) {
+    private function indexStudent(Student $student)
+    {
         // Ambil semua supervision: langsung & melalui tim
         $supervisions = Supervision::with([
-                'student.user',
-                'lecturer.user',
-                'activity.internship.company',
-                'activity.activityType',
-                'activity.logs',
-                'team.members.student',
-            ])
-            ->where('student_id', $student->student_id) // supervision langsung
-            ->orWhereHas('team.members', function($query) use ($student) {
-                $query->where('student_id', $student->student_id); // supervision via tim
+            'student.user',
+            'lecturer.user',
+            'activity.internship.company',
+            'activity.activityType',
+            'activity.logs',
+            'team.members.student',
+        ])
+            ->where(function ($query) use ($student) {
+                // Supervision langsung
+                $query->where('student_id', $student->student_id)
+                    // Supervision via tim
+                    ->orWhereHas('team.members', function ($q) use ($student) {
+                        $q->where('student_id', $student->student_id);
+                    });
             })
+            ->whereIn('supervision_status', ['approved', 'completed']) // filter status
             ->orderBy('supervision_id', 'desc')
             ->get();
 
         // Mapping ke StudentActivity
-        $studentActivities = $supervisions->map(function($sv) use ($student) {
+        $studentActivities = $supervisions->map(function ($sv) use ($student) {
 
             // Tentukan apakah mahasiswa ini bagian dari tim
             $isTeamMember = $sv->team && $sv->team->members->contains(fn($m) => $m->student_id == $student->student_id);
@@ -192,8 +199,8 @@ class TimelineProgressController extends Controller
                 'activityName' => $sv->activity->title ?? 'Untitled Project',
                 'supervisor' => $sv->lecturer->name ?? 'Unknown',
                 'startDate' => $sv->activity->start_date
-                            ? Carbon::parse($sv->activity->start_date)->format('Y-m-d')
-                            : "",
+                    ? Carbon::parse($sv->activity->start_date)->format('Y-m-d')
+                    : "",
                 'endDate' => $sv->activity->end_date
                     ? Carbon::parse($sv->activity->end_date)->format('Y-m-d')
                     : "",
@@ -232,7 +239,6 @@ class TimelineProgressController extends Controller
             $activity->save();
 
             return back()->with('success', 'Progress log has been added successfully!');
-
         } catch (\Exception $e) {
             Log::error('Failed to store activity log: ' . $e->getMessage());
 
@@ -245,7 +251,7 @@ class TimelineProgressController extends Controller
     {
         $activity = Activity::findOrFail($activity_id);
 
-        if ($activity -> lecturer_id !== Auth::user() -> lecturer -> lecture_id) {
+        if ($activity->lecturer_id !== Auth::user()->lecturer->lecture_id) {
             abort(403, 'Anda tidak memiliki otorisasi untuk menyelesaikan aktivitas ini.');
         }
 
