@@ -16,7 +16,11 @@ export default function Toast({
             setProgress((prev) => {
                 if (prev <= 0) {
                     clearInterval(interval);
-                    onClose && onClose(); // <-- auto close parent
+
+                    queueMicrotask(() => {
+                        onClose && onClose();
+                    });
+
                     return 0;
                 }
                 return prev - step;

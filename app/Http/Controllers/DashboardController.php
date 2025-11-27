@@ -24,13 +24,13 @@ class DashboardController extends Controller
         if ($user->role->role_name === 'admin') {
 
             $activities = Activity::with('activityType')->latest()->take(5)->get();
-        } elseif ($user->role->role_name === 'Dosen') {
+        } elseif ($user->role->role_name === 'dosen') {
             if ($user->lecturer) {
                 $activities = $user->lecturer->supervisions->map(function ($supervision) {
                     return $supervision->activity;
                 })->unique()->values();
             }
-        } elseif ($user->role->role_name === 'Mahasiswa') {
+        } elseif ($user->role->role_name === 'mahasiswa') {
             if ($user->student) {
                 $activities = $user->student->teamMembers->map(function ($teamMember) {
                     return $teamMember->team->activity;
@@ -46,8 +46,8 @@ class DashboardController extends Controller
             $totalCompetition = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Competition'))->count();
 
             $systemStats = [
-                'totalStudents' => User::whereHas('role', fn($q) => $q->where('role_name', 'Mahasiswa'))->count(),
-                'totalLecturers' => User::whereHas('role', fn($q) => $q->where('role_name', 'Dosen'))->count(),
+                'totalStudents' => User::whereHas('role', fn($q) => $q->where('role_name', 'mahasiswa'))->count(),
+                'totalLecturers' => User::whereHas('role', fn($q) => $q->where('role_name', 'dosen'))->count(),
                 'activeProjects' => [
                     'pkl' => $totalPkl,
                     'thesis' => $totalThesis,
@@ -67,8 +67,8 @@ class DashboardController extends Controller
 
 
         $stats = [
-            'total_students' => User::whereHas('role', fn($q) => $q->where('role_name', 'Mahasiswa'))->count(),
-            'total_lecturers' => User::whereHas('role', fn($q) => $q->where('role_name', 'Dosen'))->count(),
+            'total_students' => User::whereHas('role', fn($q) => $q->where('role_name', 'mahasiswa'))->count(),
+            'total_lecturers' => User::whereHas('role', fn($q) => $q->where('role_name', 'dosen'))->count(),
             'active_relations' => Supervision::count(),
             'pending_matches' => Supervision::where('supervision_status', 'Pending')->count(),
         ];

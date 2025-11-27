@@ -40,59 +40,72 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../Components/ui/select";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/AlertDialog";
+import { toast } from "sonner";
 
-export default function TimelineProgressPage({
-    user,
-    supervisions
-}) {
+export default function TimelineProgressPage({ user, supervisions }) {
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+    const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
 
     // selectedTimelineItem tidak lagi dibutuhkan karena kita mengupdate activity secara keseluruhan
     // const [selectedTimelineItem, setSelectedTimelineItem] = useState(null);
 
     const [updateNote, setUpdateNote] = useState("");
-    const [updateStatus, setUpdateStatus] = useState ("");
+    const [updateStatus, setUpdateStatus] = useState("");
 
     const userRole = user?.role?.role_name;
 
-    const studentActivities = supervisions?.map(sv => ({
-        id: sv.id,
-        activityType: sv.activityType,
-        activityName: sv.activityName,
-        supervisor: sv.supervisor,
-        lecturerName: sv.lecturerName,
-        startDate: sv.startDate,
-        endDate: sv.endDate,
-        status: sv.status,
-        timeline: sv.timeline?.map(log => ({
-            id: log.id,
-            activity_id: log.activity_id,
-            description: log.description,
-            dueDate: log.log_date,
-        })) ?? []
-    })) ?? [];
+    const studentActivities =
+        supervisions?.map((sv) => ({
+            id: sv.id,
+            activityType: sv.activityType,
+            activityName: sv.activityName,
+            supervisor: sv.supervisor,
+            lecturerName: sv.lecturerName,
+            startDate: sv.startDate,
+            endDate: sv.endDate,
+            status: sv.status,
+            timeline:
+                sv.timeline?.map((log) => ({
+                    id: log.id,
+                    activity_id: log.activity_id,
+                    description: log.description,
+                    dueDate: log.log_date,
+                })) ?? [],
+        })) ?? [];
 
-    const supervisedStudents = supervisions?.map(sv => ({
-        id: sv.id,
-        studentName: sv.individualStudentName,
-        studentNIM: sv.individualStudentNim,
-        activityType: sv.activityType,
-        activityName: sv.activityName,
-        status: sv.status,
-        lastUpdate: sv.lastUpdate,
-        isTeam:sv.isTeam,
-        teamName:sv.teamName,
-        teamMembers:sv.teamMembers,
-        timeline: sv.activityLogs?.map(log => ({
-            id: log.id,
-            activity_id: log.activity_id,
-            description: log.description,
-            dueDate: log.log_date,
-        })) ?? []
-    })) ?? [];
+    const supervisedStudents =
+        supervisions?.map((sv) => ({
+            id: sv.id,
+            studentName: sv.individualStudentName,
+            studentNIM: sv.individualStudentNim,
+            activityType: sv.activityType,
+            activityName: sv.activityName,
+            status: sv.status,
+            lastUpdate: sv.lastUpdate,
+            isTeam: sv.isTeam,
+            teamName: sv.teamName,
+            teamMembers: sv.teamMembers,
+            timeline:
+                sv.activityLogs?.map((log) => ({
+                    id: log.id,
+                    activity_id: log.activity_id,
+                    description: log.description,
+                    dueDate: log.log_date,
+                })) ?? [],
+        })) ?? [];
 
     const getActivityStatusColor = (status) => {
         switch (status) {
@@ -139,12 +152,7 @@ export default function TimelineProgressPage({
     };
 
     const handleSaveUpdate = () => {
-        const activityId = selectedActivity?.timeline[0].activity_id;
-
-        if (!activityId) {
-            console.error("Activity ID is missing for update.");
-            return;
-        }
+        const activityId = selectedActivity?.timeline?.[0]?.activity_id;
 
         const data = {
             activity_id: activityId,
@@ -152,78 +160,122 @@ export default function TimelineProgressPage({
             description: updateNote,
         };
 
-        console.log("Saving new progress log via Inertia POST:", data);
-
         router.post(route(`timeline.updatelog`), data, {
             preserveScroll: true,
             onSuccess: () => {
-                console.log("Activity log saved successfully!");
-                router.reload({ only: ['supervisions'] });
-                toast("Log progres berhasil ditambahkan!");
-            },
-            onError: (errors) => {
-                console.error("Error saving activity log:", errors);
-                toast("Failed to save progress. Check console for details.");
-            },
+                router.reload({
+                    only: ["supervisions"],
+                    onFinish: () => {
+                        // Update state dialog agar pakai data baru
+                        const updated = supervisions.find(
+                            (sv) => sv.id === selectedActivity.id
+                        );
 
-            onFinish: () => {
-                // Lakukan pembersihan state setelah request (berhasil atau gagal)
-                setIsUpdateDialogOpen(false);
-                setUpdateNote("");
-                setUpdateStatus("");
+                        if (updated) {
+                            setSelectedActivity(updated);
+                        }
 
-                // Tutup dialog update dan buka kembali dialog detail
-                setIsDialogOpen(true);
-            }
+                        setIsUpdateDialogOpen(false);
+                        setIsDialogOpen(false);
+
+                        toast("Log progres berhasil ditambahkan!");
+                    },
+                });
+            },
         });
     };
 
     const handleCompleteActivity = () => {
-    // Menggunakan selectedStudent karena ini adalah tampilan Dosen
         const activityToComplete = selectedStudent;
-
-        if (!activityToComplete || activityToComplete.status === 'completed') return;
-
-        if (!confirm(`Are you sure you want to mark activity "${activityToComplete.activityName}" as Completed?`)) {
+        if (!activityToComplete || activityToComplete.status === "completed")
             return;
-        }
 
-        router.patch(route('timeline.complete', activityToComplete.timeline[0].activity_id), {
-            status: 'completed',
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                console.log("Activity marked as completed.");
-                router.reload({ only: ['supervisions'] });
-            },
-            onError: (errors) => {
-                console.error("Error completing activity:", errors);
-                alert("Failed to mark activity as completed. Check console for details.");
-            },
-            onFinish: () => {
-                setIsDialogOpen(false);
+        router.patch(
+            route(
+                "timeline.complete",
+                activityToComplete?.timeline?.[0]?.activity_id
+            ),
+            { status: "completed" },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload({
+                        only: ["supervisions"],
+                        onFinish: () => {
+                            const updated = supervisions.find(
+                                (sv) => sv.id === selectedStudent.id
+                            );
+
+                            if (updated) setSelectedStudent(updated);
+                        },
+                    });
+                },
+                onError: (errors) => {
+                    console.error("Error completing activity:", errors);
+                    alert(
+                        "Failed to mark activity as completed. Check console for details."
+                    );
+                },
+                onFinish: () => {
+                    setIsDialogOpen(false);
+                },
             }
-        });
+        );
     };
 
     const renderLecturerActionButtons = () => {
         if (!selectedStudent) return null;
 
-        const isCompleted = selectedStudent.status === 'completed';
+        const isCompleted = selectedStudent.status === "completed";
 
         return (
             <>
-                {/* Tombol Completed - Hanya muncul jika belum completed */}
+                {/* TOMBOL UNTUK MEMBUKA DIALOG */}
                 {!isCompleted && (
                     <Button
                         variant="default"
-                        onClick={handleCompleteActivity}
+                        onClick={() => setIsCompleteDialogOpen(true)}
                         className="bg-green-600 hover:bg-green-700 gap-2"
                     >
                         <CheckCircle2 className="w-4 h-4" />
                         Mark as Completed
                     </Button>
                 )}
+
+                {/* ALERT DIALOG */}
+                <AlertDialog
+                    open={isCompleteDialogOpen}
+                    onOpenChange={setIsCompleteDialogOpen}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                Mark Activity as Completed?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to mark activity "
+                                <span className="font-semibold">
+                                    {selectedStudent?.activityName}
+                                </span>
+                                " as completed?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                            <AlertDialogAction
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => {
+                                    handleCompleteActivity();
+                                    setIsCompleteDialogOpen(false);
+                                }}
+                            >
+                                Mark Completed
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </>
         );
     };
@@ -312,13 +364,17 @@ export default function TimelineProgressPage({
                                                     )}{" "}
                                                     -{" "}
                                                     {activity.endDate
-                                                        ? new Date(activity.endDate).toLocaleDateString("en-US", {
-                                                            month: "short",
-                                                            day: "numeric",
-                                                            year: "numeric",
-                                                        })
-                                                        : "Present"
-                                                    }
+                                                        ? new Date(
+                                                              activity.endDate
+                                                          ).toLocaleDateString(
+                                                              "en-US",
+                                                              {
+                                                                  month: "short",
+                                                                  day: "numeric",
+                                                                  year: "numeric",
+                                                              }
+                                                          )
+                                                        : "Present"}
                                                 </div>
                                             </div>
                                         </div>
@@ -367,8 +423,7 @@ export default function TimelineProgressPage({
                                         {
                                             studentActivities.filter(
                                                 (a) =>
-                                                    a.status ===
-                                                        "completed" ||
+                                                    a.status === "completed" ||
                                                     a.status === "on progress"
                                             ).length
                                         }
@@ -824,8 +879,6 @@ export default function TimelineProgressPage({
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            {/* TOMBOL UPDATE PROGRESS LAMA DIHAPUS DARI SINI */}
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -836,19 +889,22 @@ export default function TimelineProgressPage({
                             </div>
                         )}
 
-
                         {userRole === "dosen" && selectedStudent && (
                             <div className="space-y-6">
                                 {/* Student Info */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-accent rounded-lg">
                                     <div className="space-y-1">
                                         <p className="text-sm text-muted-foreground">
-                                            {selectedStudent.isTeam ? "Team" : "Student"}
+                                            {selectedStudent.isTeam
+                                                ? "Team"
+                                                : "Student"}
                                         </p>
 
                                         {/* Judul utama */}
                                         <p className="text-sm">
-                                            {selectedStudent.isTeam ? selectedStudent.teamName : selectedStudent.studentName}
+                                            {selectedStudent.isTeam
+                                                ? selectedStudent.teamName
+                                                : selectedStudent.studentName}
                                         </p>
 
                                         {/* Jika tim, tampilkan informasi setiap member */}
@@ -857,16 +913,18 @@ export default function TimelineProgressPage({
                                                 <p className="text-sm text-muted-foreground">
                                                     Members
                                                 </p>
-                                                {selectedStudent.teamMembers?.map((m, idx) => (
-                                                    <div key={idx}>
-                                                        <p className="text-sm">
-                                                            {m.name}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {m.nim}
-                                                        </p>
-                                                    </div>
-                                                ))}
+                                                {selectedStudent.teamMembers?.map(
+                                                    (m, idx) => (
+                                                        <div key={idx}>
+                                                            <p className="text-sm">
+                                                                {m.name}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {m.nim}
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                )}
                                             </div>
                                         ) : (
                                             <p className="text-xs text-muted-foreground">
@@ -897,8 +955,8 @@ export default function TimelineProgressPage({
                                 <div className="space-y-4">
                                     <h4>Progress Timeline</h4>
                                     <div className="space-y-4">
-                                        {selectedStudent.timeline.map(
-                                            (item, index) => (
+                                        {selectedStudent?.timeline?.map(
+                                            (item) => (
                                                 <div
                                                     key={item.id}
                                                     className="gap-4"
@@ -941,22 +999,29 @@ export default function TimelineProgressPage({
                         )}
 
                         <div className="flex justify-end gap-2">
-                            {/* TOMBOL UPDATE PROGRESS BARU DITEMPATKAN DI SINI */}
-                            {userRole ===
-                                "mahasiswa" && (
+                            {/* TOMBOL UPDATE PROGRESS — hanya untuk mahasiswa dan jika belum completed */}
+                            {userRole === "mahasiswa" &&
+                                selectedActivity?.status !== "completed" && (
                                     <Button
-                                        variant="default" // Mengubah ke default agar lebih menonjol
+                                        variant="default"
                                         className="gap-2"
                                         onClick={() =>
-                                            // Memanggil fungsi baru dengan selectedActivity
-                                            handleUpdateProgress(selectedActivity)
+                                            handleUpdateProgress(
+                                                selectedActivity
+                                            )
                                         }
                                     >
                                         <Plus className="w-4 h-4" />
                                         Update Progress
                                     </Button>
                                 )}
-                            {userRole === "dosen" && selectedStudent && renderLecturerActionButtons()}
+
+                            {/* TOMBOL DOSEN — render hanya jika belum completed */}
+                            {userRole === "dosen" &&
+                                selectedStudent &&
+                                selectedStudent.status !== "completed" &&
+                                renderLecturerActionButtons()}
+
                             <Button onClick={() => setIsDialogOpen(false)}>
                                 Close
                             </Button>

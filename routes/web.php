@@ -117,6 +117,11 @@ Route::patch('/timeline/{activity}/complete', [TimelineProgressController::class
     ->middleware(['auth', 'verified', 'role:dosen'])
     ->name('timeline.complete');
 
+Route::get('/timeline/{id}/detail', [TimelineProgressController::class, 'getActivityDetail'])
+    ->middleware(['auth', 'verified', 'role:mahasiswa|dosen'])
+    ->name('timeline.detail');
+
+
 // --- FITUR UMUM / DOSEN ---
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dosen bisa melihat ini, Mahasiswa juga mungkin (tergantung logic controller)

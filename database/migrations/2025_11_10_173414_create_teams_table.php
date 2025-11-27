@@ -12,7 +12,6 @@ return new class extends Migration
             $table->bigIncrements('team_id');
 
             $table->string('team_name', 100);
-            $table->unsignedBigInteger('activity_id');
 
             $table->text('description')->nullable();
 
