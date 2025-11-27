@@ -13,100 +13,102 @@ class ApprovalCenterController extends Controller
 {
 
     public function index()
-{
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-    // Jika bukan dosen → kosongkan saja
-    if ($user->role_name !== 'dosen' || !$user->lecturer) {
-        return Inertia::render('ApprovalPage', [
-            'approvalRequests' => collect()
-        ]);
-    }
+        // Jika bukan dosen → kosongkan saja
+        if ($user->role_name !== 'dosen' || !$user->lecturer) {
+            return Inertia::render('ApprovalPage', [
+                'approvalRequests' => collect()
+            ]);
+        }
 
-    $lecturerId = $user->lecturer->lecturer_id;
+        $lecturerId = $user->lecturer->lecturer_id;
 
-    // Ambil semua supervision + relasi yang dibutuhkan
-    $supervisions = Supervision::with([
+        // Ambil semua supervision + relasi yang dibutuhkan
+        $supervisions = Supervision::with([
             'student.user',              // mahasiswa pengaju individu (kalau ada)
             'lecturer.user',             // dosen pembimbing
             'activity.internship.name', // untuk ambil tempat magang PKL
             'team.members.student.masterStudent',         // anggota tim + data user
         ])
-        ->where('lecturer_id', $lecturerId)
-        ->orderBy('supervision_id', 'desc')
-        ->get()
-        ->map(function ($item) {
+            ->where('lecturer_id', $lecturerId)
+            ->orderBy('supervision_id', 'desc')
+            ->get()
+            ->map(function ($item) {
 
-            /* ===== TEAM HANDLING ===== */
-            $teamName = null;
-            $teamMembers = [];
+                /* ===== TEAM HANDLING ===== */
+                $teamName = null;
+                $teamMembers = [];
 
-            if ($item->team) {
-                // Nama tim
-                $teamName = $item->team->team_name ?? '-';
+                if ($item->team) {
+                    // Nama tim
+                    $teamName = $item->team->team_name ?? '-';
 
-                // Urutkan leader berdasarkan pivot id
-                $sortedMembers = $item->team->members
-                    ->sortBy('pivot.id')
-                    ->values();
+                    // Urutkan leader berdasarkan pivot id
+                    $sortedMembers = $item->team->members
+                        ->sortBy('pivot.id')
+                        ->values();
 
-                // Konversi ke nama student
-                $teamMembers = $sortedMembers->map(function ($m) {
-                    return [
-                        'name'  => $m->student->name ?? $m->full_name ?? 'Unknown',
-                        'nim'   => $m->student->nim,
-                        'email' => $m->student->email ?? '-',
-                    ];
-                });
-            }
+                    // Konversi ke nama student
+                    $teamMembers = $sortedMembers->map(function ($m) {
+                        return [
+                            'name'  => $m->student->name ?? $m->full_name ?? 'Unknown',
+                            'nim'   => $m->student->nim,
+                            'email' => $m->student->email ?? '-',
+                        ];
+                    });
+                }
 
-            /* ===== INTERNSHIP COMPANY ===== */
-            $companyName = null;
-            if ($item->activity->activity_type === 'pkl') {
-                $companyName = $item->activity->internship->company->company_name
-                    ?? 'Unknown Company';
-            }
+                /* ===== INTERNSHIP COMPANY ===== */
+                $companyName = null;
+                if ($item->activity->activity_type === 'pkl') {
+                    $companyName = $item->activity->internship->company->company_name
+                        ?? 'Unknown Company';
+                }
 
-            return [
-                /* ===== SUPERVISION ===== */
-                'id' => $item->supervision_id,
-                'status' => ($item->supervision_status ?? 'Pending'),
-                'submittedDate' => $item->assigned_date
-                    ? Carbon::parse($item->assigned_date)->format('Y-m-d')
-                    : now()->format('Y-m-d'),
-                'notes' => $item->notes ?? null,
+                return [
+                    /* ===== SUPERVISION ===== */
+                    'id' => $item->supervision_id,
+                    'status' => $item->supervision_status === 'completed'
+                        ? 'approved'
+                        : ($item->supervision_status ?? 'pending'),
+                    'submittedDate' => $item->assigned_date
+                        ? Carbon::parse($item->assigned_date)->format('Y-m-d')
+                        : now()->format('Y-m-d'),
+                    'notes' => $item->notes ?? null,
 
-                /* ===== LECTURER ===== */
-                'lecturerName' => $item->lecturer->name ?? 'Unknown',
-                'lecturerEmail' => $item->lecturer->email ?? '-',
+                    /* ===== LECTURER ===== */
+                    'lecturerName' => $item->lecturer->name ?? 'Unknown',
+                    'lecturerEmail' => $item->lecturer->email ?? '-',
 
-                /* ===== ACTIVITY ===== */
-                'activityType' => $item->activity->activityType->type_name ?? '-',
-                'activityName' => $item->activity->title ?? 'Untitled Project',
-                'activityDescription' => $item->activity->description ?? '-',
-                'companyName' => $companyName,
+                    /* ===== ACTIVITY ===== */
+                    'activityType' => $item->activity->activityType->type_name ?? '-',
+                    'activityName' => $item->activity->title ?? 'Untitled Project',
+                    'activityDescription' => $item->activity->description ?? '-',
+                    'companyName' => $companyName,
 
-                 /* ===== STUDENT / TEAM ===== */
-                'isTeam' => $item->team_id !== null,
-                'teamName' => $teamName,
-                'teamMembers' => $teamMembers,
+                    /* ===== STUDENT / TEAM ===== */
+                    'isTeam' => $item->team_id !== null,
+                    'teamName' => $teamName,
+                    'teamMembers' => $teamMembers,
 
-                /* individu */
-                'individualStudentName'  => $item->student->name  ?? null,
-                'individualStudentEmail' => $item->student->email ?? null,
-                'individualStudentNim'   => $item->student->nim ?? null,
-                'individualStudentFocus' => $item->student->focus ?? null,
+                    /* individu */
+                    'individualStudentName'  => $item->student->name  ?? null,
+                    'individualStudentEmail' => $item->student->email ?? null,
+                    'individualStudentNim'   => $item->student->nim ?? null,
+                    'individualStudentFocus' => $item->student->focus ?? null,
 
-                /* request type untuk frontend */
-                'requestType' => 'supervision',
-            ];
-        });
+                    /* request type untuk frontend */
+                    'requestType' => 'supervision',
+                ];
+            });
 
-    return Inertia::render('ApprovalPage', [
-        'approvalRequests' => $supervisions
-    ]);
-}
+        return Inertia::render('ApprovalPage', [
+            'approvalRequests' => $supervisions
+        ]);
+    }
 
 
     // Handle Approve/Reject
@@ -128,7 +130,7 @@ class ApprovalCenterController extends Controller
 
         $supervision->update([
             'supervision_status' => $status,
-            'notes'             => $request -> notes
+            'notes'             => $request->notes
         ]);
 
         if ($supervision->activity_id && $status == 'approved') {

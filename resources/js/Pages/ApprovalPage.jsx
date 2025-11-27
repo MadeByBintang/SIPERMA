@@ -433,7 +433,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
 
                 {/* View Details Dialog */}
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Request Details</DialogTitle>
                             <DialogDescription>
@@ -594,7 +594,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                                                     key={idx}
                                                                     variant="secondary"
                                                                 >
-                                                                    {member.name}
+                                                                    {
+                                                                        member.name
+                                                                    }
                                                                 </Badge>
                                                             )
                                                         )}

@@ -197,7 +197,7 @@ export default function MatchingPage({ user, matches = [] }) {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border max-h-64 overflow-y-auto">
+                        <div className="rounded-md border max-h-90 overflow-y-auto">
                             <Table className="table-auto w-full">
                                 <TableHeader>
                                     <TableRow>
