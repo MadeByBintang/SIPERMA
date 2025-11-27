@@ -10,12 +10,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/Components/ui/card";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         username: "",
         password: "",
     });
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -70,16 +74,34 @@ export default function LoginPage({ status, canResetPassword }) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    placeholder="Masukkan password"
-                                    onChange={(e) =>
-                                        setData("password", e.target.value)
-                                    }
-                                    required
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={
+                                            showPassword ? "text" : "password"
+                                        }
+                                        value={data.password}
+                                        placeholder="Masukkan password"
+                                        onChange={(e) =>
+                                            setData("password", e.target.value)
+                                        }
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowPassword(!showPassword)
+                                        }
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="w-4 h-4" />
+                                        ) : (
+                                            <Eye className="w-4 h-4" />
+                                        )}
+                                    </button>
+                                </div>
+
                                 {errors.password && (
                                     <p className="text-sm text-red-600">
                                         {errors.password}
