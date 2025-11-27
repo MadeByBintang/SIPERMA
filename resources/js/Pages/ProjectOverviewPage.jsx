@@ -42,7 +42,7 @@ import {
     SelectValue,
 } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
-import { Progress } from "@/Components/ui/progress";
+// import { Progress } from "@/Components/ui/progress";
 import {
     Search,
     Edit,
@@ -127,7 +127,7 @@ export default function ProjectOverviewPage({ projects = [] }) {
         setFormData({
             title: project.title || "",
             description: project.description || "",
-            progress: project.progress || 0,
+            // progress: project.progress || 0,
             status: project.status || "pending",
             startDate: project.startDate || "",
             endDate: project.endDate || "",
@@ -378,7 +378,7 @@ export default function ProjectOverviewPage({ projects = [] }) {
                                                     <TableHead className="min-w-[300px]">Project</TableHead>
                                                     <TableHead>Team Members</TableHead>
                                                     <TableHead>Supervisor</TableHead>
-                                                    <TableHead>Progress</TableHead>
+                                                    {/* <TableHead>Progress</TableHead> */}
                                                     <TableHead>Status</TableHead>
                                                     <TableHead className="text-right">Actions</TableHead>
                                                 </TableRow>
@@ -419,14 +419,14 @@ export default function ProjectOverviewPage({ projects = [] }) {
                                                                     <span className="text-sm">{project.supervisor}</span>
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell>
+                                                            {/* <TableCell>
                                                                 <div className="space-y-2 min-w-[120px]">
                                                                     <div className="flex items-center justify-between">
                                                                         <span className="text-sm">{project.progress}%</span>
                                                                     </div>
                                                                     <Progress value={project.progress} className="h-2" />
                                                                 </div>
-                                                            </TableCell>
+                                                            </TableCell> */}
                                                             <TableCell>
                                                                 {getStatusBadge(project.status)}
                                                             </TableCell>
@@ -538,13 +538,13 @@ export default function ProjectOverviewPage({ projects = [] }) {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
+                                {/* <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label>Progress</Label>
                                         <span className="text-sm">{selectedProject.progress}%</span>
                                     </div>
                                     <Progress value={selectedProject.progress} className="h-3" />
-                                </div>
+                                </div> */}
                             </div>
                         )}
                         <DialogFooter>
@@ -559,7 +559,7 @@ export default function ProjectOverviewPage({ projects = [] }) {
                     <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Edit Project</DialogTitle>
-                            <DialogDescription>Update project information and progress</DialogDescription>
+                            <DialogDescription>Update project information</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
@@ -615,7 +615,7 @@ export default function ProjectOverviewPage({ projects = [] }) {
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
+                            {/* <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="progress">Progress</Label>
                                     <span className="text-sm text-muted-foreground">{formData.progress || 0}%</span>
@@ -630,7 +630,7 @@ export default function ProjectOverviewPage({ projects = [] }) {
                                     onChange={(e) => setFormData({ ...formData, progress: e.target.value })}
                                     className="cursor-pointer"
                                 />
-                            </div>
+                            </div> */}
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>

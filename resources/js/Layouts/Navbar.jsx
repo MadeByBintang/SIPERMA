@@ -46,7 +46,7 @@ export default function Navbar({ setMobileMenuOpen }) {
     const adminMenu = [
         { href: "/admin/dashboard", label: "Dashboard" },
         { href: "/admin/users", label: "Users" },
-        { href: "/admin/projects", label: "Project" },
+        { href: "/admin/projects", label: "Projects" },
         { href: "/admin/relations", label: "Relations" },
         { href: "/admin/reports", label: "Reports" },
         { href: "/admin/settings", label: "Settings" },

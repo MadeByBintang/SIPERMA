@@ -16,13 +16,13 @@ class DashboardController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
+
         $user->load('role', 'student.teamMembers.team.activity', 'lecturer.supervisions.activity');
 
-        
+
         $activities = collect();
-        if ($user->role->role_name === 'Admin') {
-         
+        if ($user->role->role_name === 'admin') {
+
             $activities = Activity::with('activityType')->latest()->take(5)->get();
         } elseif ($user->role->role_name === 'Dosen') {
             if ($user->lecturer) {
@@ -38,9 +38,9 @@ class DashboardController extends Controller
             }
         }
 
-        if ($user->role->role_name === 'Admin') {
-            
-            
+        if ($user->role->role_name === 'admin') {
+
+
             $totalPkl = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'PKL'))->count();
             $totalThesis = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Thesis'))->count();
             $totalCompetition = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Competition'))->count();
@@ -58,10 +58,10 @@ class DashboardController extends Controller
                 'rejectedGuidance' => Supervision::where('supervision_status', 'Rejected')->count(),
             ];
 
-        
+
             return Inertia::render('AdminDashboardPage', [
-                'systemStats' => $systemStats, 
-                'notifications' => [], 
+                'systemStats' => $systemStats,
+                'notifications' => [],
             ]);
         }
 
@@ -69,11 +69,11 @@ class DashboardController extends Controller
         $stats = [
             'total_students' => User::whereHas('role', fn($q) => $q->where('role_name', 'Mahasiswa'))->count(),
             'total_lecturers' => User::whereHas('role', fn($q) => $q->where('role_name', 'Dosen'))->count(),
-            'active_relations' => Supervision::count(), 
+            'active_relations' => Supervision::count(),
             'pending_matches' => Supervision::where('supervision_status', 'Pending')->count(),
         ];
 
-    
+
         return Inertia::render('Dashboard', [
             'activities' => $activities,
             'stats' => $stats,

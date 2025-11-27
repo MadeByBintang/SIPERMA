@@ -171,9 +171,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
 
-    // 5. System Settings
-    Route::get('/settings', [SystemSettingsController::class, 'index'])
-        ->name('settings');
+    // // 5. System Settings
+    // Route::get('/settings', [SystemSettingsController::class, 'index'])
+    //     ->name('settings');
 });
 
 require __DIR__ . '/auth.php';

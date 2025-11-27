@@ -72,7 +72,7 @@ export default function Sidebar({ setMobileMenuOpen }) {
             icon: GitBranch,
         },
         { href: "/admin/reports", label: "System Reports", icon: FileText },
-        { href: "/admin/settings", label: "System Settings", icon: Settings },
+        // { href: "/admin/settings", label: "System Settings", icon: Settings },
         { href: "/profile/admin", label: "Admin Profile", icon: User },
     ];
 

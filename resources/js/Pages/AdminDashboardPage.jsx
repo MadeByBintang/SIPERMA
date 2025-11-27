@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Head, Link } from "@inertiajs/react"; // Gabungkan import
+import { Head, router } from "@inertiajs/react"; // Gabungkan import
 import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
@@ -32,15 +32,9 @@ import {
 } from "@/Components/ui/dialog";
 
 // 1. TERIMA PROPS DARI CONTROLLER DISINI
-export default function AdminDashboardPage({ systemStats, notifications }) { 
+export default function AdminDashboardPage({ systemStats, notifications }) {
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-
-    // HAPUS BAGIAN "const systemStats = { ... }" YANG HARDCODED
-    // HAPUS BAGIAN "const notifications = [ ... ]" YANG HARDCODED
-    
-    // Catatan: Karena di controller kamu mengirim 'notifications' => [], 
-    // maka list notifikasi akan kosong sampai kamu memperbaiki query notifikasi di Controller.
 
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -71,6 +65,10 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
         setIsDetailDialogOpen(true);
     };
 
+    const handleQuickAction = (page) => {
+        router.visit(`/admin/${page}`);
+    };
+
     return (
         <MainLayout>
             <Head title="Admin Dashboard" />
@@ -88,7 +86,9 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     {/* Total Students */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Total Students</CardTitle>
+                            <CardTitle className="text-sm">
+                                Total Students
+                            </CardTitle>
                             <Users className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -108,7 +108,9 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     {/* Total Lecturers */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Total Lecturers</CardTitle>
+                            <CardTitle className="text-sm">
+                                Total Lecturers
+                            </CardTitle>
                             <UserCheck className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -128,7 +130,9 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     {/* Active Projects */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Active Projects</CardTitle>
+                            <CardTitle className="text-sm">
+                                Active Projects
+                            </CardTitle>
                             <Briefcase className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -136,9 +140,12 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                                 <div className="flex items-baseline gap-2">
                                     {/* MENGHITUNG TOTAL DARI DATA DATABASE */}
                                     <span className="text-3xl">
-                                        {(systemStats.activeProjects?.pkl || 0) +
-                                            (systemStats.activeProjects?.thesis || 0) +
-                                            (systemStats.activeProjects?.competition || 0)}
+                                        {(systemStats.activeProjects?.pkl ||
+                                            0) +
+                                            (systemStats.activeProjects
+                                                ?.thesis || 0) +
+                                            (systemStats.activeProjects
+                                                ?.competition || 0)}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -151,7 +158,9 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     {/* Pending Approvals */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">Pending Approvals</CardTitle>
+                            <CardTitle className="text-sm">
+                                Pending Approvals
+                            </CardTitle>
                             <Clock className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -182,28 +191,100 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                         <CardContent>
                             <div className="space-y-4">
                                 {/* PKL */}
-                                <ProjectProgressItem 
-                                    label="PKL (Internship)" 
-                                    count={systemStats.activeProjects?.pkl || 0} 
-                                    total={(systemStats.activeProjects?.pkl || 0) + (systemStats.activeProjects?.thesis || 0) + (systemStats.activeProjects?.competition || 0)}
-                                    color="bg-blue-500"
-                                />
-                                
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                            <span className="text-sm">
+                                                PKL (Internship)
+                                            </span>
+                                        </div>
+                                        <span className="text-sm">
+                                            {systemStats.activeProjects?.pkl ||
+                                                0}{" "}
+                                            projects
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-muted rounded-full h-2">
+                                        <div
+                                            className="bg-blue-500 h-2 rounded-full"
+                                            style={{
+                                                width: `${
+                                                    (systemStats.activeProjects
+                                                        ?.pkl || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.thesis || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.competition || 0)
+                                                }%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
                                 {/* Thesis */}
-                                <ProjectProgressItem 
-                                    label="Thesis" 
-                                    count={systemStats.activeProjects?.thesis || 0} 
-                                    total={(systemStats.activeProjects?.pkl || 0) + (systemStats.activeProjects?.thesis || 0) + (systemStats.activeProjects?.competition || 0)}
-                                    color="bg-green-500"
-                                />
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                                            <span className="text-sm">
+                                                Thesis
+                                            </span>
+                                        </div>
+                                        <span className="text-sm">
+                                            {systemStats.activeProjects
+                                                ?.thesis || 0}{" "}
+                                            projects
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-muted rounded-full h-2">
+                                        <div
+                                            className="bg-green-500 h-2 rounded-full"
+                                            style={{
+                                                width: `${
+                                                    (systemStats.activeProjects
+                                                        ?.pkl || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.thesis || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.competition || 0)
+                                                }%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
 
                                 {/* Competition */}
-                                <ProjectProgressItem 
-                                    label="Competition" 
-                                    count={systemStats.activeProjects?.competition || 0} 
-                                    total={(systemStats.activeProjects?.pkl || 0) + (systemStats.activeProjects?.thesis || 0) + (systemStats.activeProjects?.competition || 0)}
-                                    color="bg-orange-500"
-                                />
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                            <span className="text-sm">
+                                                Competition
+                                            </span>
+                                        </div>
+                                        <span className="text-sm">
+                                            {systemStats.activeProjects
+                                                ?.competition || 0}{" "}
+                                            projects
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-muted rounded-full h-2">
+                                        <div
+                                            className="bg-orange-500 h-2 rounded-full"
+                                            style={{
+                                                width: `${
+                                                    (systemStats.activeProjects
+                                                        ?.pkl || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.thesis || 0) +
+                                                    (systemStats.activeProjects
+                                                        ?.competition || 0)
+                                                }%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -212,38 +293,77 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     <Card>
                         <CardHeader>
                             <CardTitle>Guidance Approval Status</CardTitle>
-                            <CardDescription>Overview of lecturer guidance requests</CardDescription>
+                            <CardDescription>
+                                Overview of lecturer guidance requests
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                <StatusCard 
-                                    icon={Clock} 
-                                    title="Pending Approvals" 
-                                    subtitle="Awaiting response" 
-                                    count={systemStats.pendingApprovals} 
-                                    theme="orange" 
-                                />
-                                <StatusCard 
-                                    icon={CheckCircle2} 
-                                    title="Approved Guidance" 
-                                    subtitle="Successfully matched" 
-                                    count={systemStats.approvedGuidance} 
-                                    theme="green" 
-                                />
-                                <StatusCard 
-                                    icon={AlertCircle} 
-                                    title="Rejected Requests" 
-                                    subtitle="Declined by lecturers" 
-                                    count={systemStats.rejectedGuidance} 
-                                    theme="red" 
-                                />
+                                {/* Pending */}
+                                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-orange-100 rounded-lg">
+                                            <Clock className="w-4 h-4 text-orange-700" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm">
+                                                Pending Approvals
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Awaiting response
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl text-orange-700">
+                                        {systemStats.pendingApprovals}
+                                    </span>
+                                </div>
+
+                                {/* Approved */}
+                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-green-100 rounded-lg">
+                                            <CheckCircle2 className="w-4 h-4 text-green-700" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm">
+                                                Approved Guidance
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Successfully matched
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl text-green-700">
+                                        {systemStats.approvedGuidance}
+                                    </span>
+                                </div>
+
+                                {/* Rejected */}
+                                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-red-100 rounded-lg">
+                                            <AlertCircle className="w-4 h-4 text-red-700" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm">
+                                                Rejected Requests
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Declined by lecturers
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl text-red-700">
+                                        {systemStats.rejectedGuidance}
+                                    </span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* System Notifications */}
-                {/* LOGIKA UNTUK MENANGANI ARRAY KOSONG DARI CONTROLLER */}
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -255,21 +375,73 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                             </div>
                             <Badge variant="outline" className="gap-2">
                                 <Bell className="w-3 h-3" />
-                                {notifications.length > 0 ? notifications.filter((n) => n.status === "pending").length : 0} pending
+                                {
+                                    notifications.filter(
+                                        (n) => n.status === "pending"
+                                    ).length
+                                }{" "}
+                                pending
                             </Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
                             {notifications.length === 0 ? (
-                                <p className="text-center text-sm text-muted-foreground py-4">No new notifications.</p>
+                                <p className="text-center text-sm text-muted-foreground py-4">
+                                    No new notifications.
+                                </p>
                             ) : (
                                 notifications.map((notification, index) => (
                                     <div key={notification.id}>
                                         <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
-                                            {/* ... (Isi notifikasi sama seperti sebelumnya) ... */}
-                                            {/* Kode notifikasi bisa Anda copy paste dari yang lama, tapi pastikan struktur datanya sesuai */}
-                                            <p>Notification Item (Perlu penyesuaian data DB)</p>
+                                            <div
+                                                className={`p-2 rounded-lg ${
+                                                    notification.status ===
+                                                    "pending"
+                                                        ? "bg-orange-100"
+                                                        : "bg-green-100"
+                                                }`}
+                                            >
+                                                {getNotificationIcon(
+                                                    notification.type
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-2 mb-1">
+                                                    <p className="line-clamp-1">
+                                                        {notification.title}
+                                                    </p>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`${getStatusColor(
+                                                            notification.status
+                                                        )} text-xs shrink-0`}
+                                                    >
+                                                        {notification.status}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground line-clamp-1 mb-1">
+                                                    {notification.description}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {notification.timestamp}
+                                                </p>
+                                            </div>
+                                            {notification.status ===
+                                                "pending" && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="shrink-0"
+                                                    onClick={() =>
+                                                        handleViewNotification(
+                                                            notification
+                                                        )
+                                                    }
+                                                >
+                                                    View
+                                                </Button>
+                                            )}
                                         </div>
                                         {index < notifications.length - 1 && (
                                             <Separator className="my-2" />
@@ -281,64 +453,446 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                     </CardContent>
                 </Card>
 
-                {/* Quick Actions tetap sama, hanya Link href yang perlu dipastikan benar */}
+                {/* Quick Actions */}
                 <Card>
-                     <CardHeader>
+                    <CardHeader>
                         <CardTitle>Quick Actions</CardTitle>
-                     </CardHeader>
-                     <CardContent>
-                        {/* ... Tombol-tombol Quick Actions ... */}
-                        <p className="text-sm text-muted-foreground">Menu navigasi (sudah benar)</p>
-                     </CardContent>
+                        <CardDescription>
+                            Common administrative tasks
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <Button
+                                variant="outline"
+                                className="gap-2 justify-start"
+                                onClick={() => handleQuickAction("users")}
+                            >
+                                <Users className="w-4 h-4" />
+                                Manage Users
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="gap-2 justify-start"
+                                onClick={() => handleQuickAction("projects")}
+                            >
+                                <Briefcase className="w-4 h-4" />
+                                View All Projects
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="gap-2 justify-start"
+                                onClick={() => handleQuickAction("relations")}
+                            >
+                                <CheckCircle2 className="w-4 h-4" />
+                                Review Relations
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="gap-2 justify-start"
+                                onClick={() => handleQuickAction("reports")}
+                            >
+                                <TrendingUp className="w-4 h-4" />
+                                System Reports
+                            </Button>
+                        </div>
+                    </CardContent>
                 </Card>
-                
+
+                {/* Notification Detail Dialog */}
+                <Dialog
+                    open={isDetailDialogOpen}
+                    onOpenChange={setIsDetailDialogOpen}
+                >
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Notification Details</DialogTitle>
+                            <DialogDescription>
+                                Complete information about this notification
+                            </DialogDescription>
+                        </DialogHeader>
+                        {selectedNotification && (
+                            <div className="space-y-6 py-4">
+                                {/* Notification Header */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`p-2 rounded-lg ${
+                                                selectedNotification.status ===
+                                                "pending"
+                                                    ? "bg-orange-100"
+                                                    : "bg-green-100"
+                                            }`}
+                                        >
+                                            {getNotificationIcon(
+                                                selectedNotification.type
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg">
+                                                {selectedNotification.title}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {selectedNotification.timestamp}
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant="outline"
+                                            className={getStatusColor(
+                                                selectedNotification.status
+                                            )}
+                                        >
+                                            {selectedNotification.status}
+                                        </Badge>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Details Grid */}
+                                {selectedNotification.details && (
+                                    <div className="space-y-4">
+                                        {selectedNotification.type ===
+                                            "guidance-request" && (
+                                            <>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Student
+                                                        </p>
+                                                        <div>
+                                                            <p>
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .studentName
+                                                                }
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .studentNim
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Requested Supervisor
+                                                        </p>
+                                                        <div>
+                                                            <p>
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerName
+                                                                }
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerNip
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Activity Type
+                                                        </p>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-blue-50 text-blue-700 border-blue-300"
+                                                        >
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .activityType
+                                                            }
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Request Date
+                                                        </p>
+                                                        <p className="text-sm">
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .requestDate
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Project Title
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedNotification
+                                                                .details
+                                                                .projectTitle
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {selectedNotification.type ===
+                                            "team-approval" && (
+                                            <>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Team Name
+                                                        </p>
+                                                        <p>
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .teamName
+                                                            }
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Activity Type
+                                                        </p>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-blue-50 text-blue-700 border-blue-300"
+                                                        >
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .activityType
+                                                            }
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Supervisor
+                                                        </p>
+                                                        <div>
+                                                            <p>
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerName
+                                                                }
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerNip
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Request Date
+                                                        </p>
+                                                        <p className="text-sm">
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .requestDate
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Team Members (
+                                                        {
+                                                            selectedNotification
+                                                                .details
+                                                                .teamMembers
+                                                                ?.length
+                                                        }
+                                                        )
+                                                    </p>
+                                                    <div className="space-y-2">
+                                                        {selectedNotification.details.teamMembers?.map(
+                                                            (member, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="flex items-center gap-2 p-2 bg-accent rounded-lg"
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                        <span className="text-xs text-primary">
+                                                                            {member
+                                                                                .split(
+                                                                                    " "
+                                                                                )
+                                                                                .map(
+                                                                                    (
+                                                                                        n
+                                                                                    ) =>
+                                                                                        n[0]
+                                                                                )
+                                                                                .join(
+                                                                                    ""
+                                                                                )
+                                                                                .substring(
+                                                                                    0,
+                                                                                    2
+                                                                                )}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-sm">
+                                                                        {member}
+                                                                    </span>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Project Title
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedNotification
+                                                                .details
+                                                                .projectTitle
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {selectedNotification.type ===
+                                            "guidance-approved" && (
+                                            <>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Student
+                                                        </p>
+                                                        <div>
+                                                            <p>
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .studentName
+                                                                }
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .studentNim
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Supervisor
+                                                        </p>
+                                                        <div>
+                                                            <p>
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerName
+                                                                }
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    selectedNotification
+                                                                        .details
+                                                                        .lecturerNip
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Activity Type
+                                                        </p>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-green-50 text-green-700 border-green-300"
+                                                        >
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .activityType
+                                                            }
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Approval Date
+                                                        </p>
+                                                        <p className="text-sm">
+                                                            {
+                                                                selectedNotification
+                                                                    .details
+                                                                    .requestDate
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Project Title
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedNotification
+                                                                .details
+                                                                .projectTitle
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDetailDialogOpen(false)}
+                            >
+                                Close
+                            </Button>
+                            {selectedNotification?.status === "pending" && (
+                                <Button
+                                    onClick={() =>
+                                        handleQuickAction("approvals")
+                                    }
+                                >
+                                    Go to Relations Management
+                                </Button>
+                            )}
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </MainLayout>
-    );
-}
-
-// Komponen Helper Kecil untuk kebersihan kode
-function ProjectProgressItem({ label, count, total, color }) {
-    const percentage = total > 0 ? (count / total) * 100 : 0;
-    return (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${color}`} />
-                    <span className="text-sm">{label}</span>
-                </div>
-                <span className="text-sm">{count} projects</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-                <div
-                    className={`${color} h-2 rounded-full transition-all duration-500`}
-                    style={{ width: `${percentage}%` }}
-                />
-            </div>
-        </div>
-    );
-}
-
-function StatusCard({ icon: Icon, title, subtitle, count, theme }) {
-    const colors = {
-        orange: { bg: "bg-orange-50", border: "border-orange-200", iconBg: "bg-orange-100", iconColor: "text-orange-700", textColor: "text-orange-700" },
-        green: { bg: "bg-green-50", border: "border-green-200", iconBg: "bg-green-100", iconColor: "text-green-700", textColor: "text-green-700" },
-        red: { bg: "bg-red-50", border: "border-red-200", iconBg: "bg-red-100", iconColor: "text-red-700", textColor: "text-red-700" },
-    };
-    const c = colors[theme];
-
-    return (
-        <div className={`flex items-center justify-between p-3 ${c.bg} rounded-lg border ${c.border}`}>
-            <div className="flex items-center gap-3">
-                <div className={`p-2 ${c.iconBg} rounded-lg`}>
-                    <Icon className={`w-4 h-4 ${c.iconColor}`} />
-                </div>
-                <div>
-                    <p className="text-sm">{title}</p>
-                    <p className="text-xs text-muted-foreground">{subtitle}</p>
-                </div>
-            </div>
-            <span className={`text-2xl ${c.textColor}`}>{count}</span>
-        </div>
     );
 }
