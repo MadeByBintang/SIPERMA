@@ -45,7 +45,7 @@ class TimelineProgressController extends Controller
             'team.members.student.masterStudent',
         ])
             ->where('lecturer_id', $lecturer->lecturer_id)
-            ->whereIn('supervision_status', ['approved', 'completed']) 
+            ->whereIn('supervision_status', ['approved', 'completed'])
             ->orderBy('supervision_id', 'desc')
             ->get()
             ->map(function ($item) {
@@ -166,8 +166,8 @@ class TimelineProgressController extends Controller
             ->orderBy('supervision_id', 'desc')
             ->get();
 
-        // Mapping ke StudentActivity
-        $studentActivities = $supervisions->map(function ($sv) use ($student) {
+             // Mapping ke StudentActivity
+            $studentActivities = $supervisions->map(function ($sv) use ($student) {
 
             // Tentukan apakah mahasiswa ini bagian dari tim
             $isTeamMember = $sv->team && $sv->team->members->contains(fn($m) => $m->student_id == $student->student_id);
