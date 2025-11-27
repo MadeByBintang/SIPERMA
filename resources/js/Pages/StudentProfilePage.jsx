@@ -88,14 +88,27 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
         focus: initialData.focus,
     });
 
+    const [localErrors, setLocalErrors] = useState({});
+    const [dirty, setDirty] = useState({ email: false });
+
+    const isDirty = dirty.email && data.email !== initialData.email;
+
     const handleEdit = () => setIsEditing(true);
 
     const handleCancel = () => {
-        reset();
         setIsEditing(false);
+        reset(); // reset data kembali
+        setLocalErrors({}); // hapus error frontend
+        setDirty({ email: false }); // reset dirty flag
     };
 
     const handleSave = () => {
+        // jangan izinkan save jika email invalid
+        if (localErrors.email) {
+            toast.error("Email tidak valid. Perbaiki dulu sebelum menyimpan.");
+            return;
+        }
+
         router.post(
             route("profile.student.update"),
             {
@@ -207,7 +220,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                 <Button
                                     onClick={handleSave}
                                     className="gap-2"
-                                    disabled={processing}
+                                    disabled={processing || localErrors.email}
                                 >
                                     <Save className="w-4 h-4" />{" "}
                                     {processing ? "Saving..." : "Save"}
@@ -261,14 +274,48 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Email</Label>
+                                        <Label htmlFor="email">Email</Label>
                                         <Input
                                             id="email"
                                             type="email"
                                             value={data.email}
-                                            onChange={(e) =>
-                                                setData("email", e.target.value)
-                                            }
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setData("email", value);
+
+                                                // tandai field sudah diubah user
+                                                setDirty((prev) => ({
+                                                    ...prev,
+                                                    email: true,
+                                                }));
+
+                                                const emailRegex =
+                                                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                                                if (!isDirty) {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: null,
+                                                    }));
+                                                } else if (
+                                                    !emailRegex.test(value)
+                                                ) {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: "Format email tidak valid.",
+                                                    }));
+                                                } else {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: null,
+                                                    }));
+                                                }
+
+                                                setDirty((prev) => ({
+                                                    ...prev,
+                                                    email: true,
+                                                }));
+                                            }}
                                             disabled={!isEditing}
                                             className={
                                                 !isEditing
@@ -276,12 +323,20 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                                     : "bg-background"
                                             }
                                         />
-                                        {errors.email && (
+
+                                        {isEditing && localErrors.email && (
+                                            <div className="text-red-500 text-xs">
+                                                {localErrors.email}
+                                            </div>
+                                        )}
+
+                                        {!isEditing && errors.email && (
                                             <div className="text-red-500 text-xs">
                                                 {errors.email}
                                             </div>
                                         )}
                                     </div>
+
                                     <div className="space-y-2">
                                         <Label>Program Studi</Label>
                                         <Input
