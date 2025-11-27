@@ -147,6 +147,7 @@ export default function RegistrationPage({
 
         // Institution
         institution_id: "",
+
         isNewInstitution: false,
         newInstitutionName: "",
         newInstitutionSector: "",
@@ -291,6 +292,7 @@ export default function RegistrationPage({
             data.activityType === "pkl" ? "teamMembers" : "competitionTeam";
 
         const current = data[field];
+        // console.log("Selected team members:", data.teamMembers);
 
         if (current.includes(id)) {
             setData(
@@ -519,11 +521,13 @@ export default function RegistrationPage({
                                             <Label>Select Institution</Label>
                                             <Select
                                                 value={data.institution_id}
-                                                onValueChange={(val) =>
+                                                onValueChange={(val) => {
+                                                    console.log("Selected:", val);
                                                     setData(
                                                         "institution_id",
                                                         val
                                                     )
+                                                }
                                                 }
                                             >
                                                 <SelectTrigger>

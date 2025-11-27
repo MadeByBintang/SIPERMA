@@ -19,9 +19,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('activity_type_id')->references('activity_type_id')->on('activity_types');
-             $table->foreign('internship_id')->references('internship_id')->on('internships');
+            $table->foreign('internship_id')->references('internship_id')->on('internships');
 
-             $table->json('topics')->nullable();
         });
     }
 

@@ -45,6 +45,7 @@ class TimelineProgressController extends Controller
             'team.members.student.masterStudent',
         ])
             ->where('lecturer_id', $lecturer->lecturer_id)
+            ->whereIn('supervision_status', ['approved', 'completed']) 
             ->orderBy('supervision_id', 'desc')
             ->get()
             ->map(function ($item) {

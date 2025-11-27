@@ -17,34 +17,15 @@ class Team extends Model
 
     // 2. Mass Assignment
     protected $fillable = [
-        'team_name',
         'activity_id',
-        'leader_id',
-        'supervisor_id',
+        'team_name',
         'description',
-        'status',
-        'progress',
-        'company_name',
-        'competition_date',
     ];
 
 
     public function members()
     {
         return $this->hasMany(TeamMember::class, 'team_id', 'team_id');
-    }
-
-
-    public function leader()
-    {
-        return $this->hasOne(TeamMember::class, 'team_id', 'team_id')
-            ->orderBy('team_member_id', 'asc');
-    }
-
-
-    public function supervisor()
-    {
-        return $this->belongsTo(Lecturer::class, 'supervisor_id', 'lecturer_id');
     }
 
     public function activity()

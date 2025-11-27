@@ -12,8 +12,6 @@ return new class extends Migration
             $table->id('team_member_id');
             $table->unsignedBigInteger('team_id');
             $table->unsignedBigInteger('student_id');
-            $table->string('role_in_team', 50);
-            $table->string('member_status', 50)->default('pending');
 
             $table->foreign('team_id')->references('team_id')->on('teams');
             $table->foreign('student_id')->references('student_id')->on('students');

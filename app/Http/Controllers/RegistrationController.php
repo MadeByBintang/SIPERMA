@@ -101,11 +101,12 @@ class RegistrationController extends Controller
         $user = Auth::user();
         $student = $user->student;
 
-        if (!$student) return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
-
-        $request->validate(['activityType' => 'required|in:pkl,skripsi,competition']);
+        $request->validate([
+            'activityType' => 'required|in:pkl,skripsi,competition'
+        ]);
 
         DB::beginTransaction();
+
         try {
             if ($request->activityType === 'skripsi') {
                 $this->storeThesis($request, $student);
@@ -114,10 +115,10 @@ class RegistrationController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('application.status')->with('success', 'Registration submitted successfully!');
+            return redirect()->back()->with('success', 'Registration submitted successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to submit registration: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to submit registration: ');
         }
     }
 
@@ -149,41 +150,34 @@ class RegistrationController extends Controller
     {
         $typeId = $request->activityType === 'pkl' ? 2 : 3;
 
-        // --- LOGIKA BARU UNTUK MENANGANI INSTANSI ---
         $institutionId = null;
 
-        if ($request->activityType === 'pkl') {
-            // Cek apakah user memilih 'New Institution' (checkbox di frontend)
+        if ($typeId === 2) {
             if ($request->boolean('isNewInstitution')) {
-                // Validasi Data Instansi Baru
                 $request->validate([
                     'newInstitutionName' => 'required|string|max:255',
                     'newInstitutionSector' => 'required|string|max:50',
                     'newOwnerName' => 'required|string|max:100',
-                    // Email & Phone owner boleh null sesuai database
                     'newOwnerEmail' => 'nullable|email|max:100',
                     'newOwnerPhone' => 'nullable|string|max:20',
                 ]);
 
-                // Create Institution Baru
-                $newInst = Internship::firstOrCreate(
-                    ['name' => $request->newInstitutionName],
-                    [
-                        'sector' => $request->newInstitutionSector,
-                        'address' => $request->newInstitutionAddress,
-                        'owner_name' => $request->newOwnerName,
-                        'owner_email' => $request->newOwnerEmail,
-                        'owner_phone' => $request->newOwnerPhone,
+                $newInst = Internship::firstOrCreate([
+                    'name' => $request->newInstitutionName,
+                    'sector' => $request->newInstitutionSector,
+                    'address' => $request->newInstitutionAddress,
+                    'owner_name' => $request->newOwnerName,
+                    'owner_email' => $request->newOwnerEmail,
+                    'owner_phone' => $request->newOwnerPhone,
                     ]
                 );
 
-                $institutionId = $newInst->internship_id;
+                $institutionId = $newInst -> internship_id;
             } else {
-                // Jika memilih instansi lama, validasi ID-nya
                 $request->validate([
                     'institution_id' => 'required|exists:internships,internship_id',
                 ]);
-                $institutionId = $request->institution_id;
+                $institutionId = $request -> institution_id;
             }
         }
 
@@ -191,40 +185,61 @@ class RegistrationController extends Controller
             'supervisor' => 'required|exists:lecturers,lecturer_id',
         ]);
 
-        // 1. Create Activity dulu
         $activity = Activity::create([
             'activity_type_id' => $typeId,
-            'title' => $request->activityType === 'pkl' ? 'PKL Team - ' . $student->name : $request->competitionName,
+            'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request -> competitionName,
             'description' => $request->description ?? $request->competitionField,
             'start_date' => now(),
-            'institution_id' => $institutionId, // Masukkan ID (Baru atau Lama)
+            'institution_id' => $institutionId,
         ]);
 
         // 2. Create Team
         $team = Team::create([
-            'team_name'      => $activity->title,
-            'leader_id'      => $student->user_id,
-            'supervisor_id'  => $request->supervisor,
-            'activity_id'    => $activity->activity_id,
+            'team_name'      => $request->activityType === 'pkl' ? 'PKL Team - ' . $student -> name : 'Competition Team -' .$request -> competitionName,
             'description'    => $activity->description,
-            'status'         => 'pending',
         ]);
 
-        // 3. Create Member (Leader)
         TeamMember::create([
             'team_id' => $team->team_id,
             'student_id' => $student->student_id,
-            'role_in_team' => 'Leader',
-            'member_status' => 'active',
         ]);
 
-        if ($request->has('teamMembers') && is_array($request->teamMembers)) {
-            if (count($request->teamMembers) > 3) {
-                return redirect()->back()->with('error', 'Maksimal 4 anggota termasuk ketua.');
+        if (($request->has('teamMembers') && is_array($request->teamMembers) || ($request->has('competitionTeam') && is_array($request->competitionTeam)))) {
+
+            if ($request->activityType === 'pkl'){
+                if(count($request->teamMembers) > 3) {
+                    return redirect()->back()->with('error', 'Maksimal 4 anggota termasuk ketua.');
+                }
+
+                foreach ($request -> teamMembers as $memberId){
+                    TeamMember::create([
+                        'team_id' => $team -> team_id,
+                        'student_id' => $memberId
+                    ]);
+                }
+            }
+
+            else if ($typeId === 3){
+                if(count($request->competitionTeam) > 3) {
+                    return redirect()->back()->with('error', 'Maksimal 5 anggota termasuk ketua.');
+                }
+
+                foreach ($request -> competitionTeam as $memberId){
+                    TeamMember::create([
+                        'team_id' => $team -> team_id,
+                        'student_id' => $memberId
+                    ]);
+                }
             }
         }
 
-        // 4. Create Members (Invited)
-
+        Supervision::create([
+            'student_id' => $student->student_id,
+            'lecturer_id' => $request->supervisor,
+            'activity_id' => $activity->activity_id,
+            'team_id' => $team -> team_id ?? ' ',
+            'supervision_status' => 'pending',
+            'assigned_date' => now(),
+        ]);
     }
 }
