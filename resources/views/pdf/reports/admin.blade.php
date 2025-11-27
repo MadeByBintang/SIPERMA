@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
+    <title>System Reports PDF</title>
     <style>
         body {
             font-family: sans-serif;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         table {
@@ -15,51 +15,45 @@
             margin-top: 20px;
         }
 
-        table,
         th,
         td {
-            border: 1px solid #444;
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
         }
 
-        th,
-        td {
-            padding: 6px;
-        }
-
-        h2 {
-            text-align: center;
+        th {
+            background: #f0f0f0;
         }
     </style>
 </head>
 
 <body>
-    <h2>Laporan Aktivitas (Admin)</h2>
-    <p>Jumlah kegiatan: {{ count($activities) }}</p>
-    <hr>
+    <h2>System Reports</h2>
 
+    <p>Total Projects: {{ $stats['totalProjects'] }}</p>
+    <p>Active Projects: {{ $stats['totalActive'] }}</p>
+    <p>Completed Projects: {{ $stats['totalCompleted'] }}</p>
+    <p>Total Supervisors: {{ $stats['totalSupervisors'] }}</p>
+    <p>Avg Students per Supervisor: {{ $stats['avgStudents'] }}</p>
+
+    <h3>Project Distribution</h3>
     <table>
         <thead>
             <tr>
-                <th>Mahasiswa</th>
-                <th>Kegiatan</th>
-                <th>Jenis</th>
-                <th>Pembimbing</th>
-                <th>Status</th>
+                <th>PKL</th>
+                <th>Thesis</th>
+                <th>Competition</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($activities as $a)
-                <tr>
-                    <td>{{ $a['student'] }}</td>
-                    <td>{{ $a['activityName'] }}</td>
-                    <td>{{ $a['activityType'] }}</td>
-                    <td>{{ $a['supervisor'] }}</td>
-                    <td>{{ $a['status'] }}</td>
-                </tr>
-            @endforeach
+            <tr>
+                <td>{{ $stats['distribution']['pkl'] }}</td>
+                <td>{{ $stats['distribution']['thesis'] }}</td>
+                <td>{{ $stats['distribution']['competition'] }}</td>
+            </tr>
         </tbody>
     </table>
-
 </body>
 
 </html>

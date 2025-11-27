@@ -1079,7 +1079,7 @@ export default function RegistrationPage({
                             >
                                 {processing
                                     ? "Submitting..."
-                                    : "Submit Competitiom"}
+                                    : "Submit Competitiom Registration"}
                             </Button>
                         </div>
                     </div>

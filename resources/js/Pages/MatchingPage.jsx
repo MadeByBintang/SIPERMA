@@ -35,7 +35,6 @@ const FOCUS_LABELS = {
     "BIG DATA": "Big Data",
     MTI: "Manajemen TI",
     JARINGAN: "Jaringan",
-    "": "Belum Menentukan Fokus",
 };
 
 export default function MatchingPage({ user, matches = [] }) {
@@ -137,10 +136,6 @@ export default function MatchingPage({ user, matches = [] }) {
                                         <SelectItem value="JARINGAN">
                                             Jaringan
                                         </SelectItem>
-
-                                        <SelectItem value="none">
-                                            Belum ada Fokus
-                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -194,10 +189,6 @@ export default function MatchingPage({ user, matches = [] }) {
                                             </SelectItem>
                                             <SelectItem value="JARINGAN">
                                                 Jaringan
-                                            </SelectItem>
-
-                                            <SelectItem value="none">
-                                                Belum ada Fokus
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>

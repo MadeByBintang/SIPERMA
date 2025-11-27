@@ -134,6 +134,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //     ->name('reports.export.excel');
 });
 
+Route::get('admin/reports/export-pdf', [SystemReportsController::class, 'exportPdf'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('system-reports.export-pdf');
+
 // --- FITUR KHUSUS ADMIN ---
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -165,15 +169,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/reports', [SystemReportsController::class, 'index'])
         ->name('reports');
 
+    Route::get('/admin/reports/export-pdf', [SystemReportsController::class, 'exportPdf'])
+        ->middleware(['auth', 'role:admin'])
+        ->name('system-reports.export-pdf');
+
+
     Route::post('/timeline/update-log', [\App\Http\Controllers\TimelineProgressController::class, 'updateLog'])
         ->middleware(['auth', 'verified'])
         ->name('timeline.progress.update');
 
     Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
-
-    // // 5. System Settings
-    // Route::get('/settings', [SystemSettingsController::class, 'index'])
-    //     ->name('settings');
 });
 
 require __DIR__ . '/auth.php';
