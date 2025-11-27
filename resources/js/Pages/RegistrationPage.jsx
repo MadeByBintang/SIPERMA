@@ -714,6 +714,45 @@ export default function RegistrationPage({
                                         rows={4}
                                     />
                                 </div>
+
+                                {/* Start & End Date side by side */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="pkl-start">
+                                            Start Date
+                                        </Label>
+                                        <Input
+                                            id="pkl-start"
+                                            type="date"
+                                            value={data.start_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "start_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="pkl-end">
+                                            End Date
+                                        </Label>
+                                        <Input
+                                            id="pkl-end"
+                                            type="date"
+                                            value={data.end_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "end_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 
