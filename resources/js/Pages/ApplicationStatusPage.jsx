@@ -40,6 +40,7 @@ import {
     UserPlus,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Separator } from "@/Components/ui/separator";
 import { toast } from "sonner";
 
 // TERIMA PROPS DARI CONTROLLER
@@ -447,7 +448,7 @@ export default function ApplicationStatusPage({ applications = [] }) {
                     </CardContent>
                 </Card>
 
-                {/* Details Dialog */}
+                {/* Application Status Dialog */}
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
@@ -459,126 +460,159 @@ export default function ApplicationStatusPage({ applications = [] }) {
                                     : "Submission Details"}
                             </DialogDescription>
                         </DialogHeader>
+
                         {selectedApplication && (
-                            <div className="space-y-4 text-sm">
-                                <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-6">
+                                {/* Status & Submitted Date */}
+                                <div className="flex items-center justify-between p-4 bg-accent rounded-lg">
                                     <div>
-                                        <p className="text-muted-foreground">
-                                            Activity
+                                        <p className="text-sm text-muted-foreground">
+                                            Application Status
                                         </p>
-                                        <p className="font-medium">
-                                            {selectedApplication.activityName}
+                                        <Badge
+                                            className={`gap-1 mt-1 ${getStatusColor(
+                                                selectedApplication.status
+                                            )}`}
+                                        >
+                                            {getStatusIcon(
+                                                selectedApplication.status
+                                            )}
+                                            {selectedApplication.status
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                selectedApplication.status.slice(
+                                                    1
+                                                )}
+                                        </Badge>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm text-muted-foreground">
+                                            Submitted Date
+                                        </p>
+                                        <p className="text-sm">
+                                            {new Date(
+                                                selectedApplication.submittedDate
+                                            ).toLocaleDateString("en-US", {
+                                                month: "long",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
                                         </p>
                                     </div>
-                                    <div>
-                                        <p className="text-muted-foreground">
-                                            Type
-                                        </p>
-                                        <p>
-                                            {selectedApplication.activityType}
-                                        </p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <p className="text-muted-foreground">
-                                            Description
-                                        </p>
-                                        <p className="bg-muted p-3 rounded-md mt-1">
-                                            {selectedApplication.description}
-                                        </p>
-                                    </div>
-                                    {selectedApplication.companyName && (
-                                        <div className="col-span-2">
+                                </div>
+
+                                <Separator />
+
+                                {/* Supervision Information */}
+                                <div className="space-y-3">
+                                    <h4 className="flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        Supervisor Information
+                                    </h4>
+
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
                                             <p className="text-muted-foreground">
-                                                Company
+                                                Name
                                             </p>
-                                            <p>
+                                            <p className="font-medium">
                                                 {
-                                                    selectedApplication.companyName
+                                                    selectedApplication.supervisorName
                                                 }
                                             </p>
                                         </div>
-                                    )}
+                                        <div>
+                                            <p className="text-muted-foreground">
+                                                Email
+                                            </p>
+                                            <p>
+                                                {
+                                                    selectedApplication.supervisorEmail
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <Separator />
+
+                                {/* Activity Information */}
+                                <div className="space-y-3">
+                                    <h4 className="flex items-center gap-2">
+                                        {getActivityIcon(
+                                            selectedApplication.activityType
+                                        )}
+                                        Activity Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-muted-foreground">
+                                                Activity Type
+                                            </p>
+                                            <Badge variant="outline">
+                                                {
+                                                    selectedApplication.activityType
+                                                }
+                                            </Badge>
+                                        </div>
+                                        <div className="space-y-1 col-span-2">
+                                            <p className="text-sm text-muted-foreground">
+                                                Activity Name
+                                            </p>
+                                            <p>
+                                                {
+                                                    selectedApplication.activityName
+                                                }
+                                            </p>
+                                        </div>
+                                        {selectedApplication.companyName && (
+                                            <div className="space-y-1 col-span-2">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Company/Organization
+                                                </p>
+                                                <p>
+                                                    {
+                                                        selectedApplication.companyName
+                                                    }
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Description */}
+                                <div className="space-y-2">
+                                    <p className="text-sm text-muted-foreground">
+                                        Description
+                                    </p>
+                                    <p className="text-sm bg-muted p-3 rounded-md">
+                                        {selectedApplication.description}
+                                    </p>
+                                </div>
+
+                                {/* Optional Notes */}
+                                {selectedApplication.notes && (
+                                    <>
+                                        <Separator />
+                                        <div className="space-y-3">
+                                            <h4>Review Notes</h4>
+                                            <div className="p-3 bg-muted rounded-md">
+                                                <p className="text-sm">
+                                                    {selectedApplication.notes}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
+
                         <DialogFooter>
                             <Button
                                 variant="outline"
                                 onClick={() => setIsDialogOpen(false)}
                             >
                                 Close
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Confirmation Dialog */}
-                <Dialog
-                    open={isResponseDialogOpen}
-                    onOpenChange={setIsResponseDialogOpen}
-                >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                {invitationResponse === "accept"
-                                    ? "Accept Invitation"
-                                    : "Decline Invitation"}
-                            </DialogTitle>
-                            <DialogDescription>
-                                Please confirm your decision regarding this team
-                                invitation.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        {/* TAMBAHKAN ALERT INI KEMBALI */}
-                        <div className="py-2">
-                            <Alert
-                                className={
-                                    invitationResponse === "accept"
-                                        ? "border-blue-200 bg-blue-50"
-                                        : "border-red-200 bg-red-50"
-                                }
-                            >
-                                <AlertCircle
-                                    className={`h-4 w-4 ${
-                                        invitationResponse === "accept"
-                                            ? "text-blue-600"
-                                            : "text-red-600"
-                                    }`}
-                                />
-                                <AlertDescription
-                                    className={
-                                        invitationResponse === "accept"
-                                            ? "text-blue-700"
-                                            : "text-red-700"
-                                    }
-                                >
-                                    {invitationResponse === "accept"
-                                        ? "By accepting this invitation, you will be added to the team and the supervisor will be notified."
-                                        : "The team leader will be notified of your decision."}
-                                </AlertDescription>
-                            </Alert>
-                        </div>
-
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsResponseDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant={
-                                    invitationResponse === "accept"
-                                        ? "default"
-                                        : "destructive"
-                                }
-                                onClick={handleSubmitResponse}
-                            >
-                                Confirm{" "}
-                                {invitationResponse === "accept"
-                                    ? "Accept"
-                                    : "Decline"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

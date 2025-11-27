@@ -91,7 +91,7 @@ class ApplicationStatusController extends Controller
                 
                 // Supervisor Info
                 'supervisorName' => $item->lecturer->user->name ?? $item->lecturer->name ?? '-',
-                // 'supervisorEmail' => $item->lecturer->user->email ?? '-', // Dihapus karena tidak ada di return asli Anda
+                'supervisorEmail' => $item->lecturer->email ?? '-', // Dihapus karena tidak ada di return asli Anda
                 
                 // Team/Company Info
                 'isTeam' => $team !== null,
@@ -171,14 +171,14 @@ class ApplicationStatusController extends Controller
                 
                 // Supervisor Info
                 'supervisorName' => $team->supervisor->user->name ?? $team->supervisor->name ?? '-',
-                // 'supervisorEmail' => $team->supervisor->user->email ?? '-', // Dihapus karena tidak ada di return asli Anda
+                'supervisorEmail' => $team->supervisor->email ?? '-', // Dihapus karena tidak ada di return asli Anda
                 
                 // Team/Company Info
                 'isTeam' => true,
                 'companyName' => $activity->internship->name ?? null, 
                 'teamMembers' => $teamMembersNames, 
                 'responseNotes' => '-',
-                'invitedBy' => data_get($team, 'leader.student.user.name'), // Ketua tim
+                // 'invitedBy' => data_get($team, 'leader.student.user.name'), // Ketua tim
             ]);
         });
 
