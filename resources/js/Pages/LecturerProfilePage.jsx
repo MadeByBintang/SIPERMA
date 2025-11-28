@@ -439,7 +439,8 @@ export default function LecturerProfilePage({
                                         value={accountData.username}
                                         onChange={(e) =>
                                             setAccountData(
-                                                "username".e.target.value
+                                                "username",
+                                                e.target.value
                                             )
                                         }
                                     />

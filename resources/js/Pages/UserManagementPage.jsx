@@ -425,8 +425,8 @@ export default function UserManagementPage({
                                 <TabsContent value="student">
                                     <div className="border rounded-lg overflow-hidden">
                                         <div className="overflow-x-auto">
-                                            <Table>
-                                                <TableHeader>
+                                            <Table className="w-full text-center">
+                                                <TableHeader className="[&>tr>th]:text-center">
                                                     <TableRow>
                                                         <TableHead>
                                                             NIM
@@ -440,7 +440,7 @@ export default function UserManagementPage({
                                                         <TableHead>
                                                             Status
                                                         </TableHead>
-                                                        <TableHead className="text-right">
+                                                        <TableHead>
                                                             Actions
                                                         </TableHead>
                                                     </TableRow>
@@ -460,7 +460,7 @@ export default function UserManagementPage({
                                                                         }
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        <div className="flex items-center gap-2">
+                                                                        <div className="flex items-center justify-center gap-2">
                                                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                                                                 <span className="text-xs text-primary">
                                                                                     {student.name
@@ -519,7 +519,7 @@ export default function UserManagementPage({
                                                                         </Badge>
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        <div className="flex items-center justify-end gap-2">
+                                                                        <div className="flex items-center justify-center gap-2">
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="sm"
@@ -594,8 +594,8 @@ export default function UserManagementPage({
                                 <TabsContent value="lecturer">
                                     <div className="border rounded-lg overflow-hidden">
                                         <div className="overflow-x-auto">
-                                            <Table>
-                                                <TableHeader>
+                                            <Table className="w-full text-center">
+                                                <TableHeader className="[&>tr>th]:text-center">
                                                     <TableRow>
                                                         <TableHead>
                                                             NIP
@@ -609,7 +609,7 @@ export default function UserManagementPage({
                                                         <TableHead>
                                                             Status
                                                         </TableHead>
-                                                        <TableHead className="text-right">
+                                                        <TableHead>
                                                             Actions
                                                         </TableHead>
                                                     </TableRow>
@@ -688,7 +688,7 @@ export default function UserManagementPage({
                                                                         </Badge>
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        <div className="flex items-center justify-end gap-2">
+                                                                        <div className="flex items-center justify-center gap-2">
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="sm"
