@@ -203,8 +203,8 @@ class RegistrationController extends Controller
             'internship_id' => $institutionId,
             'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request->competitionName,
             'description' => $request->description ?? $request->competitionField,
-            'start_date' => Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d'),
-            'end_date'   => Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d'),
+            'start_date' => Carbon::createFromFormat('Y-m-d', $request->start_date)->format('Y-m-d'),
+            'end_date'   => Carbon::createFromFormat('Y-m-d', $request->end_date)->format('Y-m-d'),
             'institution_id' => $institutionId,
         ]);
 
