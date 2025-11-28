@@ -268,6 +268,29 @@ export default function RegistrationPage({
         competitionSupervisor: null,
     });
 
+    // State untuk menyimpan detail institusi yang dipilih
+    const [selectedInstitution, setSelectedInstitution] = useState(null);
+
+    // Handler untuk memilih institusi
+    const handleInstitutionSelect = (institutionId) => {
+        setData("institution_id", Number(institutionId));
+
+        // Cari detail institusi dari data yang ada
+        const institution = institutions.find(
+            (inst) => inst.internship_id === Number(institutionId)
+        );
+        setSelectedInstitution(institution);
+    };
+
+    // Reset detail saat beralih ke "new institution"
+    const handleNewInstitutionToggle = (checked) => {
+        setData("isNewInstitution", checked);
+        if (checked) {
+            setSelectedInstitution(null);
+            setData("institution_id", "");
+        }
+    };
+
     const filteredThesisSup = allSupervisors.filter((s) =>
         data.researchTopics.includes(s.expertise)
     );
@@ -502,11 +525,8 @@ export default function RegistrationPage({
                                         <Checkbox
                                             id="new-inst"
                                             checked={data.isNewInstitution}
-                                            onCheckedChange={(checked) =>
-                                                setData(
-                                                    "isNewInstitution",
-                                                    checked
-                                                )
+                                            onCheckedChange={
+                                                handleNewInstitutionToggle
                                             }
                                         />
                                         <Label
@@ -520,51 +540,134 @@ export default function RegistrationPage({
 
                                     {/* Jika Pilih Existing */}
                                     {!data.isNewInstitution && (
-                                        <div className="space-y-2">
-                                            <Label>Select Institution</Label>
-                                            <Select
-                                                value={
-                                                    data.institution_id
-                                                        ? String(
-                                                              data.institution_id
-                                                          )
-                                                        : ""
-                                                }
-                                                onValueChange={(val) =>
-                                                    setData(
-                                                        "institution_id",
-                                                        Number(val)
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Search institution..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {institutions.length > 0 ? (
-                                                        institutions.map(
-                                                            (inst) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        inst.internship_id
-                                                                    }
-                                                                    value={inst.internship_id.toString()}
-                                                                >
-                                                                    {inst.name}
-                                                                </SelectItem>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>
+                                                    Select Institution
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        data.institution_id
+                                                            ? String(
+                                                                  data.institution_id
+                                                              )
+                                                            : ""
+                                                    }
+                                                    onValueChange={
+                                                        handleInstitutionSelect
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Search institution..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {institutions.length >
+                                                        0 ? (
+                                                            institutions.map(
+                                                                (inst) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            inst.internship_id
+                                                                        }
+                                                                        value={inst.internship_id.toString()}
+                                                                    >
+                                                                        {
+                                                                            inst.name
+                                                                        }
+                                                                    </SelectItem>
+                                                                )
                                                             )
-                                                        )
-                                                    ) : (
-                                                        <div className="p-2 text-sm text-muted-foreground">
-                                                            Empty list
+                                                        ) : (
+                                                            <div className="p-2 text-sm text-muted-foreground">
+                                                                Empty list
+                                                            </div>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.institution_id && (
+                                                    <p className="text-red-500 text-xs">
+                                                        {errors.institution_id}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Detail Institusi yang Dipilih */}
+                                            {selectedInstitution && (
+                                                <div className="space-y-3 p-4 bg-muted rounded-md animate-in fade-in slide-in-from-top-2">
+                                                    <div className="flex items-center gap-2 text-sm font-semibold">
+                                                        <Briefcase className="w-4 h-4" />
+                                                        Institution Details
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                                        <div>
+                                                            <Label className="text-xs text-muted-foreground">
+                                                                Company Name
+                                                            </Label>
+                                                            <p className="font-medium">
+                                                                {
+                                                                    selectedInstitution.name
+                                                                }
+                                                            </p>
                                                         </div>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.institution_id && (
-                                                <p className="text-red-500 text-xs">
-                                                    {errors.institution_id}
-                                                </p>
+
+                                                        <div>
+                                                            <Label className="text-xs text-muted-foreground">
+                                                                Sector
+                                                            </Label>
+                                                            <p className="font-medium">
+                                                                {selectedInstitution.sector ||
+                                                                    "-"}
+                                                            </p>
+                                                        </div>
+
+                                                        {selectedInstitution.address && (
+                                                            <div className="md:col-span-2">
+                                                                <Label className="text-xs text-muted-foreground">
+                                                                    Address
+                                                                </Label>
+                                                                <p className="font-medium">
+                                                                    {
+                                                                        selectedInstitution.address
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        <div>
+                                                            <Label className="text-xs text-muted-foreground">
+                                                                Contact Person
+                                                            </Label>
+                                                            <p className="font-medium">
+                                                                {selectedInstitution.owner_name ||
+                                                                    "-"}
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <Label className="text-xs text-muted-foreground">
+                                                                Email
+                                                            </Label>
+                                                            <p className="font-medium">
+                                                                {selectedInstitution.owner_email ||
+                                                                    "-"}
+                                                            </p>
+                                                        </div>
+
+                                                        {selectedInstitution.owner_phone && (
+                                                            <div>
+                                                                <Label className="text-xs text-muted-foreground">
+                                                                    Phone
+                                                                </Label>
+                                                                <p className="font-medium">
+                                                                    {
+                                                                        selectedInstitution.owner_phone
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     )}

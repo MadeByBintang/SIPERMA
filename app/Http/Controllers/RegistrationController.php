@@ -28,7 +28,16 @@ class RegistrationController extends Controller
 
         $userFocus = $currentStudent->focus;
 
-        $institutions = Internship::select('internship_id', 'name')
+        // Kirim data institusi yang lebih lengkap
+        $institutions = Internship::select(
+            'internship_id',
+            'name',
+            'sector',
+            'address',
+            'owner_name',
+            'owner_email',
+            'owner_phone'
+        )
             ->orderBy('name')
             ->get();
 
@@ -124,7 +133,8 @@ class RegistrationController extends Controller
     }
 
 
-    private function storeThesis($request, $student){
+    private function storeThesis($request, $student)
+    {
         $request->validate([
             'title' => 'required|string',
             'abstract' => 'required|string',
@@ -164,22 +174,23 @@ class RegistrationController extends Controller
                     'newOwnerPhone' => 'nullable|string|max:20',
                 ]);
 
-                $newInst = Internship::firstOrCreate([
-                    'name' => $request->newInstitutionName,
-                    'sector' => $request->newInstitutionSector,
-                    'address' => $request->newInstitutionAddress,
-                    'owner_name' => $request->newOwnerName,
-                    'owner_email' => $request->newOwnerEmail,
-                    'owner_phone' => $request->newOwnerPhone,
+                $newInst = Internship::firstOrCreate(
+                    [
+                        'name' => $request->newInstitutionName,
+                        'sector' => $request->newInstitutionSector,
+                        'address' => $request->newInstitutionAddress,
+                        'owner_name' => $request->newOwnerName,
+                        'owner_email' => $request->newOwnerEmail,
+                        'owner_phone' => $request->newOwnerPhone,
                     ]
                 );
 
-                $institutionId = $newInst -> internship_id;
+                $institutionId = $newInst->internship_id;
             } else {
                 $request->validate([
                     'institution_id' => 'required|exists:internships,internship_id',
                 ]);
-                $institutionId = $request -> institution_id;
+                $institutionId = $request->institution_id;
             }
         }
 
@@ -190,7 +201,7 @@ class RegistrationController extends Controller
         $activity = Activity::create([
             'activity_type_id' => $typeId,
             'internship_id' => $institutionId,
-            'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request -> competitionName,
+            'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request->competitionName,
             'description' => $request->description ?? $request->competitionField,
             'start_date' => Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d'),
             'end_date'   => Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d'),
@@ -199,7 +210,7 @@ class RegistrationController extends Controller
 
         // 2. Create Team
         $team = Team::create([
-            'team_name'      => $request->activityType === 'pkl' ? 'PKL Team - ' . $student -> name : 'Competition Team -' .$request -> competitionName,
+            'team_name'      => $request->activityType === 'pkl' ? 'PKL Team - ' . $student->name : 'Competition Team -' . $request->competitionName,
             'description'    => $activity->description,
         ]);
 
@@ -210,27 +221,25 @@ class RegistrationController extends Controller
 
         if (($request->has('teamMembers') && is_array($request->teamMembers) || ($request->has('competitionTeam') && is_array($request->competitionTeam)))) {
 
-            if ($request->activityType === 'pkl'){
-                if(count($request->teamMembers) > 3) {
+            if ($request->activityType === 'pkl') {
+                if (count($request->teamMembers) > 3) {
                     return redirect()->back()->with('error', 'Maksimal 4 anggota termasuk ketua.');
                 }
 
-                foreach ($request -> teamMembers as $memberId){
+                foreach ($request->teamMembers as $memberId) {
                     TeamMember::create([
-                        'team_id' => $team -> team_id,
+                        'team_id' => $team->team_id,
                         'student_id' => $memberId
                     ]);
                 }
-            }
-
-            else if ($typeId === 3){
-                if(count($request->competitionTeam) > 3) {
+            } else if ($typeId === 3) {
+                if (count($request->competitionTeam) > 3) {
                     return redirect()->back()->with('error', 'Maksimal 5 anggota termasuk ketua.');
                 }
 
-                foreach ($request -> competitionTeam as $memberId){
+                foreach ($request->competitionTeam as $memberId) {
                     TeamMember::create([
-                        'team_id' => $team -> team_id,
+                        'team_id' => $team->team_id,
                         'student_id' => $memberId
                     ]);
                 }
@@ -241,7 +250,7 @@ class RegistrationController extends Controller
             'student_id' => $student->student_id,
             'lecturer_id' => $request->supervisor,
             'activity_id' => $activity->activity_id,
-            'team_id' => $team -> team_id ?? ' ',
+            'team_id' => $team->team_id ?? ' ',
             'supervision_status' => 'pending',
             'assigned_date' => now(),
         ]);
