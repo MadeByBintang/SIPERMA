@@ -26,6 +26,8 @@ import {
     Calendar,
     User,
     Info,
+    Clock,
+    ThumbsUp,
 } from "lucide-react";
 import {
     Select,
@@ -46,27 +48,32 @@ import { Alert, AlertDescription, AlertTitle } from "../Components/ui/alert";
 
 const RelationType = "student-student" | "student-lecturer";
 
-export default function RelationManagementPage({studentStudentRelations, studentLecturerRelations}) {
+export default function RelationManagementPage({
+    studentStudentRelations,
+    studentLecturerRelations,
+}) {
     const [filterStatus, setFilterStatus] = useState("all");
     const [relationType, setRelationType] = useState("student-student");
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
-
     const getStatusColor = (status) => {
         switch (status) {
-            case "Active":
-            case "On Progress":
-            case "In Progress":
+            case "on progress":
                 return "bg-blue-100 text-blue-700";
-            case "Completed":
+            case "completed":
                 return "bg-green-100 text-green-700";
-            case "Proposal":
-                return "bg-yellow-100 text-yellow-700";
-            case "Revision":
-                return "bg-orange-100 text-orange-700";
             default:
                 return "bg-gray-100 text-gray-700";
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "on progress":
+                return <Clock className="w-4 h-4" />;
+            case "completed":
+                return <ThumbsUp className="w-4 h-4" />;
         }
     };
 
@@ -166,11 +173,8 @@ export default function RelationManagementPage({studentStudentRelations, student
                                         </SelectItem>
                                         {relationType === "student-student" ? (
                                             <>
-                                                <SelectItem value="active">
-                                                    Active
-                                                </SelectItem>
-                                                <SelectItem value="in-progress">
-                                                    In Progress
+                                                <SelectItem value="on-progress">
+                                                    Approved
                                                 </SelectItem>
                                                 <SelectItem value="completed">
                                                     Completed
@@ -178,14 +182,8 @@ export default function RelationManagementPage({studentStudentRelations, student
                                             </>
                                         ) : (
                                             <>
-                                                <SelectItem value="proposal">
-                                                    Proposal
-                                                </SelectItem>
                                                 <SelectItem value="on-progress">
-                                                    On Progress
-                                                </SelectItem>
-                                                <SelectItem value="revision">
-                                                    Revision
+                                                    Approved
                                                 </SelectItem>
                                                 <SelectItem value="completed">
                                                     Completed
@@ -194,17 +192,6 @@ export default function RelationManagementPage({studentStudentRelations, student
                                         )}
                                     </SelectContent>
                                 </Select>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Button variant="outline" className="gap-2">
-                                    <Download className="w-4 h-4" />
-                                    Export PDF
-                                </Button>
-                                <Button variant="outline" className="gap-2">
-                                    <Download className="w-4 h-4" />
-                                    Export Excel
-                                </Button>
                             </div>
                         </div>
                     </CardContent>
@@ -228,8 +215,8 @@ export default function RelationManagementPage({studentStudentRelations, student
                     </CardHeader>
                     <CardContent>
                         <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
+                            <Table className="w-full text-center">
+                                <TableHeader className="[&>tr>th]:text-center">
                                     <TableRow>
                                         {relationType === "student-student" ? (
                                             <>
@@ -247,9 +234,7 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                 </TableHead>
                                                 <TableHead>Period</TableHead>
                                                 <TableHead>Status</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
+                                                <TableHead>Actions</TableHead>
                                             </>
                                         ) : (
                                             <>
@@ -265,9 +250,7 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                 </TableHead>
                                                 <TableHead>Period</TableHead>
                                                 <TableHead>Status</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
+                                                <TableHead>Actions</TableHead>
                                             </>
                                         )}
                                     </TableRow>
@@ -360,12 +343,15 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                                     relation.status
                                                                 )}
                                                             >
+                                                                {getStatusIcon(
+                                                                    relation.status
+                                                                )}
                                                                 {
                                                                     relation.status
                                                                 }
                                                             </Badge>
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -466,12 +452,15 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                                     relation.status
                                                                 )}
                                                             >
+                                                                {getStatusIcon(
+                                                                    relation.status
+                                                                )}
                                                                 {
                                                                     relation.status
                                                                 }
                                                             </Badge>
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -625,6 +614,9 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                             selectedDetail.status
                                                         )}
                                                     >
+                                                        {getStatusIcon(
+                                                            selectedDetail.status
+                                                        )}
                                                         {selectedDetail.status}
                                                     </Badge>
                                                 </div>
@@ -794,6 +786,9 @@ export default function RelationManagementPage({studentStudentRelations, student
                                                             selectedDetail.status
                                                         )}
                                                     >
+                                                        {getStatusIcon(
+                                                            selectedDetail.status
+                                                        )}
                                                         {selectedDetail.status}
                                                     </Badge>
                                                 </div>

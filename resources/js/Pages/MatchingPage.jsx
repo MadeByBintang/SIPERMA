@@ -198,24 +198,20 @@ export default function MatchingPage({ user, matches = [] }) {
                     </CardHeader>
                     <CardContent>
                         <div className="rounded-md border max-h-90 overflow-y-auto">
-                            <Table className="table-auto w-full">
-                                <TableHeader>
+                            <Table className="w-full text-center">
+                                <TableHeader className="[&>tr>th]:text-center">
                                     <TableRow>
                                         {recommendationType === "students" ? (
                                             <>
                                                 <TableHead>Student</TableHead>
                                                 <TableHead>Interest</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
+                                                <TableHead>Actions</TableHead>
                                             </>
                                         ) : (
                                             <>
                                                 <TableHead>Lecturer</TableHead>
                                                 <TableHead>Expertise</TableHead>
-                                                <TableHead className="text-right">
-                                                    Actions
-                                                </TableHead>
+                                                <TableHead>Actions</TableHead>
                                             </>
                                         )}
                                     </TableRow>
@@ -245,7 +241,7 @@ export default function MatchingPage({ user, matches = [] }) {
                                                                 ]
                                                             }
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -278,7 +274,7 @@ export default function MatchingPage({ user, matches = [] }) {
                                                                 ]
                                                             }
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
