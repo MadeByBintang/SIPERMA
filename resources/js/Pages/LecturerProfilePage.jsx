@@ -105,17 +105,27 @@ export default function LecturerProfilePage({
     });
 
     const [isEditing, setIsEditing] = useState(false);
+    // Tambahan seperti Student
+    const [localErrors, setLocalErrors] = useState({});
+    const [dirty, setDirty] = useState({ email: false });
+
+    const isDirty = dirty.email && data.email !== initialData.email;
     // Handle Actions
     const handleEdit = () => setIsEditing(true);
 
     const handleCancel = () => {
-        reset();
+        reset(); // reset data kembali
         setIsEditing(false);
+        setLocalErrors({}); // hapus error frontend
+        setDirty({ email: false }); // reset dirty flag
     };
 
     const handleSave = () => {
-        // Gunakan POST ke route update (karena HTML form method spoofing)
-        // Pastikan route 'profile.student.update' ada di web.php
+        if (localErrors.email) {
+            toast.error("Email tidak valid. Perbaiki dulu sebelum menyimpan.");
+            return;
+        }
+
         router.post(
             route("profile.lecturer.update"),
             {
@@ -215,17 +225,16 @@ export default function LecturerProfilePage({
                                     onClick={handleCancel}
                                     variant="outline"
                                     className="gap-2"
-                                    disabled={processing}
                                 >
                                     <X className="w-4 h-4" /> Cancel
                                 </Button>
                                 <Button
                                     onClick={handleSave}
                                     className="gap-2"
-                                    disabled={processing}
+                                    disabled={processing || localErrors.email}
                                 >
                                     <Save className="w-4 h-4" />{" "}
-                                    {processing ? "Saving..." : "Update"}
+                                    {processing ? "Saving..." : "Save"}
                                 </Button>
                             </div>
                         )}
@@ -274,9 +283,37 @@ export default function LecturerProfilePage({
                                             id="email"
                                             type="email"
                                             value={data.email}
-                                            onChange={(e) =>
-                                                setData("email", e.target.value)
-                                            }
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setData("email", value);
+
+                                                setDirty((prev) => ({
+                                                    ...prev,
+                                                    email: true,
+                                                }));
+
+                                                const emailRegex =
+                                                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                                                if (!isDirty) {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: null,
+                                                    }));
+                                                } else if (
+                                                    !emailRegex.test(value)
+                                                ) {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: "Format email tidak valid.",
+                                                    }));
+                                                } else {
+                                                    setLocalErrors((prev) => ({
+                                                        ...prev,
+                                                        email: null,
+                                                    }));
+                                                }
+                                            }}
                                             disabled={!isEditing}
                                             className={
                                                 !isEditing
@@ -284,6 +321,18 @@ export default function LecturerProfilePage({
                                                     : "bg-background"
                                             }
                                         />
+
+                                        {isEditing && localErrors.email && (
+                                            <div className="text-red-500 text-xs">
+                                                {localErrors.email}
+                                            </div>
+                                        )}
+
+                                        {!isEditing && errors.email && (
+                                            <div className="text-red-500 text-xs">
+                                                {errors.email}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
