@@ -68,7 +68,7 @@ export default function ApplicationStatusPage({ applications }) {
 
     const getActivityIcon = (type) => {
         switch (type) {
-            case "PKL":
+            case "Internship":
                 return <BookOpen className="w-4 h-4" />;
             case "Thesis":
                 return <FileText className="w-4 h-4" />;

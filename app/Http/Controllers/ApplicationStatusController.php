@@ -33,7 +33,6 @@ class ApplicationStatusController extends Controller
                         $q->where('student_id', $student->student_id);
                     });
             })
-            ->whereIn('supervision_status', ['approved', 'completed']) // filter status
             ->orderBy('supervision_id', 'desc')
             ->get();
 

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Head, router } from "@inertiajs/react";
+import { useState } from "react";
+import { Head } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
@@ -7,12 +7,8 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Badge } from "@/Components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+} from "../Components/ui/card";
+import { Button } from "../Components/ui/button";
 import {
     Table,
     TableBody,
@@ -20,289 +16,93 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/Components/ui/table";
+} from "../Components/ui/table";
+import { Badge } from "../Components/ui/badge";
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/Components/ui/dialog";
+    Download,
+    Users,
+    BookOpen,
+    Eye,
+    Calendar,
+    User,
+    Info,
+} from "lucide-react";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/Components/ui/select";
+} from "../Components/ui/select";
 import {
-    Search,
-    Eye,
-    Edit,
-    Trash2,
-    Plus,
-    GitBranch,
-    UserCheck,
-    CheckCircle2,
-    Users,
-    Download,
-    BookOpen,
-    Calendar,
-    User,
-    Info,
-} from "lucide-react";
-import { toast } from "sonner";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/Components/ui/AlertDialog";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "../Components/ui/dialog";
+import { Separator } from "../Components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "../Components/ui/alert";
 
-export default function RelationManagementPage({
-    studentLecturerRelations = [],
-    studentStudentRelations = [],
-    studentsList = [], // Terima data dropdown
-    lecturersList = [], // Terima data dropdown
-}) {
-    const [relationType, setRelationType] = useState("student-lecturer");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [currentTab, setCurrentTab] = useState("all");
+const RelationType = "student-student" | "student-lecturer";
 
-    // State Data (Sync dengan props)
-    const [slData, setSlData] = useState(studentLecturerRelations);
-    const [ssData, setSsData] = useState(studentStudentRelations);
-
-    useEffect(() => {
-        setSlData(studentLecturerRelations);
-        setSsData(studentStudentRelations);
-    }, [studentLecturerRelations, studentStudentRelations]);
-
-    // CRUD States
-    const [selectedRelation, setSelectedRelation] = useState(null);
+export default function RelationManagementPage({studentStudentRelations, studentLecturerRelations}) {
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [relationType, setRelationType] = useState("student-student");
+    const [selectedDetail, setSelectedDetail] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-    // Form State
-    const [formData, setFormData] = useState({});
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "Active":
+            case "On Progress":
+            case "In Progress":
+                return "bg-blue-100 text-blue-700";
+            case "Completed":
+                return "bg-green-100 text-green-700";
+            case "Proposal":
+                return "bg-yellow-100 text-yellow-700";
+            case "Revision":
+                return "bg-orange-100 text-orange-700";
+            default:
+                return "bg-gray-100 text-gray-700";
+        }
+    };
 
     const handleViewDetails = (relation) => {
-        setSelectedRelation(relation);
+        setSelectedDetail(relation);
         setIsDetailDialogOpen(true);
     };
 
-    // --- DATABASE ACTIONS ---
-
-    const saveCreate = () => {
-        router.post(route("relations.store"), formData, {
-            // Pastikan route ini ada di web.php (misal: /relations)
-            onSuccess: () => {
-                toast.success("Relation created successfully");
-                setIsAddDialogOpen(false);
-            },
-            onError: () => toast.error("Failed to create. Check inputs."),
-        });
+    const handleCloseDialog = () => {
+        setIsDetailDialogOpen(false);
+        setSelectedDetail(null);
     };
 
-    const saveUpdate = () => {
-        router.put(route("relations.update", selectedRelation.id), formData, {
-            // Pastikan route ini ada
-            onSuccess: () => {
-                toast.success("Relation updated successfully");
-                setIsEditDialogOpen(false);
-            },
-            onError: () => toast.error("Failed to update."),
-        });
-    };
+    // Filter relations based on status only
+    const filteredRelations =
+        relationType === "student-student"
+            ? studentStudentRelations.filter((relation) => {
+                  const matchesStatus =
+                      filterStatus === "all" ||
+                      relation.status.toLowerCase().replace(" ", "-") ===
+                          filterStatus;
 
-    const confirmDelete = () => {
-        if (!selectedRelation) return;
-        router.delete(route("relations.destroy", selectedRelation.id), {
-            // Pastikan route ini ada
-            onSuccess: () => {
-                toast.success("Relation deleted successfully");
-                setIsDeleteDialogOpen(false);
-            },
-            onError: () => toast.error("Failed to delete."),
-        });
-    };
+                  return matchesStatus;
+              })
+            : studentLecturerRelations.filter((relation) => {
+                  const matchesStatus =
+                      filterStatus === "all" ||
+                      relation.status.toLowerCase().replace(" ", "-") ===
+                          filterStatus;
 
-    // --- RENDER HELPERS ---
-
-    const getFilteredData = () => {
-        const data = relationType === "student-lecturer" ? slData : ssData;
-        return data.filter((item) => {
-            const q = searchQuery.toLowerCase();
-            const type = item.activityType
-                ? item.activityType.toLowerCase()
-                : "";
-
-            // Filter Tab
-            if (currentTab !== "all" && !type.includes(currentTab))
-                return false;
-
-            // Filter Search
-            if (relationType === "student-lecturer") {
-                return (
-                    item.studentName?.toLowerCase().includes(q) ||
-                    item.supervisorName?.toLowerCase().includes(q) ||
-                    item.thesisTitle?.toLowerCase().includes(q)
-                );
-            } else {
-                return item.activityName?.toLowerCase().includes(q);
-            }
-        });
-    };
-    const filteredData = getFilteredData();
-
-    const getStatusBadge = (status) => {
-        let style = "bg-gray-100";
-        if (status === "active") style = "bg-blue-100 text-blue-800";
-        if (status === "pending") style = "bg-orange-100 text-orange-800";
-        if (status === "completed") style = "bg-green-100 text-green-800";
-        return (
-            <Badge className={style} variant="outline">
-                {status}
-            </Badge>
-        );
-    };
-
-    const getActivityBadge = (type) => {
-        return <Badge variant="outline">{type}</Badge>;
-    };
-
-    // FORM INPUTS
-    const renderFormFields = (isEdit = false) => (
-        <div className="space-y-4 py-2">
-            {/* Tampilkan Pilihan User Hanya Saat CREATE */}
-            {!isEdit && (
-                <>
-                    <div className="space-y-2">
-                        <Label>Relation Type</Label>
-                        <Select
-                            value={formData.relationType}
-                            onValueChange={(v) =>
-                                setFormData({ ...formData, relationType: v })
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="student-lecturer">
-                                    Supervision (Student-Lecturer)
-                                </SelectItem>
-                                <SelectItem value="student-student">
-                                    Team (Student-Student)
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Activity Type</Label>
-                        <Select
-                            value={formData.activity_type}
-                            onValueChange={(v) =>
-                                setFormData({ ...formData, activity_type: v })
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Thesis">Thesis</SelectItem>
-                                <SelectItem value="PKL">PKL</SelectItem>
-                                <SelectItem value="Competition">
-                                    Competition
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Student (Leader)</Label>
-                        <Select
-                            onValueChange={(v) =>
-                                setFormData({ ...formData, student_id: v })
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Student" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {studentsList.map((s) => (
-                                    <SelectItem key={s.id} value={String(s.id)}>
-                                        {s.name} ({s.nim})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Supervisor (Lecturer)</Label>
-                        <Select
-                            onValueChange={(v) =>
-                                setFormData({ ...formData, lecturer_id: v })
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Lecturer" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {lecturersList.map((l) => (
-                                    <SelectItem key={l.id} value={String(l.id)}>
-                                        {l.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </>
-            )}
-
-            <div className="space-y-2">
-                <Label>Activity Title</Label>
-                <Input
-                    value={formData.title || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                    }
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                    value={formData.status || "pending"}
-                    onValueChange={(v) =>
-                        setFormData({ ...formData, status: v })
-                    }
-                >
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-        </div>
-    );
+                  return matchesStatus;
+              });
 
     return (
         <MainLayout>
-            <Head title="My Relations" />
+            <Head title="Relation Management" />
             <div className="space-y-6">
                 {/* Info Alert */}
                 <Alert>
@@ -315,359 +115,791 @@ export default function RelationManagementPage({
                         are linked to the database records.
                     </AlertDescription>
                 </Alert>
+
+                {/* Filters Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Relation Management</CardTitle>
                         <CardDescription>
-                            Manage your activity relations.
+                            View and track student relationships including PKL,
+                            competitions, and thesis supervisions
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex flex-col md:flex-row gap-4 justify-between">
                             <div className="flex flex-col md:flex-row gap-4">
                                 <Select
                                     value={relationType}
-                                    onValueChange={(value) => {
-                                        setRelationType(value);
-                                        setCurrentTab("all");
-                                    }}
+                                    onValueChange={(value) =>
+                                        setRelationType(value)
+                                    }
                                 >
                                     <SelectTrigger className="w-full md:w-64">
                                         <SelectValue placeholder="Select relation type" />
                                     </SelectTrigger>
-
                                     <SelectContent>
-                                        <SelectItem value="student-lecturer">
-                                            <div className="flex items-center gap-2">
-                                                <UserCheck className="w-4 h-4" />
-                                                Supervision
-                                            </div>
-                                        </SelectItem>
-
                                         <SelectItem value="student-student">
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4" />
-                                                Team
+                                                Student-Student Relations
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="student-lecturer">
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4" />
+                                                Student-Lecturer Relations
                                             </div>
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
 
-                                <Input
-                                    placeholder="Search..."
-                                    className="w-[250px]"
-                                    value={searchQuery}
-                                    onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                    }
-                                />
+                                <Select
+                                    value={filterStatus}
+                                    onValueChange={setFilterStatus}
+                                >
+                                    <SelectTrigger className="w-full md:w-48">
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All Status
+                                        </SelectItem>
+                                        {relationType === "student-student" ? (
+                                            <>
+                                                <SelectItem value="active">
+                                                    Active
+                                                </SelectItem>
+                                                <SelectItem value="in-progress">
+                                                    In Progress
+                                                </SelectItem>
+                                                <SelectItem value="completed">
+                                                    Completed
+                                                </SelectItem>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <SelectItem value="proposal">
+                                                    Proposal
+                                                </SelectItem>
+                                                <SelectItem value="on-progress">
+                                                    On Progress
+                                                </SelectItem>
+                                                <SelectItem value="revision">
+                                                    Revision
+                                                </SelectItem>
+                                                <SelectItem value="completed">
+                                                    Completed
+                                                </SelectItem>
+                                            </>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <Button variant="outline" className="gap-2">
+                                    <Download className="w-4 h-4" />
+                                    Export PDF
+                                </Button>
+                                <Button variant="outline" className="gap-2">
+                                    <Download className="w-4 h-4" />
+                                    Export Excel
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Filter Tabs */}
+                {/* Relations Table */}
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            {relationType === "student-lecturer"
-                                ? "Student–Lecturer Relations"
-                                : "Student–Student Relations"}
+                            {relationType === "student-student"
+                                ? "Student-Student Relations (PKL & Competitions)"
+                                : "Student-Lecturer Relations (Thesis)"}
                         </CardTitle>
                         <CardDescription>
-                            Manage your activity relations.
+                            {filteredRelations.length}{" "}
+                            {filteredRelations.length === 1
+                                ? "relation"
+                                : "relations"}{" "}
+                            found
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-                            {/* Mobile Dropdown */}
-                            <div className="md:hidden mb-4">
-                                <Select
-                                    value={currentTab}
-                                    onValueChange={setCurrentTab}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Filter" />
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="pkl">PKL</SelectItem>
-
-                                        {/* Thesis hanya muncul jika relasinya student-lecturer */}
-                                        {relationType ===
-                                            "student-lecturer" && (
-                                            <SelectItem value="thesis">
-                                                Thesis
-                                            </SelectItem>
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {relationType === "student-student" ? (
+                                            <>
+                                                <TableHead>
+                                                    Activity Type
+                                                </TableHead>
+                                                <TableHead>
+                                                    Activity Name
+                                                </TableHead>
+                                                <TableHead>
+                                                    Team Members
+                                                </TableHead>
+                                                <TableHead>
+                                                    Supervisor
+                                                </TableHead>
+                                                <TableHead>Period</TableHead>
+                                                <TableHead>Status</TableHead>
+                                                <TableHead className="text-right">
+                                                    Actions
+                                                </TableHead>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <TableHead>Student</TableHead>
+                                                <TableHead>
+                                                    Thesis Title
+                                                </TableHead>
+                                                <TableHead>
+                                                    Supervisor
+                                                </TableHead>
+                                                <TableHead>
+                                                    Research Area
+                                                </TableHead>
+                                                <TableHead>Period</TableHead>
+                                                <TableHead>Status</TableHead>
+                                                <TableHead className="text-right">
+                                                    Actions
+                                                </TableHead>
+                                            </>
                                         )}
-
-                                        <SelectItem value="competition">
-                                            Competition
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Desktop Tabs */}
-                            <TabsList
-                                className={`hidden md:grid w-full mb-4 
-            ${
-                relationType === "student-lecturer"
-                    ? "grid-cols-4" // ada Thesis → 4 kolom
-                    : "grid-cols-3" // tidak ada Thesis → 3 kolom
-            }`}
-                            >
-                                <TabsTrigger value="all">All</TabsTrigger>
-                                <TabsTrigger value="pkl">PKL</TabsTrigger>
-
-                                {relationType === "student-lecturer" && (
-                                    <TabsTrigger value="thesis">
-                                        Thesis
-                                    </TabsTrigger>
-                                )}
-
-                                <TabsTrigger value="competition">
-                                    Competition
-                                </TabsTrigger>
-                            </TabsList>
-
-                            <div className="rounded-md border overflow-hidden">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            {relationType ===
-                                            "student-lecturer" ? (
-                                                <>
-                                                    <TableHead>
-                                                        Student
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Supervisor
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Activity
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Status
-                                                    </TableHead>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <TableHead>
-                                                        Team Name
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Supervisor
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        Status
-                                                    </TableHead>
-                                                </>
-                                            )}
-
-                                            <TableHead className="text-right">
-                                                Actions
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {filteredData.length > 0 ? (
-                                            filteredData.map((rel) => (
-                                                <TableRow key={rel.id}>
-                                                    {relationType ===
-                                                    "student-lecturer" ? (
-                                                        <>
-                                                            <TableCell>
-                                                                <div className="font-medium">
-                                                                    {
-                                                                        rel.studentName
-                                                                    }
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        rel.studentNIM
-                                                                    }
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredRelations.length > 0 ? (
+                                        filteredRelations.map((relation) => (
+                                            <TableRow key={relation.id}>
+                                                {relationType ===
+                                                "student-student" ? (
+                                                    <>
+                                                        <TableCell>
+                                                            <Badge variant="outline">
                                                                 {
-                                                                    rel.supervisorName
+                                                                    relation.activityType
                                                                 }
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {getActivityBadge(
-                                                                    rel.activityType
-                                                                )}
-                                                                <p className="text-xs mt-1">
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <p className="max-w-xs">
+                                                                {
+                                                                    relation.activityName
+                                                                }
+                                                            </p>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div>
+                                                                <p>
                                                                     {
-                                                                        rel.thesisTitle
+                                                                        relation
+                                                                            .teamMembers
+                                                                            .length
+                                                                    }{" "}
+                                                                    Members
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    Leader:{" "}
+                                                                    {
+                                                                        relation
+                                                                            .teamMembers[0]
+                                                                            .name
                                                                     }
                                                                 </p>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {getStatusBadge(
-                                                                    rel.status
-                                                                )}
-                                                            </TableCell>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <TableCell>
-                                                                <div className="font-medium">
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div>
+                                                                <p>
                                                                     {
-                                                                        rel.activityName
+                                                                        relation.supervisorName
                                                                     }
-                                                                </div>
-                                                                {getActivityBadge(
-                                                                    rel.activityType
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        relation.supervisorNIP
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="text-sm">
+                                                                <p>
+                                                                    {new Date(
+                                                                        relation.startDate
+                                                                    ).toLocaleDateString(
+                                                                        "en-US",
+                                                                        {
+                                                                            month: "short",
+                                                                            year: "numeric",
+                                                                        }
+                                                                    )}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    to{" "}
+                                                                    {new Date(
+                                                                        relation.endDate
+                                                                    ).toLocaleDateString(
+                                                                        "en-US",
+                                                                        {
+                                                                            month: "short",
+                                                                            year: "numeric",
+                                                                        }
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge
+                                                                className={getStatusColor(
+                                                                    relation.status
                                                                 )}
-                                                            </TableCell>
-                                                            <TableCell>
+                                                            >
                                                                 {
-                                                                    rel.supervisorName
+                                                                    relation.status
                                                                 }
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {getStatusBadge(
-                                                                    rel.status
-                                                                )}
-                                                            </TableCell>
-                                                        </>
-                                                    )}
-                                                    <TableCell className="text-right">
-                                                        <div className="flex justify-end gap-1">
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
                                                             <Button
-                                                                variant="ghost"
-                                                                size="icon"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="gap-2"
                                                                 onClick={() =>
                                                                     handleViewDetails(
-                                                                        rel
+                                                                        relation
                                                                     )
                                                                 }
                                                             >
-                                                                <Eye className="w-4 h-4" />
+                                                                <Eye className="w-3 h-3" />
+                                                                View Details
                                                             </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={5}
-                                                    className="text-center py-8 text-muted-foreground"
-                                                >
-                                                    No data found.
-                                                </TableCell>
+                                                        </TableCell>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TableCell>
+                                                            <div>
+                                                                <p>
+                                                                    {
+                                                                        relation.studentName
+                                                                    }
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        relation.studentNIM
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <p className="max-w-md line-clamp-2">
+                                                                {
+                                                                    relation.thesisTitle
+                                                                }
+                                                            </p>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div>
+                                                                <p>
+                                                                    {
+                                                                        relation.supervisorName
+                                                                    }
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        relation.supervisorNIP
+                                                                    }
+                                                                </p>
+                                                                {relation.coSupervisorName && (
+                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                        Co:{" "}
+                                                                        {
+                                                                            relation.coSupervisorName
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge variant="secondary">
+                                                                {
+                                                                    relation.researchArea
+                                                                }
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="text-sm">
+                                                                <p>
+                                                                    {new Date(
+                                                                        relation.startDate
+                                                                    ).toLocaleDateString(
+                                                                        "en-US",
+                                                                        {
+                                                                            month: "short",
+                                                                            year: "numeric",
+                                                                        }
+                                                                    )}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    to{" "}
+                                                                    {new Date(
+                                                                        relation.endDate
+                                                                    ).toLocaleDateString(
+                                                                        "en-US",
+                                                                        {
+                                                                            month: "short",
+                                                                            year: "numeric",
+                                                                        }
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge
+                                                                className={getStatusColor(
+                                                                    relation.status
+                                                                )}
+                                                            >
+                                                                {
+                                                                    relation.status
+                                                                }
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="gap-2"
+                                                                onClick={() =>
+                                                                    handleViewDetails(
+                                                                        relation
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Eye className="w-3 h-3" />
+                                                                View Details
+                                                            </Button>
+                                                        </TableCell>
+                                                    </>
+                                                )}
                                             </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        </Tabs>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={7}
+                                                className="text-center py-8 text-muted-foreground"
+                                            >
+                                                No relations found matching your
+                                                criteria
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
-
-                {/* DIALOGS */}
-                <Dialog
-                    open={isAddDialogOpen}
-                    onOpenChange={setIsAddDialogOpen}
-                >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Relation</DialogTitle>
-                        </DialogHeader>
-                        {renderFormFields(false)}
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsAddDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button onClick={saveCreate}>Create</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog
-                    open={isEditDialogOpen}
-                    onOpenChange={setIsEditDialogOpen}
-                >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Edit Relation</DialogTitle>
-                        </DialogHeader>
-                        {renderFormFields(true)}
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsEditDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button onClick={saveUpdate}>Update</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <AlertDialog
-                    open={isDeleteDialogOpen}
-                    onOpenChange={setIsDeleteDialogOpen}
-                >
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={confirmDelete}
-                                className="bg-red-500"
-                            >
-                                Delete
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
 
                 {/* Detail Dialog */}
                 <Dialog
                     open={isDetailDialogOpen}
                     onOpenChange={setIsDetailDialogOpen}
                 >
-                    <DialogContent>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>Details</DialogTitle>
+                            <DialogTitle>
+                                {relationType === "student-student"
+                                    ? "Team Activity Details"
+                                    : "Thesis Details"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Detailed information about this{" "}
+                                {relationType === "student-student"
+                                    ? "team activity"
+                                    : "thesis supervision"}
+                            </DialogDescription>
                         </DialogHeader>
-                        {selectedRelation && (
-                            <div className="space-y-2">
-                                <p>
-                                    <strong>Activity:</strong>{" "}
-                                    {selectedRelation.thesisTitle ||
-                                        selectedRelation.activityName}
-                                </p>
-                                <p>
-                                    <strong>Status:</strong>{" "}
-                                    {selectedRelation.status}
-                                </p>
-                                <p>
-                                    <strong>Start Date:</strong>{" "}
-                                    {selectedRelation.startDate}
-                                </p>
+
+                        {selectedDetail && (
+                            <div className="space-y-6">
+                                {relationType === "student-student" ? (
+                                    <>
+                                        {/* Activity Information */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="flex items-center gap-2">
+                                                    <Users className="w-4 h-4" />
+                                                    Activity Information
+                                                </h4>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-base px-3 py-1"
+                                                >
+                                                    {
+                                                        selectedDetail.activityType
+                                                    }
+                                                </Badge>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Activity Name
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.activityName
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Description
+                                                    </p>
+                                                    <p className="text-sm">
+                                                        {
+                                                            selectedDetail.description
+                                                        }
+                                                    </p>
+                                                </div>
+                                                {selectedDetail.location && (
+                                                    <div className="space-y-1 col-span-2">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Location
+                                                        </p>
+                                                        <p className="text-sm">
+                                                            {
+                                                                selectedDetail.location
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Start Date
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {new Date(
+                                                            selectedDetail.startDate
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                            {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        End Date
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {new Date(
+                                                            selectedDetail.endDate
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                            {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Status
+                                                    </p>
+                                                    <Badge
+                                                        className={getStatusColor(
+                                                            selectedDetail.status
+                                                        )}
+                                                    >
+                                                        {selectedDetail.status}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        {/* Team Members */}
+                                        <div className="space-y-4">
+                                            <h4 className="flex items-center gap-2">
+                                                <Users className="w-4 h-4" />
+                                                Team Members (
+                                                {
+                                                    selectedDetail.teamMembers
+                                                        .length
+                                                }
+                                                )
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {selectedDetail.teamMembers.map(
+                                                    (member, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center justify-between p-3 bg-accent rounded-lg"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                    <User className="w-5 h-5 text-primary" />
+                                                                </div>
+                                                                <div>
+                                                                    <p>
+                                                                        {
+                                                                            member.name
+                                                                        }
+                                                                    </p>
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        NIM:{" "}
+                                                                        {
+                                                                            member.nim
+                                                                        }
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <Badge variant="secondary">
+                                                                {member.role}
+                                                            </Badge>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        {/* Supervisor */}
+                                        <div className="space-y-4">
+                                            <h4 className="flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4" />
+                                                Supervisor
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Name
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.supervisorName
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        NIP
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.supervisorNIP
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Thesis Information */}
+                                        <div className="space-y-4">
+                                            <h4 className="flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4" />
+                                                Thesis Information
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Thesis Title
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.thesisTitle
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Research Area
+                                                    </p>
+                                                    <Badge variant="secondary">
+                                                        {
+                                                            selectedDetail.researchArea
+                                                        }
+                                                    </Badge>
+                                                </div>
+                                                <div className="space-y-1 col-span-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Description
+                                                    </p>
+                                                    <p className="text-sm">
+                                                        {
+                                                            selectedDetail.description
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Start Date
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {new Date(
+                                                            selectedDetail.startDate
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                            {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        End Date
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {new Date(
+                                                            selectedDetail.endDate
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                            {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Status
+                                                    </p>
+                                                    <Badge
+                                                        className={getStatusColor(
+                                                            selectedDetail.status
+                                                        )}
+                                                    >
+                                                        {selectedDetail.status}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        {/* Student Information */}
+                                        <div className="space-y-4">
+                                            <h4 className="flex items-center gap-2">
+                                                <User className="w-4 h-4" />
+                                                Student
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Name
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.studentName
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        NIM
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            selectedDetail.studentNIM
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        {/* Supervisors */}
+                                        <div className="space-y-4">
+                                            <h4 className="flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4" />
+                                                Supervision
+                                            </h4>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Main Supervisor
+                                                        </p>
+                                                        <p>
+                                                            {
+                                                                selectedDetail.supervisorName
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            NIP
+                                                        </p>
+                                                        <p>
+                                                            {
+                                                                selectedDetail.supervisorNIP
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {selectedDetail.coSupervisorName && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-muted-foreground">
+                                                                Co-Supervisor
+                                                            </p>
+                                                            <p>
+                                                                {
+                                                                    selectedDetail.coSupervisorName
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-muted-foreground">
+                                                                NIP
+                                                            </p>
+                                                            <p>
+                                                                {
+                                                                    selectedDetail.coSupervisorNIP
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end pt-4">
+                                    <Button onClick={handleCloseDialog}>
+                                        Close
+                                    </Button>
+                                </div>
                             </div>
                         )}
-                        <DialogFooter>
-                            <Button
-                                onClick={() => setIsDetailDialogOpen(false)}
-                            >
-                                Close
-                            </Button>
-                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

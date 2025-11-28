@@ -16,25 +16,25 @@ export default function Dashboard({ auth, stats, activities }) {
     const statCards = [
         {
             title: "Total Students",
-            value: stats.total_students, 
+            value: stats.total_students,
             icon: Users,
             color: "bg-blue-500",
         },
         {
             title: "Total Lecturers",
-            value: stats.total_lecturers, 
+            value: stats.total_lecturers,
             icon: UserCheck,
             color: "bg-green-500",
         },
         {
             title: "Active Relations",
-            value: stats.active_relations, 
+            value: stats.active_relations,
             icon: GitBranch,
             color: "bg-purple-500",
         },
         {
             title: "Pending Matches",
-            value: stats.pending_matches, 
+            value: stats.pending_matches,
             icon: Clock,
             color: "bg-orange-500",
         },
@@ -90,9 +90,9 @@ export default function Dashboard({ auth, stats, activities }) {
                                         <div className="flex-1">
                                             {/* Sesuaikan nama kolom DB, biasanya activity_name atau title */}
                                             <p className="text-sm font-medium">
-                                                {activity.activity_name || "Activity Log"}
+                                                {activity.title || "Activity Log"}
                                             </p>
-                                            
+
                                             {/* Tampilkan Tipe jika ada */}
                                             {activity.activity_type && (
                                                 <p className="text-xs text-muted-foreground">
@@ -112,7 +112,7 @@ export default function Dashboard({ auth, stats, activities }) {
                     </CardContent>
                 </Card>
 
-                
+
                 {userRole === "Mahasiswa" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
