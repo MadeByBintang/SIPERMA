@@ -40,7 +40,7 @@ class TimelineProgressController extends Controller
         $supervisions = Supervision::with([
             'student.user',
             'lecturer.user',
-            'activity.internship.name',
+            'activity.internship',
             'activity.logs',
             'team.members.student.masterStudent',
         ])
@@ -149,7 +149,7 @@ class TimelineProgressController extends Controller
         $supervisions = Supervision::with([
             'student.user',
             'lecturer.user',
-            'activity.internship.company',
+            'activity.internship',
             'activity.activityType',
             'activity.logs',
             'team.members.student',

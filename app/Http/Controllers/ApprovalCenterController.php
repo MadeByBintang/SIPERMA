@@ -30,7 +30,7 @@ class ApprovalCenterController extends Controller
         $supervisions = Supervision::with([
             'student.user',              // mahasiswa pengaju individu (kalau ada)
             'lecturer.user',             // dosen pembimbing
-            'activity.internship.name', // untuk ambil tempat magang PKL
+            'activity.internship', // untuk ambil tempat magang PKL
             'team.members.student.masterStudent',         // anggota tim + data user
         ])
             ->where('lecturer_id', $lecturerId)
