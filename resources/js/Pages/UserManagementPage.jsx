@@ -1,25 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Head, router } from "@inertiajs/react";
-import MainLayout from "@/Layouts/MainLayout";
+import MainLayout from "../Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Badge } from "@/Components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+} from "../Components/ui/card";
+import { Button } from "../Components/ui/Button";
+import { Input } from "../Components/ui/Input";
+import { Label } from "../Components/ui/Label";
+import { Badge } from "../Components/ui/Badge";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "../Components/ui/Tabs";
 import {
     Table,
     TableBody,
@@ -27,7 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/Components/ui/table";
+} from "../Components/ui/Table";
 import {
     Dialog,
     DialogContent,
@@ -35,7 +33,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/Components/ui/dialog";
+} from "../Components/ui/Dialog";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -45,7 +43,15 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@/Components/ui/AlertDialog";
+} from "../Components/ui/AlertDialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../Components/ui/Select";
+import { Switch } from "../Components/ui/Switch";
 import {
     Plus,
     Search,
@@ -53,52 +59,57 @@ import {
     Trash2,
     UserCheck,
     UserX,
+    Mail,
+    Phone,
+    Calendar,
     GraduationCap,
     Award,
     Users,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Switch } from "@/Components/ui/switch";
 
-export default function UserManagementPage({
-    students: propStudents = [],
-    lecturers: propLecturers = [],
-    filters = {},
-}) {
-    const [searchQuery, setSearchQuery] = useState(filters.search || "");
+const UserType = "student" | "lecturer";
+
+export default function UserManagementPage({ all_student, all_lecturer }) {
+    const [searchQuery, setSearchQuery] = useState("");
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isToggleStatusDialogOpen, setIsToggleStatusDialogOpen] =
-        useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
     const [selectedUserType, setSelectedUserType] = useState("student");
     const [currentTab, setCurrentTab] = useState("student");
+
+    // Form state
     const [formData, setFormData] = useState({});
-    const [students, setStudents] = useState(propStudents);
-    const [lecturers, setLecturers] = useState(propLecturers);
 
-    useEffect(() => {
-        setStudents(propStudents);
-        setLecturers(propLecturers);
-    }, [propStudents, propLecturers]);
+    // Mock student data
+    const [students, setStudents] = useState(all_student);
 
-    const handleSearch = (e) => {
-        if (e.key === "Enter") {
-            router.get(
-                route("admin.users"),
-                { search: searchQuery },
-                { preserveState: true }
-            );
-        }
-    };
+    // Mock lecturer data
+    const [lecturers, setLecturers] = useState(all_lecturer);
 
+    // Filter users based on search query
+    const filteredStudents = students.filter(
+        (student) =>
+            student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            student.nim.includes(searchQuery) ||
+            student.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredLecturers = lecturers.filter(
+        (lecturer) =>
+            lecturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lecturer.nip.includes(searchQuery) ||
+            lecturer.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Handle add user
     const handleAddUser = () => {
         setSelectedUserType(currentTab);
         setFormData({
             userType: currentTab,
             status: "active",
-            supervision_quota: currentTab === "lecturer" ? 5 : 0,
+            supervision_quota: currentTab === "lecturer" ? 8 : 0,
         });
         setIsAddDialogOpen(true);
     };
@@ -122,6 +133,7 @@ export default function UserManagementPage({
         });
     };
 
+    // Handle edit user
     const handleEditUser = (user, type) => {
         setSelectedUser(user);
         setSelectedUserType(type);
@@ -151,12 +163,14 @@ export default function UserManagementPage({
         });
     };
 
+    // Handle delete user
     const handleDeleteUser = (user, type) => {
         setSelectedUser(user);
         setSelectedUserType(type);
         setIsDeleteDialogOpen(true);
     };
 
+    // Confirm delete
     const confirmDelete = () => {
         if (!selectedUser) return;
         router.delete(route("admin.users.destroy", selectedUser.id), {
@@ -169,11 +183,7 @@ export default function UserManagementPage({
         });
     };
 
-    const handleToggleStatus = (user) => {
-        setSelectedUser(user);
-        setIsToggleStatusDialogOpen(true);
-    };
-
+    // Handle toggle status
     const toggleUserStatus = (user) => {
         const action = user.status === "active" ? "deactivate" : "activate";
 
@@ -188,22 +198,7 @@ export default function UserManagementPage({
         );
     };
 
-    const getStatusBadge = (status) => {
-        const isActive = status === "active";
-        return (
-            <Badge
-                variant="outline"
-                className={
-                    isActive
-                        ? "bg-green-50 text-green-700 border-green-300"
-                        : "bg-red-50 text-red-700 border-red-300"
-                }
-            >
-                {isActive ? "Active" : "Inactive"}
-            </Badge>
-        );
-    };
-
+    // Render student form fields
     const renderStudentFormFields = () => (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,10 +208,9 @@ export default function UserManagementPage({
                         id="nim"
                         placeholder="e.g., 2021001234"
                         value={formData.nim || ""}
-                        onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            setFormData({ ...formData, nim: value });
-                        }}
+                        onChange={(e) =>
+                            setFormData({ ...formData, nim: e.target.value })
+                        }
                         required
                     />
                 </div>
@@ -233,6 +227,7 @@ export default function UserManagementPage({
                     />
                 </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -251,6 +246,7 @@ export default function UserManagementPage({
         </>
     );
 
+    // Render lecturer form fields
     const renderLecturerFormFields = () => (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,10 +256,9 @@ export default function UserManagementPage({
                         id="nip"
                         placeholder="e.g., 198501012010011001"
                         value={formData.nip || ""}
-                        onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            setFormData({ ...formData, nip: value });
-                        }}
+                        onChange={(e) =>
+                            setFormData({ ...formData, nip: e.target.value })
+                        }
                         required
                     />
                 </div>
@@ -280,6 +275,7 @@ export default function UserManagementPage({
                     />
                 </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -294,31 +290,21 @@ export default function UserManagementPage({
                         required
                     />
                 </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="supervision_quota">
-                        Supervision Quota (Max Students)
-                    </Label>
+                    <Label htmlFor="quota">Supervision Quota</Label>
                     <Input
-                        id="supervision_quota"
+                        id="quota"
                         type="number"
-                        min="0"
-                        max="20"
-                        placeholder="e.g., 8"
+                        placeholder="0"
                         value={formData.supervision_quota || ""}
                         onChange={(e) =>
                             setFormData({
                                 ...formData,
-                                supervision_quota: e.target.value,
+                                supervision_quota: Number(e.target.value),
                             })
                         }
                         required
                     />
-                    <p className="text-xs text-muted-foreground">
-                        Required. Max 20.
-                    </p>
                 </div>
             </div>
         </>
@@ -342,9 +328,117 @@ export default function UserManagementPage({
                     </Button>
                 </div>
 
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Total Students
+                            </CardTitle>
+                            <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {students.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {
+                                        students.filter(
+                                            (s) => s.status === "active"
+                                        ).length
+                                    }{" "}
+                                    active
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Total Lecturers
+                            </CardTitle>
+                            <Award className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {lecturers.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {
+                                        lecturers.filter(
+                                            (l) => l.status === "active"
+                                        ).length
+                                    }{" "}
+                                    active
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Active Users
+                            </CardTitle>
+                            <UserCheck className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {students.filter(
+                                            (s) => s.status === "active"
+                                        ).length +
+                                            lecturers.filter(
+                                                (l) => l.status === "active"
+                                            ).length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Currently active
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Inactive Users
+                            </CardTitle>
+                            <UserX className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {students.filter(
+                                            (s) => s.status === "inactive"
+                                        ).length +
+                                            lecturers.filter(
+                                                (l) => l.status === "inactive"
+                                            ).length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Deactivated accounts
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* User List */}
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
                             <div>
                                 <CardTitle>User Accounts</CardTitle>
                                 <CardDescription>
@@ -352,23 +446,21 @@ export default function UserManagementPage({
                                     system
                                 </CardDescription>
                             </div>
-                            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto items-start md:items-center">
+                            <div className="w-full md:w-auto">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search by Name or ID..."
-                                        className="pl-9 w-[250px]"
+                                        placeholder="Search users..."
                                         value={searchQuery}
                                         onChange={(e) =>
                                             setSearchQuery(e.target.value)
                                         }
-                                        onKeyDown={handleSearch}
+                                        className="pl-9 w-full md:w-[300px]"
                                     />
                                 </div>
                             </div>
                         </div>
                     </CardHeader>
-
                     <CardContent>
                         <Tabs
                             value={currentTab}
@@ -391,7 +483,8 @@ export default function UserManagementPage({
                                             <div className="flex items-center gap-2">
                                                 <GraduationCap className="w-4 h-4" />
                                                 <span>
-                                                    Students ({students.length})
+                                                    Students (
+                                                    {filteredStudents.length})
                                                 </span>
                                             </div>
                                         </SelectItem>
@@ -400,7 +493,7 @@ export default function UserManagementPage({
                                                 <Award className="w-4 h-4" />
                                                 <span>
                                                     Lecturers (
-                                                    {lecturers.length})
+                                                    {filteredLecturers.length})
                                                 </span>
                                             </div>
                                         </SelectItem>
@@ -411,363 +504,355 @@ export default function UserManagementPage({
                             {/* Desktop Tabs */}
                             <TabsList className="hidden md:grid w-full grid-cols-2 mb-6">
                                 <TabsTrigger value="student" className="gap-2">
-                                    <GraduationCap className="w-4 h-4" />{" "}
-                                    Students ({students.length})
+                                    <GraduationCap className="w-4 h-4" />
+                                    Students ({filteredStudents.length})
                                 </TabsTrigger>
                                 <TabsTrigger value="lecturer" className="gap-2">
-                                    <Award className="w-4 h-4" /> Lecturers (
-                                    {lecturers.length})
+                                    <Award className="w-4 h-4" />
+                                    Lecturers ({filteredLecturers.length})
                                 </TabsTrigger>
                             </TabsList>
 
                             {/* Students Table */}
-                            <div className="rounded-md border max-h-80 overflow-y-auto">
-                                <TabsContent value="student">
-                                    <div className="border rounded-lg overflow-hidden">
-                                        <div className="overflow-x-auto">
-                                            <Table className="w-full text-center">
-                                                <TableHeader className="[&>tr>th]:text-center">
-                                                    <TableRow>
-                                                        <TableHead>
-                                                            NIM
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Name
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Email
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Status
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Actions
-                                                        </TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {students.length > 0 ? (
-                                                        students.map(
-                                                            (student) => (
-                                                                <TableRow
-                                                                    key={
-                                                                        student.id
+                            <TabsContent value="student" className="space-y-4">
+                                <div className="border rounded-lg overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <Table className="w-full text-center">
+                                            <TableHeader className="[&>tr>th]:text-center">
+                                                <TableRow>
+                                                    <TableHead>NIM</TableHead>
+                                                    <TableHead>Name</TableHead>
+                                                    <TableHead>Email</TableHead>
+                                                    <TableHead>
+                                                        Status
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        Actions
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {filteredStudents.length > 0 ? (
+                                                    filteredStudents.map(
+                                                        (student) => (
+                                                            <TableRow
+                                                                key={student.id}
+                                                            >
+                                                                <TableCell>
+                                                                    {
+                                                                        student.nim
                                                                     }
-                                                                >
-                                                                    <TableCell>
-                                                                        {
-                                                                            student.nim
-                                                                        }
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                                                <span className="text-xs text-primary">
-                                                                                    {student.name
-                                                                                        .split(
-                                                                                            " "
-                                                                                        )
-                                                                                        .map(
-                                                                                            (
-                                                                                                n
-                                                                                            ) =>
-                                                                                                n[0]
-                                                                                        )
-                                                                                        .join(
-                                                                                            ""
-                                                                                        )
-                                                                                        .substring(
-                                                                                            0,
-                                                                                            2
-                                                                                        )}
-                                                                                </span>
-                                                                            </div>
-                                                                            <span>
-                                                                                {
-                                                                                    student.name
-                                                                                }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                            <span className="text-xs text-primary">
+                                                                                {student.name
+                                                                                    .split(
+                                                                                        " "
+                                                                                    )
+                                                                                    .map(
+                                                                                        (
+                                                                                            n
+                                                                                        ) =>
+                                                                                            n[0]
+                                                                                    )
+                                                                                    .join(
+                                                                                        ""
+                                                                                    )
+                                                                                    .substring(
+                                                                                        0,
+                                                                                        2
+                                                                                    )}
                                                                             </span>
                                                                         </div>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-sm text-muted-foreground">
-                                                                        {
-                                                                            student.email
+                                                                        <span>
+                                                                            {
+                                                                                student.name
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell className="text-sm text-muted-foreground">
+                                                                    {
+                                                                        student.email
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={
+                                                                            student.status ===
+                                                                            "active"
+                                                                                ? "bg-green-50 text-green-700 border-green-300"
+                                                                                : "bg-gray-50 text-gray-700 border-gray-300"
                                                                         }
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className={
+                                                                    >
+                                                                        {student.status ===
+                                                                        "active" ? (
+                                                                            <>
+                                                                                <UserCheck className="w-3 h-3 mr-1" />
+                                                                                Active
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <UserX className="w-3 h-3 mr-1" />
+                                                                                Inactive
+                                                                            </>
+                                                                        )}
+                                                                    </Badge>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                toggleUserStatus(
+                                                                                    student,
+                                                                                    "student"
+                                                                                )
+                                                                            }
+                                                                            title={
                                                                                 student.status ===
                                                                                 "active"
-                                                                                    ? "bg-green-50 text-green-700 border-green-300"
-                                                                                    : "bg-gray-50 text-gray-700 border-gray-300"
+                                                                                    ? "Deactivate"
+                                                                                    : "Activate"
                                                                             }
                                                                         >
                                                                             {student.status ===
                                                                             "active" ? (
-                                                                                <>
-                                                                                    <UserCheck className="w-3 h-3 mr-1" />{" "}
-                                                                                    Active
-                                                                                </>
+                                                                                <UserX className="w-4 h-4" />
                                                                             ) : (
-                                                                                <>
-                                                                                    <UserX className="w-3 h-3 mr-1" />{" "}
-                                                                                    Inactive
-                                                                                </>
+                                                                                <UserCheck className="w-4 h-4" />
                                                                             )}
-                                                                        </Badge>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleToggleStatus(
-                                                                                        student,
-                                                                                        "student"
-                                                                                    )
-                                                                                }
-                                                                                title={
-                                                                                    student.status ===
-                                                                                    "active"
-                                                                                        ? "Deactivate"
-                                                                                        : "Activate"
-                                                                                }
-                                                                            >
-                                                                                {student.status ===
-                                                                                "active" ? (
-                                                                                    <UserX className="w-4 h-4" />
-                                                                                ) : (
-                                                                                    <UserCheck className="w-4 h-4" />
-                                                                                )}
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleEditUser(
-                                                                                        student,
-                                                                                        "student"
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <Edit className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleDeleteUser(
-                                                                                        student,
-                                                                                        "student"
-                                                                                    )
-                                                                                }
-                                                                                className="text-destructive hover:text-destructive"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleEditUser(
+                                                                                    student,
+                                                                                    "student"
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Edit className="w-4 h-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleDeleteUser(
+                                                                                    student,
+                                                                                    "student"
+                                                                                )
+                                                                            }
+                                                                            className="text-destructive hover:text-destructive"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </TableCell>
+                                                            </TableRow>
                                                         )
-                                                    ) : (
-                                                        <TableRow>
-                                                            <TableCell
-                                                                colSpan={5}
-                                                                className="text-center py-8 text-muted-foreground"
-                                                            >
-                                                                No students
-                                                                found
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
-                                    </div>
-                                </TabsContent>
-
-                                {/* Lecturers Table */}
-                                <TabsContent value="lecturer">
-                                    <div className="border rounded-lg overflow-hidden">
-                                        <div className="overflow-x-auto">
-                                            <Table className="w-full text-center">
-                                                <TableHeader className="[&>tr>th]:text-center">
+                                                    )
+                                                ) : (
                                                     <TableRow>
-                                                        <TableHead>
-                                                            NIP
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Name
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Email
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Status
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Actions
-                                                        </TableHead>
+                                                        <TableCell
+                                                            colSpan={8}
+                                                            className="text-center py-8 text-muted-foreground"
+                                                        >
+                                                            No students found
+                                                        </TableCell>
                                                     </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {lecturers.length > 0 ? (
-                                                        lecturers.map(
-                                                            (lecturer) => (
-                                                                <TableRow
-                                                                    key={
-                                                                        lecturer.id
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            {/* Lecturers Table */}
+                            <TabsContent value="lecturer" className="space-y-4">
+                                <div className="border rounded-lg overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <Table className="w-full text-center">
+                                            <TableHeader className="[&>tr>th]:text-center">
+                                                <TableRow>
+                                                    <TableHead>NIP</TableHead>
+                                                    <TableHead>Name</TableHead>
+                                                    <TableHead>Email</TableHead>
+                                                    <TableHead>
+                                                        Supervision Quota
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        Status
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        Actions
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {filteredLecturers.length >
+                                                0 ? (
+                                                    filteredLecturers.map(
+                                                        (lecturer) => (
+                                                            <TableRow
+                                                                key={
+                                                                    lecturer.id
+                                                                }
+                                                            >
+                                                                <TableCell>
+                                                                    {
+                                                                        lecturer.nip
                                                                     }
-                                                                >
-                                                                    <TableCell>
-                                                                        {
-                                                                            lecturer.nip
-                                                                        }
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                                                <span className="text-xs text-primary">
-                                                                                    {lecturer.name
-                                                                                        .split(
-                                                                                            " "
-                                                                                        )
-                                                                                        .map(
-                                                                                            (
-                                                                                                n
-                                                                                            ) =>
-                                                                                                n[0]
-                                                                                        )
-                                                                                        .join(
-                                                                                            ""
-                                                                                        )
-                                                                                        .substring(
-                                                                                            0,
-                                                                                            2
-                                                                                        )}
-                                                                                </span>
-                                                                            </div>
-                                                                            <span>
-                                                                                {
-                                                                                    lecturer.name
-                                                                                }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                            <span className="text-xs text-primary">
+                                                                                {lecturer.name
+                                                                                    .split(
+                                                                                        " "
+                                                                                    )
+                                                                                    .map(
+                                                                                        (
+                                                                                            n
+                                                                                        ) =>
+                                                                                            n[0]
+                                                                                    )
+                                                                                    .join(
+                                                                                        ""
+                                                                                    )
+                                                                                    .substring(
+                                                                                        0,
+                                                                                        2
+                                                                                    )}
                                                                             </span>
                                                                         </div>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-sm text-muted-foreground">
-                                                                        {
-                                                                            lecturer.email
+                                                                        <span>
+                                                                            {
+                                                                                lecturer.name
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell className="text-sm text-muted-foreground">
+                                                                    {
+                                                                        lecturer.email
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {
+                                                                        lecturer.supervision_quota
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={
+                                                                            lecturer.status ===
+                                                                            "active"
+                                                                                ? "bg-green-50 text-green-700 border-green-300"
+                                                                                : "bg-gray-50 text-gray-700 border-gray-300"
                                                                         }
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className={
+                                                                    >
+                                                                        {lecturer.status ===
+                                                                        "active" ? (
+                                                                            <>
+                                                                                <UserCheck className="w-3 h-3 mr-1" />
+                                                                                Active
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <UserX className="w-3 h-3 mr-1" />
+                                                                                Inactive
+                                                                            </>
+                                                                        )}
+                                                                    </Badge>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                toggleUserStatus(
+                                                                                    lecturer,
+                                                                                    "lecturer"
+                                                                                )
+                                                                            }
+                                                                            title={
                                                                                 lecturer.status ===
                                                                                 "active"
-                                                                                    ? "bg-green-50 text-green-700 border-green-300"
-                                                                                    : "bg-gray-50 text-gray-700 border-gray-300"
+                                                                                    ? "Deactivate"
+                                                                                    : "Activate"
                                                                             }
                                                                         >
                                                                             {lecturer.status ===
                                                                             "active" ? (
-                                                                                <>
-                                                                                    <UserCheck className="w-3 h-3 mr-1" />{" "}
-                                                                                    Active
-                                                                                </>
+                                                                                <UserX className="w-4 h-4" />
                                                                             ) : (
-                                                                                <>
-                                                                                    <UserX className="w-3 h-3 mr-1" />{" "}
-                                                                                    Inactive
-                                                                                </>
+                                                                                <UserCheck className="w-4 h-4" />
                                                                             )}
-                                                                        </Badge>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleToggleStatus(
-                                                                                        lecturer,
-                                                                                        "lecturer"
-                                                                                    )
-                                                                                }
-                                                                                title={
-                                                                                    lecturer.status ===
-                                                                                    "active"
-                                                                                        ? "Deactivate"
-                                                                                        : "Activate"
-                                                                                }
-                                                                            >
-                                                                                {lecturer.status ===
-                                                                                "active" ? (
-                                                                                    <UserX className="w-4 h-4" />
-                                                                                ) : (
-                                                                                    <UserCheck className="w-4 h-4" />
-                                                                                )}
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleEditUser(
-                                                                                        lecturer,
-                                                                                        "lecturer"
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <Edit className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleDeleteUser(
-                                                                                        lecturer,
-                                                                                        "lecturer"
-                                                                                    )
-                                                                                }
-                                                                                className="text-destructive hover:text-destructive"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleEditUser(
+                                                                                    lecturer,
+                                                                                    "lecturer"
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Edit className="w-4 h-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleDeleteUser(
+                                                                                    lecturer,
+                                                                                    "lecturer"
+                                                                                )
+                                                                            }
+                                                                            className="text-destructive hover:text-destructive"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </TableCell>
+                                                            </TableRow>
                                                         )
-                                                    ) : (
-                                                        <TableRow>
-                                                            <TableCell
-                                                                colSpan={5}
-                                                                className="text-center py-8 text-muted-foreground"
-                                                            >
-                                                                No lecturers
-                                                                found
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
+                                                    )
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell
+                                                            colSpan={7}
+                                                            className="text-center py-8 text-muted-foreground"
+                                                        >
+                                                            No lecturers found
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
                                     </div>
-                                </TabsContent>
-                            </div>
+                                </div>
+                            </TabsContent>
                         </Tabs>
                     </CardContent>
                 </Card>
 
+                {/* Add User Dialog */}
                 <Dialog
                     open={isAddDialogOpen}
                     onOpenChange={setIsAddDialogOpen}
                 >
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
                                 Add New{" "}
@@ -776,8 +861,8 @@ export default function UserManagementPage({
                                     : "Lecturer"}
                             </DialogTitle>
                             <DialogDescription>
-                                Create a new account. This will automatically
-                                create a profile.
+                                Fill in the details to create a new{" "}
+                                {selectedUserType} account
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
@@ -797,49 +882,12 @@ export default function UserManagementPage({
                     </DialogContent>
                 </Dialog>
 
-                <AlertDialog
-                    open={isToggleStatusDialogOpen}
-                    onOpenChange={setIsToggleStatusDialogOpen}
-                >
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                {selectedUser?.status === "active"
-                                    ? "Deactivate User?"
-                                    : "Activate User?"}
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                                {selectedUser?.has_user_account
-                                    ? `Are you sure you want to ${
-                                          selectedUser.status === "active"
-                                              ? "deactivate"
-                                              : "activate"
-                                      } this user?`
-                                    : "This user does not have a login account yet. Do you want to toggle status anyway?"}
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-blue-600"
-                                onClick={() => {
-                                    toggleUserStatus(selectedUser);
-                                    setIsToggleStatusDialogOpen(false);
-                                }}
-                            >
-                                {selectedUser?.status === "active"
-                                    ? "Deactivate"
-                                    : "Activate"}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
+                {/* Edit User Dialog */}
                 <Dialog
                     open={isEditDialogOpen}
                     onOpenChange={setIsEditDialogOpen}
                 >
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
                                 Edit{" "}
@@ -847,6 +895,10 @@ export default function UserManagementPage({
                                     ? "Student"
                                     : "Lecturer"}
                             </DialogTitle>
+                            <DialogDescription>
+                                Update the {selectedUserType} account
+                                information
+                            </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {selectedUserType === "student"
@@ -865,6 +917,7 @@ export default function UserManagementPage({
                     </DialogContent>
                 </Dialog>
 
+                {/* Delete Confirmation Dialog */}
                 <AlertDialog
                     open={isDeleteDialogOpen}
                     onOpenChange={setIsDeleteDialogOpen}
@@ -873,20 +926,19 @@ export default function UserManagementPage({
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete the account for
+                                This will permanently delete the{" "}
+                                {selectedUserType} account for{" "}
                                 <span className="font-medium text-foreground">
-                                    {" "}
                                     {selectedUser?.name}
                                 </span>
-                                .
+                                . This action cannot be undone.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={confirmDelete}
-                                className="bg-red-600"
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                                 Delete Account
                             </AlertDialogAction>
