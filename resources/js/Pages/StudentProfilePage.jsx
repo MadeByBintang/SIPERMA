@@ -411,7 +411,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                         value={accountData.username}
                                         onChange={(e) =>
                                             setAccountData(
-                                                "username".e.target.value
+                                                "username", e.target.value
                                             )
                                         }
                                     />
@@ -552,7 +552,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                         </div>
                                     )}
                                     <p className="text-xs text-muted-foreground">
-                                        Must be at least 8 characters long
+                                        Must be 8-15 characters long
                                     </p>
                                     {accountErrors.password && (
                                         <div className="text-red-500 text-xs">

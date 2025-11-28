@@ -19,9 +19,20 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Ganti dari 'email' ke 'username' (NIM/NIP)
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'username' => ['required', 'string', 'min:3', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:15'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'username.required' => 'NIM/NIP wajib diisi.',
+            'username.min' => 'NIM/NIP minimal 3 karakter.',
+            'username.max' => 'NIM/NIP maksimal 255 karakter.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.max' => 'Password maksimal 15 karakter.',
         ];
     }
 
@@ -34,7 +45,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'username' => trans('auth.failed'),
+                'username' => 'NIM/NIP atau password salah.',
             ]);
         }
 

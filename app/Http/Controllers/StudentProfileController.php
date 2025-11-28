@@ -22,10 +22,10 @@ class StudentProfileController extends Controller
             'nim' => $student->nim,
             'studyProgram' => 'Teknologi Informasi',
             'email' => $student->email,
-            'focus' => $student -> focus
+            'focus' => $student->focus
         ] : null;
 
-        $supervisors = $student ? $student->supervisions->map(function($sup) {
+        $supervisors = $student ? $student->supervisions->map(function ($sup) {
             return [
                 'id' => $sup->supervision_id,
                 'name' => $sup->lecturer->user->name ?? $sup->lecturer->name ?? 'Unknown',
@@ -89,28 +89,29 @@ class StudentProfileController extends Controller
 
         $rules = [
             'current_password' => ['required', 'current_password'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'max:15', 'confirmed'],
         ];
 
-        $old_username = $user -> username;
-        $new_username = $request -> input('username');
+        $old_username = $user->username;
+        $new_username = $request->input('username');
 
-        if ($old_username != $new_username){
+        if ($old_username != $new_username) {
             $rules['username'] = ['required', 'string', 'max:255', 'unique:users,username'];
-        }
-        else {
+        } else {
             $rules['username'] = 'required';
         }
 
-        $validated = $request->validate($rules);
-
+        $validated = $request->validate($rules, [
+            'password.max' => 'Password tidak boleh lebih dari 15 karakter.',
+            'password.min' => 'Password minimal 8 karakter.',
+        ]);
 
         if ($old_username !== $new_username) {
-            $user -> username = $validated['username'];
+            $user->username = $validated['username'];
         }
 
         if (!empty($validated['password'])) {
-            $user -> password = Hash::make($validated['password']);
+            $user->password = Hash::make($validated['password']);
         }
 
         if ($user->isDirty()) {

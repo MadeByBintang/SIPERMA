@@ -11,7 +11,7 @@ import {
     CardTitle,
 } from "@/Components/ui/card";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function LoginPage({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -20,9 +20,38 @@ export default function LoginPage({ status, canResetPassword }) {
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [localErrors, setLocalErrors] = useState({});
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        // Validasi username (NIM/NIP)
+        if (!data.username) {
+            newErrors.username = "NIM/NIP wajib diisi";
+        } else if (data.username.length < 3) {
+            newErrors.username = "NIM/NIP minimal 3 karakter";
+        }
+
+        // Validasi password
+        if (!data.password) {
+            newErrors.password = "Password wajib diisi";
+        } else if (data.password.length < 8) {
+            newErrors.password = "Password minimal 8 karakter";
+        } else if (data.password.length > 15) {
+            newErrors.password = "Password maksimal 15 karakter";
+        }
+
+        setLocalErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validasi dulu sebelum submit
+        if (!validateForm()) {
+            return;
+        }
 
         post(route("login"), {
             onFinish: () => reset("password"),
@@ -60,15 +89,33 @@ export default function LoginPage({ status, canResetPassword }) {
                                     type="text"
                                     value={data.username}
                                     placeholder="Masukkan NIM atau NIP"
-                                    onChange={(e) =>
-                                        setData("username", e.target.value)
+                                    onChange={(e) => {
+                                        setData("username", e.target.value);
+                                        // Clear local error saat user mengetik
+                                        if (localErrors.username) {
+                                            setLocalErrors((prev) => ({
+                                                ...prev,
+                                                username: null,
+                                            }));
+                                        }
+                                    }}
+                                    className={
+                                        localErrors.username || errors.username
+                                            ? "border-red-500"
+                                            : ""
                                     }
-                                    required
                                 />
-                                {errors.username && (
-                                    <p className="text-sm text-red-600">
+                                {localErrors.username && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                        <AlertCircle className="w-3 h-3" />
+                                        {localErrors.username}
+                                    </div>
+                                )}
+                                {!localErrors.username && errors.username && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                        <AlertCircle className="w-3 h-3" />
                                         {errors.username}
-                                    </p>
+                                    </div>
                                 )}
                             </div>
 
@@ -82,10 +129,22 @@ export default function LoginPage({ status, canResetPassword }) {
                                         }
                                         value={data.password}
                                         placeholder="Masukkan password"
-                                        onChange={(e) =>
-                                            setData("password", e.target.value)
+                                        onChange={(e) => {
+                                            setData("password", e.target.value);
+                                            // Clear local error saat user mengetik
+                                            if (localErrors.password) {
+                                                setLocalErrors((prev) => ({
+                                                    ...prev,
+                                                    password: null,
+                                                }));
+                                            }
+                                        }}
+                                        className={
+                                            localErrors.password ||
+                                            errors.password
+                                                ? "border-red-500"
+                                                : ""
                                         }
-                                        required
                                     />
                                     <button
                                         type="button"
@@ -102,11 +161,22 @@ export default function LoginPage({ status, canResetPassword }) {
                                     </button>
                                 </div>
 
-                                {errors.password && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.password}
-                                    </p>
+                                {localErrors.password && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                        <AlertCircle className="w-3 h-3" />
+                                        {localErrors.password}
+                                    </div>
                                 )}
+                                {!localErrors.password && errors.password && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                        <AlertCircle className="w-3 h-3" />
+                                        {errors.password}
+                                    </div>
+                                )}
+
+                                <p className="text-xs text-muted-foreground">
+                                    Password harus 8-15 karakter
+                                </p>
                             </div>
 
                             <Button
