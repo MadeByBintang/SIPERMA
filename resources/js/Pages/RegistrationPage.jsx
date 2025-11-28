@@ -75,7 +75,11 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
                     <TableBody>
                         {members.length > 0 ? (
                             members.map((member) => (
-                                <TableRow key={member.id}>
+                                <TableRow
+                                    key={member.id}
+                                    className="cursor-pointer"
+                                    onClick={() => onToggle(member.id)}
+                                >
                                     <TableCell>
                                         <Checkbox
                                             checked={selectedMembers.includes(
@@ -87,18 +91,16 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
                                                     member.id
                                                 )
                                             }
+                                            onClick={(e) => e.stopPropagation()} // cegah double trigger
                                             onCheckedChange={() =>
                                                 onToggle(member.id)
                                             }
                                         />
                                     </TableCell>
-
                                     <TableCell>{member.name}</TableCell>
-
                                     <TableCell className="text-muted-foreground">
                                         {member.nim}
                                     </TableCell>
-
                                     <TableCell>
                                         <div className="flex gap-1 flex-wrap">
                                             {member.interests && (
@@ -129,6 +131,101 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
         </CardContent>
     </Card>
 );
+
+// Recommended supervisors based on matching expertise
+const SupervisorSelectionCard = ({
+    title,
+    supervisors,
+    selectedId,
+    onSelect,
+    filterId,
+    error,
+}) => {
+    const filteredList = filterId
+        ? supervisors.filter((s) => s.id !== filterId)
+        : supervisors;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" /> {title}
+                </CardTitle>
+                <CardDescription>
+                    Select a lecturer based on expertise
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="rounded-md border max-h-64 overflow-y-auto">
+                    <Table className="table-auto w-full">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-16">Select</TableHead>
+                                <TableHead className="min-w-40">Name</TableHead>
+                                <TableHead className="min-w-40">
+                                    Expertise
+                                </TableHead>
+                                <TableHead className="min-w-24">
+                                    Quota
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            {filteredList.length > 0 ? (
+                                filteredList.map((sup) => (
+                                    <TableRow
+                                        key={sup.id}
+                                        className="cursor-pointer"
+                                        onClick={() => onSelect(sup.id)}
+                                    >
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedId === sup.id}
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onCheckedChange={() =>
+                                                    onSelect(sup.id)
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell>{sup.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-1 flex-wrap">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs"
+                                                >
+                                                    {sup.expertise}
+                                                </Badge>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {sup.currentStudents}/
+                                            {sup.maxStudents}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="text-center py-4 text-muted-foreground"
+                                    >
+                                        No supervisors found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function RegistrationPage({
     studentInfo,
@@ -182,102 +279,6 @@ export default function RegistrationPage({
     const filteredCompMembers = allMembers.filter(
         (m) => m.interests === data.competitionField
     );
-
-    // Recommended supervisors based on matching expertise
-    const SupervisorSelectionCard = ({
-        title,
-        supervisors,
-        selectedId,
-        onSelect,
-        filterId,
-        error,
-    }) => {
-        const filteredList = filterId
-            ? supervisors.filter((s) => s.id !== filterId)
-            : supervisors;
-
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="w-5 h-5" /> {title}
-                    </CardTitle>
-                    <CardDescription>
-                        Select a lecturer based on expertise
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border max-h-64 overflow-y-auto">
-                        <Table className="table-auto w-full">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-16">
-                                        Select
-                                    </TableHead>
-                                    <TableHead className="min-w-40">
-                                        Name
-                                    </TableHead>
-                                    <TableHead className="min-w-40">
-                                        Expertise
-                                    </TableHead>
-                                    <TableHead className="min-w-24">
-                                        Quota
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-
-                            <TableBody>
-                                {filteredList.length > 0 ? (
-                                    filteredList.map((sup) => (
-                                        <TableRow key={sup.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={
-                                                        selectedId === sup.id
-                                                    }
-                                                    onCheckedChange={() =>
-                                                        onSelect(sup.id)
-                                                    }
-                                                />
-                                            </TableCell>
-                                            <TableCell>{sup.name}</TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-1 flex-wrap">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        {sup.expertise}
-                                                    </Badge>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {sup.currentStudents}/
-                                                {sup.maxStudents}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={5}
-                                            className="text-center py-4 text-muted-foreground"
-                                        >
-                                            No supervisors found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {error && (
-                        <p className="text-red-500 text-xs mt-2">{error}</p>
-                    )}
-                </CardContent>
-            </Card>
-        );
-    };
 
     const handleTabChange = (value) => {
         setData("activityType", value);
