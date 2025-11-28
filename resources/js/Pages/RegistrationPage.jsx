@@ -138,6 +138,8 @@ export default function RegistrationPage({
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         activityType: "pkl",
+        start_date: "",
+        end_date: "",
 
         // PKL
         description: "",
