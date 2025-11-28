@@ -24,7 +24,7 @@ class RelationManagementController extends Controller
         $supervisions = Supervision::with([
             'student.user',
             'lecturer.user',
-            'activity.internship.address',
+            'activity.internship',
             'team.members.student.masterStudent',
         ])
             ->whereHas('activity', function ($q) {
