@@ -187,6 +187,7 @@ class RegistrationController extends Controller
 
         $activity = Activity::create([
             'activity_type_id' => $typeId,
+            'internship_id' => $institutionId,
             'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request -> competitionName,
             'description' => $request->description ?? $request->competitionField,
             'start_date' => now(),

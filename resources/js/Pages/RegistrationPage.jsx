@@ -520,14 +520,8 @@ export default function RegistrationPage({
                                         <div className="space-y-2">
                                             <Label>Select Institution</Label>
                                             <Select
-                                                value={data.institution_id}
-                                                onValueChange={(val) => {
-                                                    console.log("Selected:", val);
-                                                    setData(
-                                                        "institution_id",
-                                                        val
-                                                    )
-                                                }
+                                                value={data.institution_id ? String(data.institution_id) : ""}
+                                                onValueChange={(val) => setData("institution_id", Number(val))
                                                 }
                                             >
                                                 <SelectTrigger>

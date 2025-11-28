@@ -21,7 +21,7 @@ class ApplicationStatusController extends Controller
         $supervisions = Supervision::with([
             'student.user',
             'lecturer.user',
-            'activity.internship.company',
+            'activity.internship',
             'activity.activityType',
             'team.members.student',
         ])
