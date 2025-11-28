@@ -520,8 +520,18 @@ export default function RegistrationPage({
                                         <div className="space-y-2">
                                             <Label>Select Institution</Label>
                                             <Select
-                                                value={data.institution_id ? String(data.institution_id) : ""}
-                                                onValueChange={(val) => setData("institution_id", Number(val))
+                                                value={
+                                                    data.institution_id
+                                                        ? String(
+                                                              data.institution_id
+                                                          )
+                                                        : ""
+                                                }
+                                                onValueChange={(val) =>
+                                                    setData(
+                                                        "institution_id",
+                                                        Number(val)
+                                                    )
                                                 }
                                             >
                                                 <SelectTrigger>
@@ -1110,7 +1120,7 @@ export default function RegistrationPage({
                             >
                                 {processing
                                     ? "Submitting..."
-                                    : "Submit Competitiom Registration"}
+                                    : "Submit Competition Registration"}
                             </Button>
                         </div>
                     </div>

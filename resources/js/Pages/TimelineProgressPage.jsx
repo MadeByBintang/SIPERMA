@@ -23,6 +23,7 @@ import {
     AlertCircle,
     ChevronRight,
     Plus,
+    ThumbsUp,
 } from "lucide-react";
 import {
     Dialog,
@@ -111,7 +112,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
         switch (status) {
             case "completed":
                 return "bg-green-100 text-green-700";
-            case "on progress":
+            case "approved":
                 return "bg-blue-100 text-blue-700";
             default:
                 return "bg-gray-100 text-gray-700";
@@ -126,6 +127,15 @@ export default function TimelineProgressPage({ user, supervisions }) {
                 return <FileText className="w-5 h-5" />;
             case "Lomba":
                 return <Award className="w-5 h-5" />;
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "completed":
+                return <ThumbsUp className="w-4 h-4" />;
+            case "approved":
+                return <CheckCircle2 className="w-4 h-4" />;
         }
     };
 
@@ -347,6 +357,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                             activity.status
                                                         )}
                                                     >
+                                                        {getStatusIcon(
+                                                            activity.status
+                                                        )}
                                                         {activity.status}
                                                     </Badge>
                                                 </div>
@@ -408,7 +421,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
         return (
             <div className="space-y-6">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
@@ -424,7 +437,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                             studentActivities.filter(
                                                 (a) =>
                                                     a.status === "completed" ||
-                                                    a.status === "on progress"
+                                                    a.status === "approved"
                                             ).length
                                         }
                                     </span>
@@ -439,7 +452,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">Completed</CardTitle>
-                            <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
@@ -447,7 +460,32 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                     <span className="text-3xl">
                                         {
                                             studentActivities.filter(
-                                                (a) => a.status === "Completed"
+                                                (a) => a.status === "completed"
+                                            ).length
+                                        }
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Successfully finished
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                On Progress
+                            </CardTitle>
+                            <ThumbsUp className="w-4 h-4 text-primary" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {
+                                            studentActivities.filter(
+                                                (a) => a.status === "approved"
                                             ).length
                                         }
                                     </span>
@@ -674,6 +712,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                             student.status
                                                         )}
                                                     >
+                                                        {getStatusIcon(
+                                                            student.status
+                                                        )}
                                                         {student.status}
                                                     </Badge>
                                                 </div>
@@ -709,6 +750,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                             student.status
                                                         )}
                                                     >
+                                                        {getStatusIcon(
+                                                            student.status
+                                                        )}
                                                         {student.status}
                                                     </Badge>
                                                 </div>
@@ -814,6 +858,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                 selectedActivity.status
                                             )}
                                         >
+                                            {getStatusIcon(
+                                                selectedActivity.status
+                                            )}
                                             {selectedActivity.status}
                                         </Badge>
                                     </div>

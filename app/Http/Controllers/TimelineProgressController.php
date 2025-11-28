@@ -96,9 +96,7 @@ class TimelineProgressController extends Controller
                 return [
                     /* ===== SUPERVISION ===== */
                     'id' => $item->supervision_id,
-                    'status' => $item->supervision_status === 'approved'
-                        ? 'on progress'
-                        : ($item->supervision_status ?? 'pending'),
+                    'status' => $item->supervision_status,
 
                     'startDate' => $item->activity->start_date
                         ? Carbon::parse($item->activity->start_date)->format('Y-m-d')
@@ -205,7 +203,7 @@ class TimelineProgressController extends Controller
                 'endDate' => $sv->activity->end_date
                     ? Carbon::parse($sv->activity->end_date)->format('Y-m-d')
                     : "",
-                'status' => $sv->supervision_status === 'approved' ? 'on progress' : ($sv->supervision_status ?? 'pending'),
+                'status' => $sv->supervision_status,
                 'timeline' => $timeline,
                 'isTeam' => $isTeamMember,
                 'teamName' => $teamName,

@@ -53,7 +53,6 @@ export default function ApplicationStatusPage({ applications }) {
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
-    const [invitationResponse, setInvitationResponse] = useState(null);
     const [activeTab, setActiveTab] = useState("all");
 
     const getStatusColor = (status) => {
@@ -95,30 +94,6 @@ export default function ApplicationStatusPage({ applications }) {
         }
     };
 
-    const handleViewDetails = (application) => {
-        setSelectedApplication(application);
-        setIsDialogOpen(true);
-    };
-
-    const handleRespondToInvitation = (application, response) => {
-        if (!["accept", "decline"].includes(response)) {
-            console.error("Invalid response value");
-            return;
-        }
-
-        setSelectedApplication(application);
-        setInvitationResponse(response);
-        setIsResponseDialogOpen(true);
-    };
-
-    const handleSubmitResponse = () => {
-        console.log(
-            `${invitationResponse} invitation ${selectedApplication?.id}`
-        );
-        setIsResponseDialogOpen(false);
-        setSelectedApplication(null);
-    };
-
     const pendingApplications = applications.filter(
         (a) => a.status === "pending"
     );
@@ -146,14 +121,8 @@ export default function ApplicationStatusPage({ applications }) {
             : applications; // fallback
 
     const renderApplicationCard = (application) => {
-        const isInvitation = application.applicationType === "invitation";
-        const isPending = application.status === "pending";
-
         return (
-            <Card
-                key={application.id}
-                className={isPending && isInvitation ? "border-primary" : ""}
-            >
+            <Card key={application.id}>
                 <CardContent className="p-6">
                     <div className="space-y-4">
                         <div className="flex items-start justify-between gap-4">
@@ -175,15 +144,6 @@ export default function ApplicationStatusPage({ applications }) {
                                         <Badge variant="outline">
                                             {application.activityType}
                                         </Badge>
-                                        {isInvitation && (
-                                            <Badge
-                                                variant="outline"
-                                                className="gap-1"
-                                            >
-                                                <UserPlus className="w-3 h-3" />
-                                                Team Invitation
-                                            </Badge>
-                                        )}
                                     </div>
                                     <div>
                                         <p>{application.activityName}</p>
@@ -194,9 +154,6 @@ export default function ApplicationStatusPage({ applications }) {
                                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                             <User className="w-3 h-3" />
-                                            {isInvitation
-                                                ? `Invited by: ${application.invitedBy}`
-                                                : `Supervisor: ${application.supervisorName}`}
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
@@ -467,12 +424,7 @@ export default function ApplicationStatusPage({ applications }) {
                     <DialogContent className="max-w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Application Details</DialogTitle>
-                            <DialogDescription>
-                                {selectedApplication?.applicationType ===
-                                "invitation"
-                                    ? "Team invitation details"
-                                    : "Submission details"}
-                            </DialogDescription>
+                            <DialogDescription></DialogDescription>
                         </DialogHeader>
 
                         {selectedApplication && (
@@ -501,10 +453,7 @@ export default function ApplicationStatusPage({ applications }) {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm text-muted-foreground">
-                                            {selectedApplication.applicationType ===
-                                            "invitation"
-                                                ? "Invited On"
-                                                : "Submitted On"}
+                                            {"Submitted On"}
                                         </p>
                                         <p className="text-sm">
                                             {new Date(
@@ -544,10 +493,7 @@ export default function ApplicationStatusPage({ applications }) {
                                                 Application Type
                                             </p>
                                             <Badge variant="outline">
-                                                {selectedApplication.applicationType ===
-                                                "invitation"
-                                                    ? "Team Invitation"
-                                                    : "Supervision Request"}
+                                                {"Supervision Request"}
                                             </Badge>
                                         </div>
                                         <div className="space-y-1 col-span-2">
@@ -712,71 +658,6 @@ export default function ApplicationStatusPage({ applications }) {
                                 )}
                             </div>
                         )}
-                    </DialogContent>
-                </Dialog>
-
-                {/* Invitation Response Dialog */}
-                <Dialog
-                    open={isResponseDialogOpen}
-                    onOpenChange={setIsResponseDialogOpen}
-                >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                {invitationResponse === "accept"
-                                    ? "Accept Team Invitation"
-                                    : "Decline Team Invitation"}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {invitationResponse === "accept"
-                                    ? "Confirm that you want to join this team"
-                                    : "Are you sure you want to decline this invitation?"}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        {selectedApplication && (
-                            <div className="space-y-4">
-                                <div className="p-3 bg-accent rounded-lg">
-                                    <p className="text-sm">
-                                        {selectedApplication.activityName}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Team Leader:{" "}
-                                        {selectedApplication.teamLeader}
-                                    </p>
-                                </div>
-
-                                <Alert>
-                                    <AlertCircle className="h-4 w-4" />
-                                    <AlertDescription>
-                                        {invitationResponse === "accept"
-                                            ? "By accepting this invitation, you will be added to the team and the supervisor will be notified."
-                                            : "The team leader will be notified of your decision."}
-                                    </AlertDescription>
-                                </Alert>
-                            </div>
-                        )}
-
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsResponseDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant={
-                                    invitationResponse === "accept"
-                                        ? "default"
-                                        : "destructive"
-                                }
-                                onClick={handleSubmitResponse}
-                            >
-                                {invitationResponse === "accept"
-                                    ? "Confirm Accept"
-                                    : "Confirm Decline"}
-                            </Button>
-                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
