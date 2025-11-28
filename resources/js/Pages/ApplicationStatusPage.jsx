@@ -10,7 +10,12 @@ import {
 } from "../Components/ui/card";
 import { Button } from "../Components/ui/button";
 import { Badge } from "../Components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../Components/ui/tabs";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "../Components/ui/tabs";
 import {
     Select,
     SelectContent,
@@ -39,28 +44,28 @@ import {
     Eye,
     Mail,
     UserPlus,
+    ThumbsUp,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../Components/ui/alert";
 import { Separator } from "../Components/ui/separator";
-
 
 export default function ApplicationStatusPage({ applications }) {
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
-    const [invitationResponse, setInvitationResponse] = useState (null);
+    const [invitationResponse, setInvitationResponse] = useState(null);
     const [activeTab, setActiveTab] = useState("all");
 
     const getStatusColor = (status) => {
         switch (status) {
             case "approved":
-                return "bg-green-100 text-green-700";
+                return "bg-blue-100 text-blue-700";
             case "rejected":
                 return "bg-red-100 text-red-700";
             case "pending":
                 return "bg-yellow-100 text-yellow-700";
             case "completed":
-                return "bg-blue-100 text-blue-700";
+                return "bg-green-100 text-green-700";
             default:
                 return "bg-gray-100 text-gray-700";
         }
@@ -85,6 +90,8 @@ export default function ApplicationStatusPage({ applications }) {
                 return <XCircle className="w-4 h-4" />;
             case "pending":
                 return <Clock className="w-4 h-4" />;
+            case "completed":
+                return <ThumbsUp className="w-4 h-4" />;
         }
     };
 
@@ -121,8 +128,8 @@ export default function ApplicationStatusPage({ applications }) {
     const rejectedApplications = applications.filter(
         (a) => a.status === "rejected"
     );
-    const pendingInvitations = applications.filter(
-        (a) => a.applicationType === "invitation" && a.status === "pending"
+    const completedApplications = applications.filter(
+        (a) => a.status === "completed"
     );
 
     const filteredApplications =
@@ -132,7 +139,11 @@ export default function ApplicationStatusPage({ applications }) {
             ? pendingApplications
             : activeTab === "approved"
             ? approvedApplications
-            : rejectedApplications;
+            : activeTab === "rejected"
+            ? rejectedApplications
+            : activeTab === "completed"
+            ? completedApplications
+            : applications; // fallback
 
     const renderApplicationCard = (application) => {
         const isInvitation = application.applicationType === "invitation";
@@ -233,51 +244,6 @@ export default function ApplicationStatusPage({ applications }) {
                                 )}
                             </div>
                         )}
-
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-1 sm:gap-2 flex-1 sm:flex-initial"
-                                onClick={() => handleViewDetails(application)}
-                            >
-                                <Eye className="w-3 h-3" />
-                                <span className="hidden sm:inline">
-                                    View Details
-                                </span>
-                                <span className="sm:hidden">View</span>
-                            </Button>
-                            {isPending && isInvitation && (
-                                <>
-                                    <Button
-                                        size="sm"
-                                        className="gap-1 sm:gap-2 flex-1 sm:flex-initial bg-green-600 text-white hover:bg-green-700"
-                                        onClick={() =>
-                                            handleRespondToInvitation(
-                                                application,
-                                                "accept"
-                                            )
-                                        }
-                                    >
-                                        <CheckCircle2 className="w-3 h-3" />
-                                        Accept
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        className="gap-1 sm:gap-2 flex-1 sm:flex-initial bg-red-600 text-white hover:bg-red-700"
-                                        onClick={() =>
-                                            handleRespondToInvitation(
-                                                application,
-                                                "decline"
-                                            )
-                                        }
-                                    >
-                                        <XCircle className="w-3 h-3" />
-                                        Decline
-                                    </Button>
-                                </>
-                            )}
-                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -299,7 +265,7 @@ export default function ApplicationStatusPage({ applications }) {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-5 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
@@ -343,7 +309,7 @@ export default function ApplicationStatusPage({ applications }) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">Approved</CardTitle>
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
@@ -361,43 +327,42 @@ export default function ApplicationStatusPage({ applications }) {
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Pending Invitations
-                            </CardTitle>
-                            <UserPlus className="w-4 h-4 text-primary" />
+                            <CardTitle className="text-sm">Rejected</CardTitle>
+                            <XCircle className="w-4 h-4 text-red-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {pendingInvitations.length}
+                                        {rejectedApplications.length}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Requires your action
+                                    Rejected applications
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">Completed</CardTitle>
+                            <ThumbsUp className="w-4 h-4 text-green-600" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {completedApplications.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Completed applications
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Alert for pending invitations */}
-                {pendingInvitations.length > 0 && (
-                    <Alert className="border-primary">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            You have {pendingInvitations.length} pending team{" "}
-                            {pendingInvitations.length === 1
-                                ? "invitation"
-                                : "invitations"}{" "}
-                            that{" "}
-                            {pendingInvitations.length === 1
-                                ? "requires"
-                                : "require"}{" "}
-                            your response.
-                        </AlertDescription>
-                    </Alert>
-                )}
 
                 {/* Applications List with Tabs */}
                 <Card>
@@ -444,12 +409,19 @@ export default function ApplicationStatusPage({ applications }) {
                                                 {rejectedApplications.length})
                                             </div>
                                         </SelectItem>
+                                        <SelectItem value="completed">
+                                            <div className="flex items-center gap-2">
+                                                <ThumbsUp className="w-4 h-4" />
+                                                Completed (
+                                                {completedApplications.length})
+                                            </div>
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             {/* Desktop: Tabs */}
-                            <TabsList className="hidden md:grid w-full grid-cols-4">
+                            <TabsList className="hidden md:grid w-full grid-cols-5">
                                 <TabsTrigger value="all">
                                     All ({applications.length})
                                 </TabsTrigger>
@@ -464,6 +436,13 @@ export default function ApplicationStatusPage({ applications }) {
                                 <TabsTrigger value="rejected" className="gap-2">
                                     <XCircle className="w-4 h-4" />
                                     Rejected ({rejectedApplications.length})
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="completed"
+                                    className="gap-2"
+                                >
+                                    <ThumbsUp className="w-4 h-4" />
+                                    Completed ({completedApplications.length})
                                 </TabsTrigger>
                             </TabsList>
 
@@ -629,7 +608,8 @@ export default function ApplicationStatusPage({ applications }) {
                                     </div>
                                 </div>
 
-                                {selectedApplication.teamMembers?.length > 0 && (
+                                {selectedApplication.teamMembers?.length >
+                                    0 && (
                                     <>
                                         <Separator />
                                         <div className="space-y-3">
@@ -655,7 +635,9 @@ export default function ApplicationStatusPage({ applications }) {
                                                                         }
                                                                         variant="secondary"
                                                                     >
-                                                                        {member.member_name}
+                                                                        {
+                                                                            member.member_name
+                                                                        }
                                                                     </Badge>
                                                                 )
                                                             )}
@@ -728,43 +710,6 @@ export default function ApplicationStatusPage({ applications }) {
                                         </div>
                                     </>
                                 )}
-
-                                {/* Action Buttons for Pending Invitations */}
-                                {selectedApplication.status === "pending" &&
-                                    selectedApplication.applicationType ===
-                                        "invitation" && (
-                                        <>
-                                            <Separator />
-                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                <Button
-                                                    className="flex-1 gap-2 bg-green-600 text-white hover:bg-green-700"
-                                                    onClick={() => {
-                                                        setIsDialogOpen(false);
-                                                        handleRespondToInvitation(
-                                                            selectedApplication,
-                                                            "accept"
-                                                        );
-                                                    }}
-                                                >
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                    Accept Invitation
-                                                </Button>
-                                                <Button
-                                                    className="flex-1 gap-2 bg-red-600 text-white hover:bg-red-700"
-                                                    onClick={() => {
-                                                        setIsDialogOpen(false);
-                                                        handleRespondToInvitation(
-                                                            selectedApplication,
-                                                            "decline"
-                                                        );
-                                                    }}
-                                                >
-                                                    <XCircle className="w-4 h-4" />
-                                                    Decline Invitation
-                                                </Button>
-                                            </div>
-                                        </>
-                                    )}
                             </div>
                         )}
                     </DialogContent>
