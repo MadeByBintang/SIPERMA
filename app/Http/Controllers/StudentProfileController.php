@@ -48,7 +48,7 @@ class StudentProfileController extends Controller
         $master  = $student->masterStudent;
 
         $rules = [
-            'name'  => 'required|string|max:255',
+            // 'name'  => 'required|string|max:255',
             'focus' => 'nullable|string|in:BIG DATA,MTI,JARINGAN',
         ];
 
@@ -66,7 +66,7 @@ class StudentProfileController extends Controller
         // Update Student
         $student->focus = $validated['focus'] ?? $student->focus;
 
-        $master->full_name = $validated['name'];
+        // $master->full_name = $validated['name'];
         $master->email     = $validated['email'];
 
         if ($student->isDirty()) {

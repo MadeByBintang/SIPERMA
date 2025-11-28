@@ -83,7 +83,6 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
     };
 
     const { data, setData, processing, reset, errors } = useForm({
-        name: initialData.name,
         email: initialData.email,
         focus: initialData.focus,
     });
@@ -113,7 +112,6 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
             route("profile.student.update"),
             {
                 _method: "post",
-                name: data.name,
                 email: data.email,
                 focus: data.focus,
             },
@@ -245,16 +243,12 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                         <Label>Full Name</Label>
                                         <Input
                                             id="name"
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData("name", e.target.value)
-                                            }
-                                            disabled={!isEditing}
-                                            className={
-                                                !isEditing
-                                                    ? "bg-muted"
-                                                    : "bg-background"
-                                            }
+                                            value={initialData.name}
+                                            // onChange={(e) =>
+                                            //     setData("name", e.target.value)
+                                            // }
+                                            disabled
+                                            className={"bg-muted"}
                                         />
                                         {errors.name && (
                                             <div className="text-red-500 text-xs">

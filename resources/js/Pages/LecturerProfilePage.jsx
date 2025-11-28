@@ -100,7 +100,6 @@ export default function LecturerProfilePage({
     };
 
     const { data, setData, processing, reset, errors } = useForm({
-        name: initialData.name,
         email: initialData.email,
         focus: initialData.focus,
     });
@@ -121,7 +120,6 @@ export default function LecturerProfilePage({
             route("profile.lecturer.update"),
             {
                 _method: "post",
-                name: data.name,
                 email: data.email,
                 focus: data.focus,
             },
@@ -247,16 +245,9 @@ export default function LecturerProfilePage({
                                         <Label htmlFor="name">Full Name</Label>
                                         <Input
                                             id="name"
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData("name", e.target.value)
-                                            }
-                                            disabled={!isEditing}
-                                            className={
-                                                !isEditing
-                                                    ? "bg-muted"
-                                                    : "bg-background"
-                                            }
+                                            value={initialData.name}
+                                            disabled
+                                            className="bg-muted"
                                         />
                                         {errors.name && (
                                             <div className="text-red-500 text-xs">

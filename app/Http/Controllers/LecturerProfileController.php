@@ -44,7 +44,7 @@ class LecturerProfileController extends Controller
         $master  = $lecturer->masterlecturer;
 
         $rules = [
-            'name'  => 'required|string|max:255',
+            // 'name'  => 'required|string|max:255',
             'focus' => 'nullable|string|in:BIG DATA,MTI,JARINGAN',
         ];
 
@@ -61,7 +61,7 @@ class LecturerProfileController extends Controller
 
         $lecturer->focus = $validated['focus'] ?? $lecturer->focus;
 
-        $master->full_name = $validated['name'];
+        // $master->full_name = $validated['name'];
         $master->email     = $validated['email'];
 
         if ($lecturer->isDirty()) {
