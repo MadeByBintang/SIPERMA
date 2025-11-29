@@ -47,90 +47,107 @@ import { Head, useForm } from "@inertiajs/react";
 
 const FOCUS_LABELS = ["BIG DATA", "MTI", "JARINGAN"];
 // Recommended team members based on matching interests
-const TeamSelectionCard = ({ members, selectedMembers, onToggle }) => (
-    <Card>
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Recommended Team Members
-            </CardTitle>
-            <CardDescription>
-                Students with matching interests and expertise for collaboration
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="rounded-md border max-h-64 overflow-y-auto">
-                <Table className="table-auto w-full">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-16">Select</TableHead>
-                            <TableHead className="min-w-40">Name</TableHead>
-                            <TableHead className="min-w-32">NIM</TableHead>
-                            <TableHead className="min-w-48">
-                                Interests
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
+const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Recommended Team Members
+                </CardTitle>
+                <CardDescription>
+                    Students with matching interests and expertise for
+                    collaboration
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="rounded-md border max-h-64 overflow-y-auto">
+                    <Table className="table-auto w-full">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-16">Select</TableHead>
+                                <TableHead className="min-w-40">Name</TableHead>
+                                <TableHead className="min-w-32">NIM</TableHead>
+                                <TableHead className="min-w-48">
+                                    Interests
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
 
-                    <TableBody>
-                        {members.length > 0 ? (
-                            members.map((member) => (
-                                <TableRow
-                                    key={member.id}
-                                    className="cursor-pointer"
-                                    onClick={() => onToggle(member.id)}
-                                >
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={selectedMembers.includes(
-                                                member.id
-                                            )}
-                                            disabled={
-                                                selectedMembers.length >= 3 &&
-                                                !selectedMembers.includes(
-                                                    member.id
-                                                )
+                        <TableBody>
+                            {members.length > 0 ? (
+                                members
+                                    .filter(
+                                        (m) => {
+                                            if (type === "internship") {
+                                                return !["approved", "completed", "pending"].includes(
+                                                    m?.internship_status
+                                                );
                                             }
-                                            onClick={(e) => e.stopPropagation()} // cegah double trigger
-                                            onCheckedChange={() =>
-                                                onToggle(member.id)
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell>{member.name}</TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {member.nim}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-1 flex-wrap">
-                                            {member.interests && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                >
-                                                    {member.interests}
-                                                </Badge>
-                                            )}
-                                        </div>
+                                            return true;
+                                        }
+                                    )
+                                    .map((member) => (
+                                        <TableRow
+                                            key={member.id}
+                                            className="cursor-pointer"
+                                            onClick={() => onToggle(member.id)}
+                                        >
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedMembers.includes(
+                                                        member.id
+                                                    )}
+                                                    disabled={
+                                                        selectedMembers.length >=
+                                                            3 &&
+                                                        !selectedMembers.includes(
+                                                            member.id
+                                                        )
+                                                    }
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    } // cegah double trigger
+                                                    onCheckedChange={() =>
+                                                        onToggle(member.id)
+                                                    }
+                                                />
+                                            </TableCell>
+                                            <TableCell>{member.name}</TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {member.nim}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-1 flex-wrap">
+                                                    {member.interests && (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {member.interests}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="text-center py-4 text-muted-foreground"
+                                    >
+                                        No recommended members found.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={5}
-                                    className="text-center py-4 text-muted-foreground"
-                                >
-                                    No recommended members found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-        </CardContent>
-    </Card>
-);
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
 
 // Recommended supervisors based on matching expertise
 const SupervisorSelectionCard = ({
@@ -945,6 +962,7 @@ export default function RegistrationPage({
                             members={allMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
+                            type="internship"
                         />
 
                         <SupervisorSelectionCard
@@ -1346,6 +1364,7 @@ export default function RegistrationPage({
                             members={filteredCompMembers}
                             selectedMembers={data.competitionTeam}
                             onToggle={handleTeamMemberToggle}
+                            type="competition"
                         />
 
                         <SupervisorSelectionCard

@@ -80,19 +80,19 @@ class RegistrationController extends Controller
 
         $allStudents = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
-            ->whereDoesntHave('supervisions', function ($q) {
-                $q->whereHas('activity', function ($a) {
-                    $a->where('activity_type_id', 2); // PKL
-                })
-                ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
-            })
+            // ->whereDoesntHave('supervisions', function ($q) {
+            //     $q->whereHas('activity', function ($a) {
+            //         $a->where('activity_type_id', 2); // PKL
+            //     })
+            //     ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
+            // })
 
-            ->whereDoesntHave('teamMembers.team.supervision', function ($q) {
-                $q->whereHas('activity', function ($a) {
-                    $a->where('activity_type_id', 2); // PKL
-                })
-                ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
-            })
+            // ->whereDoesntHave('teamMembers.team.supervision', function ($q) {
+            //     $q->whereHas('activity', function ($a) {
+            //         $a->where('activity_type_id', 2); // PKL
+            //     })
+            //     ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
+            // })
 
             ->get()
             ->map(function ($student) {
@@ -101,6 +101,7 @@ class RegistrationController extends Controller
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->focus,
+                    'internship_status' => $this -> getStudentActivityStatus($student -> student_id, 2)
                 ];
             });
 
@@ -114,6 +115,7 @@ class RegistrationController extends Controller
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->focus,
+                    'internship_status' => $this -> getStudentActivityStatus($student -> student_id, 2)
                 ];
             });
 
