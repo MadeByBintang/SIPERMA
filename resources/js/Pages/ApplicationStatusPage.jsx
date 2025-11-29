@@ -519,7 +519,12 @@ export default function ApplicationStatusPage({ applications }) {
                                             <p className="text-sm text-muted-foreground">
                                                 Activity Type
                                             </p>
-                                            <Badge variant="outline">
+                                            <Badge
+                                                variant="outline"
+                                                className={`gap-1 ${getActivityTypeColor(
+                                                    selectedApplication.activityType
+                                                )}`}
+                                            >
                                                 {getActivityIcon(
                                                     selectedApplication.activityType
                                                 )}
@@ -529,14 +534,6 @@ export default function ApplicationStatusPage({ applications }) {
                                             </Badge>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-sm text-muted-foreground">
-                                                Application Type
-                                            </p>
-                                            <Badge variant="outline">
-                                                {"Supervision Request"}
-                                            </Badge>
-                                        </div>
-                                        <div className="space-y-1 col-span-2">
                                             <p className="text-sm text-muted-foreground">
                                                 Activity Name
                                             </p>

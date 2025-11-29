@@ -588,8 +588,13 @@ export default function RelationManagementPage({
                                                 </h4>
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-base px-3 py-1"
+                                                    className={`gap-1 ${getActivityTypeColor(
+                                                        selectedDetail.activityType
+                                                    )}`}
                                                 >
+                                                    {getActivityIcon(
+                                                        selectedDetail.activityType
+                                                    )}
                                                     {
                                                         selectedDetail.activityType
                                                     }
@@ -733,9 +738,6 @@ export default function RelationManagementPage({
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <Badge variant="secondary">
-                                                                {member.role}
-                                                            </Badge>
                                                         </div>
                                                     )
                                                 )}

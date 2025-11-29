@@ -264,15 +264,15 @@ export default function RegistrationPage({
         block_internship && block_thesis
             ? "competition"
             : block_internship
-            ? "skripsi"
-            : "pkl";
+            ? "Thesis"
+            : "Internship";
 
     const { data, setData, post, processing, errors, reset } = useForm({
         activityType: default_activity_type,
         start_date: "",
         end_date: "",
 
-        // PKL
+        // Internship
         description: "",
         preferredCompany: "",
         teamMembers: [],
@@ -340,7 +340,7 @@ export default function RegistrationPage({
     const handleTabChange = (value) => {
         setData("activityType", value);
 
-        if (value === "pkl") {
+        if (value === "Internship") {
             setData("competitionTeam", []);
         } else if (value === "competition") {
             setData("teamMembers", []);
@@ -353,11 +353,11 @@ export default function RegistrationPage({
         const startDate = new Date(data.start_date);
         let maxMonths;
 
-        if (data.activityType === "pkl") {
+        if (data.activityType === "Internship") {
             maxMonths = 3;
         } else if (data.activityType === "competition") {
             maxMonths = 2;
-        } else if (data.activityType === "skripsi") {
+        } else if (data.activityType === "Thesis") {
             maxMonths = 6;
         }
 
@@ -369,7 +369,7 @@ export default function RegistrationPage({
 
     const handleTeamMemberToggle = (id) => {
         const field =
-            data.activityType === "pkl" ? "teamMembers" : "competitionTeam";
+            data.activityType === "Internship" ? "teamMembers" : "competitionTeam";
 
         const current = data[field];
         // console.log("Selected team members:", data.teamMembers);
@@ -429,7 +429,7 @@ export default function RegistrationPage({
                 <div>
                     <h1>Activity Registration</h1>
                     <p className="text-muted-foreground">
-                        Register for PKL (Internship), Thesis, or Academic
+                        Register for Internship (Internship), Thesis, or Academic
                         Competition
                     </p>
                 </div>
@@ -458,16 +458,16 @@ export default function RegistrationPage({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem
-                                            value="pkl"
+                                            value="Internship"
                                             disabled={block_internship}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>PKL (Internship) </span>
+                                                <span>Internship (Internship) </span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem
-                                            value="skripsi"
+                                            value="Thesis"
                                             disabled={block_thesis}
                                         >
                                             <div className="flex items-center gap-2">
@@ -488,15 +488,15 @@ export default function RegistrationPage({
                             {/* Desktop: Tabs */}
                             <TabsList className="hidden md:grid w-full grid-cols-3">
                                 <TabsTrigger
-                                    value="pkl"
+                                    value="Internship"
                                     className="gap-2"
                                     disabled={block_internship}
                                 >
                                     <Briefcase className="w-4 h-4" />
-                                    PKL (Internship)
+                                    Internship (Internship)
                                 </TabsTrigger>
                                 <TabsTrigger
-                                    value="skripsi"
+                                    value="Thesis"
                                     className="gap-2"
                                     disabled={block_thesis}
                                 >
@@ -515,12 +515,12 @@ export default function RegistrationPage({
                     </CardContent>
                 </Card>
 
-                {/* PKL Form */}
-                {data.activityType === "pkl" && (
+                {/* Internship Form */}
+                {data.activityType === "Internship" && (
                     <div className="space-y-6">
                         <Alert>
                             <Info className="h-4 w-4" />
-                            <AlertTitle>PKL Registration</AlertTitle>
+                            <AlertTitle>Internship Registration</AlertTitle>
                             <AlertDescription>
                                 Register for your internship program. We'll
                                 recommend team members and supervisors based on
@@ -542,20 +542,20 @@ export default function RegistrationPage({
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="pkl-name">
+                                        <Label htmlFor="Internship-name">
                                             Full Name
                                         </Label>
                                         <Input
-                                            id="pkl-name"
+                                            id="Internship-name"
                                             value={studentInfo.name}
                                             disabled
                                             className="bg-muted"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="pkl-nim">NIM</Label>
+                                        <Label htmlFor="Internship-nim">NIM</Label>
                                         <Input
-                                            id="pkl-nim"
+                                            id="Internship-nim"
                                             value={studentInfo.nim}
                                             disabled
                                             className="bg-muted"
@@ -565,12 +565,12 @@ export default function RegistrationPage({
                             </CardContent>
                         </Card>
 
-                        {/* PKL Details */}
+                        {/* Internship Details */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Briefcase className="w-5 h-5" />
-                                    PKL Details
+                                    Internship Details
                                 </CardTitle>
                                 <CardDescription>
                                     Provide information about your internship
@@ -880,12 +880,12 @@ export default function RegistrationPage({
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="pkl-description">
-                                        PKL Description
+                                    <Label htmlFor="Internship-description">
+                                        Internship Description
                                     </Label>
                                     <Textarea
-                                        id="pkl-description"
-                                        placeholder="Describe your PKL goals, objectives, and what you hope to achieve..."
+                                        id="Internship-description"
+                                        placeholder="Describe your Internship goals, objectives, and what you hope to achieve..."
                                         value={data.description}
                                         onChange={(e) =>
                                             setData(
@@ -900,11 +900,11 @@ export default function RegistrationPage({
                                 {/* Start & End Date side by side */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="pkl-start">
+                                        <Label htmlFor="Internship-start">
                                             Start Date
                                         </Label>
                                         <Input
-                                            id="pkl-start"
+                                            id="Internship-start"
                                             type="date"
                                             value={data.start_date}
                                             onChange={(e) =>
@@ -931,11 +931,11 @@ export default function RegistrationPage({
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="pkl-end">
+                                        <Label htmlFor="Internship-end">
                                             End Date
                                         </Label>
                                         <Input
-                                            id="pkl-end"
+                                            id="Internship-end"
                                             type="date"
                                             value={data.end_date}
                                             onChange={(e) =>
@@ -966,7 +966,7 @@ export default function RegistrationPage({
                         />
 
                         <SupervisorSelectionCard
-                            title="Recommended PKL Supervisors"
+                            title="Recommended Internship Supervisors"
                             supervisors={allSupervisors}
                             selectedId={data.supervisor}
                             onSelect={(id) => setData("supervisor", id)}
@@ -981,14 +981,14 @@ export default function RegistrationPage({
                             >
                                 {processing
                                     ? "Submitting..."
-                                    : "Submit PKL Registration"}
+                                    : "Submit Internship Registration"}
                             </Button>
                         </div>
                     </div>
                 )}
 
                 {/* Thesis Form */}
-                {data.activityType === "skripsi" && (
+                {data.activityType === "Thesis" && (
                     <div className="space-y-6">
                         <Alert>
                             <Info className="h-4 w-4" />

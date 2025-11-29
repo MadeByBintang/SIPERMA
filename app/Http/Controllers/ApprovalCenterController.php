@@ -63,8 +63,8 @@ class ApprovalCenterController extends Controller
 
                 /* ===== INTERNSHIP COMPANY ===== */
                 $companyName = null;
-                if ($item->activity->activity_type === 'pkl') {
-                    $companyName = $item->activity->internship->company->company_name
+                if ($item->activity->activity_type_id === 2) {
+                    $companyName = $item->activity->internship->name
                         ?? 'Unknown Company';
                 }
 

@@ -142,6 +142,17 @@ export default function TimelineProgressPage({ user, supervisions }) {
         }
     };
 
+    const getActivityTypeColor = (type) => {
+        switch (type) {
+            case "Internship":
+                return "bg-blue-100";
+            case "Thesis":
+                return "bg-green-100";
+            case "Competition":
+                return "bg-yellow-100";
+        }
+    };
+
     const handleViewDetails = (activity) => {
         setSelectedActivity(activity);
         setSelectedStudent(null);
@@ -654,7 +665,8 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                     <div className="flex items-start gap-3">
                                         <div
                                             className={`p-2 rounded-lg mt-1 ${
-                                                student.activityType === "Internship"
+                                                student.activityType ===
+                                                "Internship"
                                                     ? "bg-blue-100"
                                                     : student.activityType ===
                                                       "Thesis"
@@ -684,7 +696,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                             </Badge>
                                                             <Badge
                                                                 variant="outline"
-                                                                className="gap-1"
+                                                                className={`gap-1 ${getActivityTypeColor(
+                                                                    student.activityType
+                                                                )}`}
                                                             >
                                                                 {getActivityIcon(
                                                                     student.activityType
@@ -1009,7 +1023,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                         </p>
                                         <Badge
                                             variant="outline"
-                                            className="gap-1"
+                                            className={`gap-1 ${getActivityTypeColor(
+                                                selectedStudent.activityType
+                                            )}`}
                                         >
                                             {getActivityIcon(
                                                 selectedStudent.activityType

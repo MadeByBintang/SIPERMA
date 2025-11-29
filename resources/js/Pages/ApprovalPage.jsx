@@ -49,6 +49,9 @@ import {
     AlertCircle,
     Eye,
     ThumbsUp,
+    Briefcase,
+    GraduationCap,
+    Trophy,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
 import { Separator } from "@/Components/ui/separator";
@@ -99,12 +102,23 @@ export default function ApprovalPage({ approvalRequests = [] }) {
 
     const getActivityIcon = (type) => {
         switch (type) {
-            case "PKL":
-                return <BookOpen className="w-4 h-4" />;
-            case "Tugas Akhir":
-                return <FileText className="w-4 h-4" />;
-            case "Lomba":
-                return <Award className="w-4 h-4" />;
+            case "Internship":
+                return <Briefcase className="w-4 h-4" />;
+            case "Thesis":
+                return <GraduationCap className="w-4 h-4" />;
+            case "Competition":
+                return <Trophy className="w-4 h-4" />;
+        }
+    };
+
+    const getActivityTypeColor = (type) => {
+        switch (type) {
+            case "Internship":
+                return "bg-blue-100";
+            case "Thesis":
+                return "bg-green-100";
+            case "Competition":
+                return "bg-yellow-100";
         }
     };
 
@@ -223,26 +237,24 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-start gap-2">
-                                        <div className="mt-1 text-muted-foreground">
-                                            {getActivityIcon(
-                                                request.activityType
-                                            )}
-                                        </div>
                                         <div className="flex-1 min-w-0">
+                                            <Badge
+                                                variant="outline"
+                                                className={`gap-1 ${getActivityTypeColor(
+                                                    request.activityType
+                                                )}`}
+                                            >
+                                                {getActivityIcon(
+                                                    request.activityType
+                                                )}
+                                                {request.activityType}
+                                            </Badge>
                                             <p className="line-clamp-1 font-medium">
                                                 {request.activityName}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {request.activityType}
                                             </p>
                                         </div>
                                     </div>
                                 </TableCell>
-                                {/* <TableCell>
-                                    <Badge variant="outline" className="capitalize">
-                                        {request.requestType}
-                                    </Badge>
-                                </TableCell> */}
                                 <TableCell>
                                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                         <Calendar className="w-3 h-3" />
@@ -589,7 +601,15 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             <p className="text-sm text-muted-foreground">
                                                 Activity Type
                                             </p>
-                                            <Badge variant="outline">
+                                            <Badge
+                                                variant="outline"
+                                                className={`gap-1 ${getActivityTypeColor(
+                                                    selectedRequest.activityType
+                                                )}`}
+                                            >
+                                                {getActivityIcon(
+                                                    selectedRequest.activityType
+                                                )}
                                                 {selectedRequest.activityType}
                                             </Badge>
                                         </div>
