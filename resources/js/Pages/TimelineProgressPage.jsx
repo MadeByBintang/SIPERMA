@@ -360,7 +360,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                         {getStatusIcon(
                                                             activity.status
                                                         )}
-                                                        {activity.status}
+                                                        {activity.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            activity.status.slice(
+                                                                1
+                                                            )}
                                                     </Badge>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -715,7 +720,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                         {getStatusIcon(
                                                             student.status
                                                         )}
-                                                        {student.status}
+                                                        {student.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            student.status.slice(
+                                                                1
+                                                            )}
                                                     </Badge>
                                                 </div>
                                             </div>
@@ -753,7 +763,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                         {getStatusIcon(
                                                             student.status
                                                         )}
-                                                        {student.status}
+                                                        {student.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            student.status.slice(
+                                                                1
+                                                            )}
                                                     </Badge>
                                                 </div>
 
@@ -861,7 +876,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                             {getStatusIcon(
                                                 selectedActivity.status
                                             )}
-                                            {selectedActivity.status}
+                                            {selectedActivity.status
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                selectedActivity.status.slice(
+                                                    1
+                                                )}
                                         </Badge>
                                     </div>
                                     <div className="space-y-1">

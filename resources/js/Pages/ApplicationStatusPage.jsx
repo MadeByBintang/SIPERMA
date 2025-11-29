@@ -77,11 +77,14 @@ export default function ApplicationStatusPage({ applications }) {
 
     const getActivityIcon = (type) => {
         switch (type) {
+            case "PKL":
             case "Internship":
                 return <BookOpen className="w-4 h-4" />;
             case "Thesis":
+            case "Tugas Akhir":
                 return <FileText className="w-4 h-4" />;
             case "Competition":
+            case "Lomba":
                 return <Award className="w-4 h-4" />;
         }
     };
@@ -96,6 +99,20 @@ export default function ApplicationStatusPage({ applications }) {
                 return <Clock className="w-4 h-4" />;
             case "completed":
                 return <ThumbsUp className="w-4 h-4" />;
+        }
+    };
+
+    const getActivityTypeColor = (type) => {
+        switch (type) {
+            case "PKL":
+            case "Internship":
+                return "bg-blue-100";
+            case "Thesis":
+            case "Tugas Akhir":
+                return "bg-green-100";
+            case "Competition":
+            case "Lomba":
+                return "bg-yellow-100";
         }
     };
 
@@ -132,21 +149,17 @@ export default function ApplicationStatusPage({ applications }) {
                     <div className="space-y-4">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3 flex-1">
-                                <div
-                                    className={`p-2 rounded-lg mt-1 ${
-                                        application.activityType === "PKL"
-                                            ? "bg-blue-100"
-                                            : application.activityType ===
-                                              "Thesis"
-                                            ? "bg-green-100"
-                                            : "bg-orange-100"
-                                    }`}
-                                >
-                                    {getActivityIcon(application.activityType)}
-                                </div>
                                 <div className="flex-1 space-y-2">
                                     <div className="flex items-start gap-2 flex-wrap">
-                                        <Badge variant="outline">
+                                        <Badge
+                                            variant="outline"
+                                            className={`gap-1 ${getActivityTypeColor(
+                                                application.activityType
+                                            )}`}
+                                        >
+                                            {getActivityIcon(
+                                                application.activityType
+                                            )}
                                             {application.activityType}
                                         </Badge>
                                     </div>
@@ -243,8 +256,8 @@ export default function ApplicationStatusPage({ applications }) {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="grid grid-cols-5 gap-4 md:gap-6">
-                    <Card>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    {/* <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
                                 Total Applications
@@ -263,7 +276,7 @@ export default function ApplicationStatusPage({ applications }) {
                                 </p>
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -493,9 +506,15 @@ export default function ApplicationStatusPage({ applications }) {
                                 {/* Activity Information */}
                                 <div className="space-y-3">
                                     <h4 className="flex items-center gap-2">
-                                        {getActivityIcon(
-                                            selectedApplication.activityType
-                                        )}
+                                        <div
+                                            className={`p-2 rounded-lg ${getActivityTypeColor(
+                                                selectedApplication.activityType
+                                            )}`}
+                                        >
+                                            {getActivityIcon(
+                                                selectedApplication.activityType
+                                            )}
+                                        </div>
                                         Activity Information
                                     </h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -504,6 +523,9 @@ export default function ApplicationStatusPage({ applications }) {
                                                 Activity Type
                                             </p>
                                             <Badge variant="outline">
+                                                {getActivityIcon(
+                                                    selectedApplication.activityType
+                                                )}
                                                 {
                                                     selectedApplication.activityType
                                                 }

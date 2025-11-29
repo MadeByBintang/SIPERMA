@@ -310,7 +310,7 @@ export default function MatchingPage({ user, matches = [] }) {
 
                 {/* Details Dialog */}
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Detailed Info</DialogTitle>
                             <DialogDescription>
@@ -320,61 +320,65 @@ export default function MatchingPage({ user, matches = [] }) {
 
                         {selectedMatch && (
                             <div className="space-y-6">
+                                {/* Header */}
+                                <h4 className="flex items-center gap-2 font-medium border-b pb-2">
+                                    {selectedMatch.type === "lecturer" ? (
+                                        <BookOpen className="w-4 h-4" />
+                                    ) : (
+                                        <GraduationCap className="w-4 h-4" />
+                                    )}
+                                    {selectedMatch.type === "lecturer"
+                                        ? "Lecturer Profile"
+                                        : "Student Profile"}
+                                </h4>
+
                                 {/* Info Grid */}
-                                <div className="ggrid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
-                                    <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 font-medium border-b pb-2">
-                                            {selectedMatch.type ===
-                                            "lecturer" ? (
-                                                <BookOpen className="w-4 h-4" />
-                                            ) : (
-                                                <GraduationCap className="w-4 h-4" />
-                                            )}
-                                            {selectedMatch.type === "lecturer"
-                                                ? "Lecturer Profile"
-                                                : "Student Profile"}
-                                        </h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-sm text-muted-foreground">
-                                                    Name
-                                                </p>
-                                                <p>{selectedMatch.name}</p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-sm text-muted-foreground">
-                                                    {selectedMatch.type ===
-                                                    "student"
-                                                        ? "NIM"
-                                                        : "NIP"}
-                                                </p>
-                                                <p>{selectedMatch.uid}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Email
-                                                </p>
-                                                <p className="flex items-center gap-1 text-sm">
-                                                    <Mail className="w-3 h-3" />
-                                                    {selectedMatch.email}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {selectedMatch.type ===
-                                                    "lecturer"
-                                                        ? "Expertise"
-                                                        : "Interests"}
-                                                </p>
-                                                <Badge>
-                                                    {
-                                                        FOCUS_LABELS[
-                                                            selectedMatch.focus
-                                                        ]
-                                                    }
-                                                </Badge>
-                                            </div>
+                                <div className="grid grid-cols-2 gap-x-16 gap-y-6">
+                                    {/* Baris 1 Kiri - Name */}
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-muted-foreground">
+                                            Name
+                                        </p>
+                                        <p className="font-medium">
+                                            {selectedMatch.name}
+                                        </p>
+                                    </div>
+
+                                    {/* Baris 1 Kanan - NIM/NIP */}
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-muted-foreground">
+                                            {selectedMatch.type === "student"
+                                                ? "NIM"
+                                                : "NIP"}
+                                        </p>
+                                        <p className="font-medium">
+                                            {selectedMatch.uid}
+                                        </p>
+                                    </div>
+
+                                    {/* Baris 2 Kiri - Email */}
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-muted-foreground">
+                                            Email
+                                        </p>
+                                        <div className="flex items-start gap-2">
+                                            <Mail className="w-4 h-4 shrink-0 mt-0.5" />
+                                            <p className="text-sm wrap-break-word overflow-wrap-anywhere">
+                                                {selectedMatch.email}
+                                            </p>
                                         </div>
+                                    </div>
+
+                                    {/* Baris 2 Kanan - Interests */}
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-muted-foreground">
+                                            {selectedMatch.type === "lecturer"
+                                                ? "Expertise"
+                                                : "Interests"}
+                                        </p>
+                                        <Badge>
+                                            {FOCUS_LABELS[selectedMatch.focus]}
+                                        </Badge>
                                     </div>
                                 </div>
 

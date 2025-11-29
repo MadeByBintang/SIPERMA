@@ -48,6 +48,7 @@ import {
     Mail,
     AlertCircle,
     Eye,
+    ThumbsUp,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
 import { Separator } from "@/Components/ui/separator";
@@ -73,7 +74,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const getStatusColor = (status) => {
         switch (status) {
             case "approved":
-                return "bg-green-100 text-green-700 border-green-200";
+                return "bg-blue-100 text-blue-700 border-blue-200"; // Ubah ke biru
+            case "completed":
+                return "bg-green-100 text-green-700 border-green-200"; // Tambahkan ini
             case "rejected":
                 return "bg-red-100 text-red-700 border-red-200";
             default:
@@ -84,7 +87,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const getStatusIcon = (status) => {
         switch (status) {
             case "approved":
-                return <CheckCircle2 className="w-4 h-4" />;
+                return <CheckCircle2 className="w-4 h-4" />; // Tetap CheckCircle
+            case "completed":
+                return <ThumbsUp className="w-4 h-4" />; // Tambahkan ini
             case "rejected":
                 return <XCircle className="w-4 h-4" />;
             case "pending":
@@ -152,6 +157,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const approvedRequests = localRequests.filter(
         (r) => r.status === "approved"
     );
+    const completedRequests = localRequests.filter(
+        (r) => r.status === "completed"
+    ); // TAMBAHKAN INI
     const rejectedRequests = localRequests.filter(
         (r) => r.status === "rejected"
     );
@@ -162,6 +170,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                 return { requests: pendingRequests, showActions: true };
             case "approved":
                 return { requests: approvedRequests, showActions: false };
+            case "completed": // TAMBAHKAN INI
+                return { requests: completedRequests, showActions: false };
             case "rejected":
                 return { requests: rejectedRequests, showActions: false };
             default:
@@ -246,8 +256,11 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                         )}`}
                                         variant="outline"
                                     >
-                                        {getStatusIcon(request.status)}{" "}
-                                        {request.status}
+                                        {getStatusIcon(request.status)}
+                                        {request.status
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            request.status.slice(1)}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -288,7 +301,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
@@ -297,7 +310,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <Clock className="w-4 h-4 text-yellow-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-1">
+                            <div className="space-y     -1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
                                         {pendingRequests.length}
@@ -312,7 +325,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">Approved</CardTitle>
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            <CheckCircle2 className="w-4 h-4 text-blue-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-1">
@@ -341,6 +354,24 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Declined requests
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">Completed</CardTitle>
+                            <ThumbsUp className="w-4 h-4 text-green-600" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {completedRequests.length}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Finished activities
                                 </p>
                             </div>
                         </CardContent>
@@ -391,26 +422,37 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                         <SelectItem value="rejected">
                                             Rejected ({rejectedRequests.length})
                                         </SelectItem>
+                                        <SelectItem value="completed">
+                                            Completed (
+                                            {completedRequests.length})
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             {/* Desktop Tabs */}
-                            <TabsList className="hidden md:grid w-full grid-cols-4 mb-6">
+                            <TabsList className="hidden md:grid w-full grid-cols-5 mb-6">
                                 <TabsTrigger value="all">
                                     All ({approvalRequests.length})
                                 </TabsTrigger>
                                 <TabsTrigger value="pending" className="gap-2">
-                                    <Clock className="w-4 h-4" /> Pending (
-                                    {pendingRequests.length})
+                                    <Clock className="w-4 h-4" />
+                                    Pending ({pendingRequests.length})
                                 </TabsTrigger>
                                 <TabsTrigger value="approved" className="gap-2">
-                                    <CheckCircle2 className="w-4 h-4" />{" "}
+                                    <CheckCircle2 className="w-4 h-4" />
                                     Approved ({approvedRequests.length})
                                 </TabsTrigger>
                                 <TabsTrigger value="rejected" className="gap-2">
-                                    <XCircle className="w-4 h-4" /> Rejected (
-                                    {rejectedRequests.length})
+                                    <XCircle className="w-4 h-4" />
+                                    Rejected ({rejectedRequests.length})
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="completed"
+                                    className="gap-2"
+                                >
+                                    <ThumbsUp className="w-4 h-4" />
+                                    Completed ({completedRequests.length})
                                 </TabsTrigger>
                             </TabsList>
 
@@ -426,6 +468,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             </TabsContent>
                             <TabsContent value="rejected">
                                 {renderRequestsTable(rejectedRequests, false)}
+                            </TabsContent>
+                            <TabsContent value="completed">
+                                {renderRequestsTable(completedRequests, false)}
                             </TabsContent>
                         </Tabs>
                     </CardContent>

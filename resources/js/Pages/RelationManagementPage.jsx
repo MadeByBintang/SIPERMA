@@ -346,9 +346,22 @@ export default function RelationManagementPage({
                                                                 {getStatusIcon(
                                                                     relation.status
                                                                 )}
-                                                                {
-                                                                    relation.status
-                                                                }
+                                                                {relation.status
+                                                                    .split(" ")
+                                                                    .map(
+                                                                        (
+                                                                            word
+                                                                        ) =>
+                                                                            word
+                                                                                .charAt(
+                                                                                    0
+                                                                                )
+                                                                                .toUpperCase() +
+                                                                            word.slice(
+                                                                                1
+                                                                            )
+                                                                    )
+                                                                    .join(" ")}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
@@ -455,9 +468,22 @@ export default function RelationManagementPage({
                                                                 {getStatusIcon(
                                                                     relation.status
                                                                 )}
-                                                                {
-                                                                    relation.status
-                                                                }
+                                                                {relation.status
+                                                                    .split(" ")
+                                                                    .map(
+                                                                        (
+                                                                            word
+                                                                        ) =>
+                                                                            word
+                                                                                .charAt(
+                                                                                    0
+                                                                                )
+                                                                                .toUpperCase() +
+                                                                            word.slice(
+                                                                                1
+                                                                            )
+                                                                    )
+                                                                    .join(" ")}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
@@ -617,7 +643,20 @@ export default function RelationManagementPage({
                                                         {getStatusIcon(
                                                             selectedDetail.status
                                                         )}
-                                                        {selectedDetail.status}
+                                                        {selectedDetail.status
+                                                            .split(" ")
+                                                            .map(
+                                                                (word) =>
+                                                                    word
+                                                                        .charAt(
+                                                                            0
+                                                                        )
+                                                                        .toUpperCase() +
+                                                                    word.slice(
+                                                                        1
+                                                                    )
+                                                            )
+                                                            .join(" ")}{" "}
                                                     </Badge>
                                                 </div>
                                             </div>
@@ -789,7 +828,20 @@ export default function RelationManagementPage({
                                                         {getStatusIcon(
                                                             selectedDetail.status
                                                         )}
-                                                        {selectedDetail.status}
+                                                        {selectedDetail.status
+                                                            .split(" ")
+                                                            .map(
+                                                                (word) =>
+                                                                    word
+                                                                        .charAt(
+                                                                            0
+                                                                        )
+                                                                        .toUpperCase() +
+                                                                    word.slice(
+                                                                        1
+                                                                    )
+                                                            )
+                                                            .join(" ")}{" "}
                                                     </Badge>
                                                 </div>
                                             </div>
