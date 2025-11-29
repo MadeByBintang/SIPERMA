@@ -699,18 +699,18 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                     <>
                                         <Separator />
                                         <div className="flex flex-col sm:flex-row gap-3">
-                                            <Button
-                                                className="flex-1 gap-2"
-                                                onClick={() => {
-                                                    setIsDialogOpen(false);
-                                                    handleApproveClick(
-                                                        selectedRequest
-                                                    );
-                                                }}
-                                            >
-                                                <CheckCircle2 className="w-4 h-4" />
-                                                Approve Request
-                                            </Button>
+                                            {selectedRequest?.current_supervision < selectedRequest?.supervision_quota && (
+                                                <Button
+                                                    className="flex-1 gap-2"
+                                                    onClick={() => {
+                                                        setIsDialogOpen(false);
+                                                        handleApproveClick(selectedRequest);
+                                                    }}
+                                                >
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    Approve Request
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="destructive"
                                                 className="flex-1 gap-2"

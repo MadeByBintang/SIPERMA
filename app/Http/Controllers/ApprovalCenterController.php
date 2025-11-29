@@ -80,6 +80,10 @@ class ApprovalCenterController extends Controller
                     /* ===== LECTURER ===== */
                     'lecturerName' => $item->lecturer->name ?? 'Unknown',
                     'lecturerEmail' => $item->lecturer->email ?? '-',
+                    'current_supervision'   => $item -> lecturer -> supervisions
+                                        ->where('supervision_status', 'approved')
+                                        ->count(),
+                    'supervision_quota'     => $item -> lecturer -> supervision_quota,
 
                     /* ===== ACTIVITY ===== */
                     'activityType' => $item->activity->activityType->type_name ?? '-',
@@ -99,7 +103,7 @@ class ApprovalCenterController extends Controller
                     'individualStudentFocus' => $item->student->focus ?? null,
 
                     /* request type untuk frontend */
-                    'requestType' => 'supervision',
+                    // 'requestType' => 'supervision',
                 ];
             });
 
