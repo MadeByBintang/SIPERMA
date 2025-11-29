@@ -111,8 +111,35 @@ class RegistrationController extends Controller
         $user = Auth::user();
         $student = $user->student;
 
+
+        // Validasi end_date berdasarkan activity type
+        $maxMonths = match ($request->activityType) {
+            'pkl' => 3,
+            'competition' => 2,
+            'skripsi' => 6,
+        };
+
+        $maxEndDate = Carbon::parse($request->start_date)->addMonths($maxMonths);
+
         $request->validate([
-            'activityType' => 'required|in:pkl,skripsi,competition'
+            'activityType' => 'required|in:pkl,skripsi,competition',
+            'start_date' => [
+                'required',
+                'date',
+                'after_or_equal:today',
+                'before_or_equal:' . now()->addDays(10)->format('Y-m-d')
+            ],
+            'end_date' => [
+                'required',
+                'date',
+                'after:start_date',
+                'before_or_equal:' . $maxEndDate->format('Y-m-d')
+            ],
+        ], [
+            'start_date.after_or_equal' => 'Start date cannot be in the past.',
+            'start_date.before_or_equal' => 'Start date must be within 10 days from today.',
+            'end_date.after' => 'End date must be after start date.',
+            'end_date.before_or_equal' => "End date cannot exceed $maxMonths months from start date.",
         ]);
 
         DB::beginTransaction();

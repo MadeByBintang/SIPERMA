@@ -313,6 +313,26 @@ export default function RegistrationPage({
         }
     };
 
+    const getMaxEndDate = () => {
+        if (!data.start_date) return "";
+
+        const startDate = new Date(data.start_date);
+        let maxMonths;
+
+        if (data.activityType === "pkl") {
+            maxMonths = 3;
+        } else if (data.activityType === "competition") {
+            maxMonths = 2;
+        } else if (data.activityType === "skripsi") {
+            maxMonths = 6;
+        }
+
+        const maxDate = new Date(startDate);
+        maxDate.setMonth(maxDate.getMonth() + maxMonths);
+
+        return maxDate.toISOString().split("T")[0];
+    };
+
     const handleTeamMemberToggle = (id) => {
         const field =
             data.activityType === "pkl" ? "teamMembers" : "competitionTeam";
@@ -845,6 +865,19 @@ export default function RegistrationPage({
                                                     e.target.value
                                                 )
                                             }
+                                            min={
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            } // today
+                                            max={
+                                                new Date(
+                                                    Date.now() +
+                                                        10 * 24 * 60 * 60 * 1000
+                                                )
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            } // +10 hari
                                             required
                                         />
                                     </div>
@@ -863,6 +896,13 @@ export default function RegistrationPage({
                                                     e.target.value
                                                 )
                                             }
+                                            min={
+                                                data.start_date ||
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            max={getMaxEndDate()}
                                             required
                                         />
                                     </div>
