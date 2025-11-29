@@ -95,6 +95,7 @@ export default function LecturerProfilePage({
         nip: lecturer?.nip || "-",
         studyProgram: "Teknologi Informasi",
         email: lecturer?.email || "-",
+        current_supervision: lecturer?.current_supervision || "0",
         supervision_quota: lecturer?.supervision_quota || "0",
         focus: lecturer?.focus || "",
     };
@@ -404,7 +405,7 @@ export default function LecturerProfilePage({
                                             </div>
                                             <p className="text-xs text-muted-foreground">
                                                 Currently supervising:{" "}
-                                                {initialData.supervision_quota}{" "}
+                                                {initialData.current_supervision}{" "}
                                                 of{" "}
                                                 {initialData.supervision_quota}{" "}
                                                 students

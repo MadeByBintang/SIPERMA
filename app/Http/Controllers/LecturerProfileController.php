@@ -24,12 +24,14 @@ class LecturerProfileController extends Controller
         ->first();
 
         $lecturerData = $lecturer ? [
-            'name'              => $lecturer -> name,
-            'nip'               => $lecturer -> nip,
-            'email'             => $lecturer -> email,
-            'focus'             => $lecturer->focus,
-            'current_supervision'   => $lecturer -> supervisions->count(),
-            'supervision_quota' => $lecturer -> supervision_quota,
+            'name'                  => $lecturer -> name,
+            'nip'                   => $lecturer -> nip,
+            'email'                 => $lecturer -> email,
+            'focus'                 => $lecturer->focus,
+            'current_supervision'   => $lecturer->supervisions
+                                        ->where('supervision_status', 'approved')
+                                        ->count(),
+            'supervision_quota'     => $lecturer -> supervision_quota,
         ] : null;
 
         return Inertia::render('LecturerProfilePage', [
