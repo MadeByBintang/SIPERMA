@@ -15,25 +15,17 @@ class SystemReportsController extends Controller
     public function index()
     {
         $supervisions = Supervision::with(['student.user', 'lecturer.user', 'activity'])->get();
-        $teams = Team::with(['leader.student', 'supervisor'])->get();
+        $teams = Team::with(['supervision.student', 'supervision.lecturer'])->get();
 
-        $totalProjects = $supervisions->count() + $teams->count();
-        $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['active', 'ongoing', 'approved']))->count();
-        $activeTeams = $teams->filter(fn($t) => in_array(strtolower($t->status), ['active', 'ongoing']))->count();
-        $totalActive = $activeSupervisions + $activeTeams;
+        $totalProjects = $supervisions->count();
+        $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['approved']))->count();
+        $totalActive = $activeSupervisions;
 
         $completedSupervisions = $supervisions->filter(fn($s) => strtolower($s->supervision_status) === 'completed')->count();
-        $completedTeams = $teams->filter(fn($t) => strtolower($t->status) === 'completed')->count();
-        $totalCompleted = $completedSupervisions + $completedTeams;
+        $totalCompleted = $completedSupervisions;
 
         $totalSupervisors = Lecturer::count();
         $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
-
-        $distribution = [
-            'pkl' => $supervisions->where('activity.activity_type', 'PKL')->count() + $teams->where('type', 'PKL')->count(),
-            'thesis' => $supervisions->where('activity.activity_type', 'Thesis')->count(),
-            'competition' => $teams->where('type', 'Competition')->count()
-        ];
 
         $stats = [
             'totalProjects' => $totalProjects,
@@ -49,24 +41,24 @@ class SystemReportsController extends Controller
     public function exportPdf()
     {
         $supervisions = Supervision::with(['student.user', 'lecturer.user', 'activity'])->get();
-        $teams = Team::with(['leader.student', 'supervisor'])->get();
+        $teams = Team::with(['supervision.student', 'supervision.lecturer'])->get();
 
         $totalProjects = $supervisions->count() + $teams->count();
         $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['active', 'ongoing', 'approved']))->count();
-        $activeTeams = $teams->filter(fn($t) => in_array(strtolower($t->status), ['active', 'ongoing']))->count();
-        $totalActive = $activeSupervisions + $activeTeams;
+        $activeTeams = $teams->filter(fn($t) => in_array(strtolower($t->supervision?->supervision_status), ['active', 'ongoing']))->count();
+        $totalActive = $activeSupervisions;
 
         $completedSupervisions = $supervisions->filter(fn($s) => strtolower($s->supervision_status) === 'completed')->count();
-        $completedTeams = $teams->filter(fn($t) => strtolower($t->status) === 'completed')->count();
-        $totalCompleted = $completedSupervisions + $completedTeams;
+        $completedTeams = $teams->filter(fn($t) => strtolower($t->supervision?->supervision_status) === 'completed')->count();
+        $totalCompleted = $completedSupervisions ;
 
         $totalSupervisors = Lecturer::count();
         $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
 
         $distribution = [
-            'pkl' => $supervisions->where('activity.activity_type', 'PKL')->count() + $teams->where('type', 'PKL')->count(),
-            'thesis' => $supervisions->where('activity.activity_type', 'Thesis')->count(),
-            'competition' => $teams->where('type', 'Competition')->count()
+            'pkl' => $supervisions->where('activity.activity_type_id', 2)->count(),
+            'thesis' => $supervisions->where('activity.activity_type_id', 1)->count(),
+            'competition' => $supervisions->where('activity.activity_type_id', 3)->count()
         ];
 
         $stats = compact('totalProjects', 'totalActive', 'totalCompleted', 'totalSupervisors', 'avgStudents', 'distribution');

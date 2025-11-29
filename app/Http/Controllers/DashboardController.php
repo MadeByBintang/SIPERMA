@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Role;
+use App\Models\Team;
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Activity;
-use App\Models\User;
-use App\Models\Role;
+use App\Models\Lecturer;
 use App\Models\Supervision;
+use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -39,7 +42,7 @@ class DashboardController extends Controller
         }
 
         if ($user->role->role_name === 'admin') {
-            $totalPkl = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'PKL'))->count();
+            $totalPkl = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Internship'))->count();
             $totalThesis = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Thesis'))->count();
             $totalCompetition = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Competition'))->count();
 
@@ -56,10 +59,10 @@ class DashboardController extends Controller
                 'rejectedGuidance' => Supervision::where('supervision_status', 'Rejected')->count(),
             ];
 
-
             return Inertia::render('AdminDashboardPage', [
                 'systemStats' => $systemStats,
                 'notifications' => [],
+                'stats' => $this -> stats(),
             ]);
         }
 
@@ -73,8 +76,64 @@ class DashboardController extends Controller
 
 
         return Inertia::render('Dashboard', [
-            // 'activities' => $activities,
+            'activities' => $activities,
             'stats' => $stats,
         ]);
+    }
+
+    private function stats()
+    {
+        $supervisions = Supervision::with(['student.user', 'lecturer.user', 'activity'])->get();
+
+        $totalProjects = $supervisions->count();
+        $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['approved']))->count();
+        $totalActive = $activeSupervisions;
+
+        $completedSupervisions = $supervisions->filter(fn($s) => strtolower($s->supervision_status) === 'completed')->count();
+        $totalCompleted = $completedSupervisions;
+
+        $totalSupervisors = Lecturer::count();
+        $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
+
+        $stats = [
+            'totalProjects' => $totalProjects,
+            'activeProjects' => $totalActive,
+            'completedProjects' => $totalCompleted,
+            'totalSupervisors' => $totalSupervisors,
+            'avgStudentsPerSupervisor' => $avgStudents,
+        ];
+
+        return $stats;
+    }
+
+
+    public function exportPdf()
+    {
+        $supervisions = Supervision::with(['student.user', 'lecturer.user', 'activity'])->get();
+        $teams = Team::with(['supervision.student', 'supervision.lecturer'])->get();
+
+        $totalProjects = $supervisions->count() + $teams->count();
+        $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['active', 'ongoing', 'approved']))->count();
+        $activeTeams = $teams->filter(fn($t) => in_array(strtolower($t->supervision?->supervision_status), ['active', 'ongoing']))->count();
+        $totalActive = $activeSupervisions;
+
+        $completedSupervisions = $supervisions->filter(fn($s) => strtolower($s->supervision_status) === 'completed')->count();
+        $completedTeams = $teams->filter(fn($t) => strtolower($t->supervision?->supervision_status) === 'completed')->count();
+        $totalCompleted = $completedSupervisions ;
+
+        $totalSupervisors = Lecturer::count();
+        $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
+
+        $distribution = [
+            'pkl' => $supervisions->where('activity.activity_type_id', 2)->count(),
+            'thesis' => $supervisions->where('activity.activity_type_id', 1)->count(),
+            'competition' => $supervisions->where('activity.activity_type_id', 3)->count()
+        ];
+
+        $stats = compact('totalProjects', 'totalActive', 'totalCompleted', 'totalSupervisors', 'avgStudents', 'distribution');
+
+        $pdf = Pdf::loadView('pdf.reports.admin', ['stats' => $stats]);
+
+        return $pdf->download('system-reports.pdf');
     }
 }

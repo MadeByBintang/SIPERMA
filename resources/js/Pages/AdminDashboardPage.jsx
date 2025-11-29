@@ -6,16 +6,18 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-    CardDescription,
+    CardDescription
 } from "@/Components/ui/card"; // Pastikan path import benar
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import {
     Users,
+    Download,
     UserCheck,
     Briefcase,
     CheckCircle2,
     Clock,
+    Check,
     AlertCircle,
     TrendingUp,
     FileText,
@@ -31,10 +33,19 @@ import {
     DialogTitle,
 } from "@/Components/ui/dialog";
 
+import { toast } from "sonner";
+
 // 1. TERIMA PROPS DARI CONTROLLER DISINI
-export default function AdminDashboardPage({ systemStats, notifications }) {
+export default function AdminDashboardPage({ systemStats, stats }) {
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+    const handleGenerateReport = () => {
+        toast.success("Generating report...");
+
+        // Buka export PDF di tab baru
+        window.open("/admin/reports/export-pdf", "_blank");
+    };
 
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -74,13 +85,24 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
             <Head title="Admin Dashboard" />
             <div className="space-y-6">
                 {/* Header */}
-                <div>
-                    <h1>Admin Dashboard</h1>
-                    <p className="text-sm text-muted-foreground">
-                        System overview and management center
-                    </p>
-                </div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0 mb-4">
+                    {/* Header Kiri */}
+                    <div>
+                        <h1>Admin Dashboard</h1>
+                        <p className="text-sm text-muted-foreground">
+                            System overview and management center
+                        </p>
+                    </div>
 
+                    {/* Tombol Export Kanan */}
+                    <Button
+                        onClick={handleGenerateReport}
+                        className="gap-2 shrink-0"
+                    >
+                        <Download className="w-4 h-4" />
+                        Export PDF
+                    </Button>
+                </div>
                 {/* System Statistics - MENGGUNAKAN DATA ASLI DARI DATABASE */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {/* Total Students */}
@@ -172,6 +194,50 @@ export default function AdminDashboardPage({ systemStats, notifications }) {
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting lecturer response
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Total Projects
+                            </CardTitle>
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {stats.totalProjects}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {stats.activeProjects} active
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm">
+                                Completed Projects
+                            </CardTitle>
+                            <Check className="w-4 h-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl">
+                                        {stats.completedProjects}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {stats.completedProjects} completed
                                 </p>
                             </div>
                         </CardContent>

@@ -39,8 +39,8 @@ class ApplicationStatusController extends Controller
             $applications = $supervisions->map(function ($sv) use ($student) {
 
                 $companyName = null;
-                if ($sv->activity->activity_type === 'pkl') {
-                    $companyName = $item->activity->internship->company->company_name
+                if ($sv-> activity -> activityType -> type_name === 'Internship') {
+                    $companyName = $sv -> activity -> internship -> name
                         ?? 'Unknown Company';
                 }
 
