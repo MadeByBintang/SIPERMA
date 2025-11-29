@@ -14,16 +14,8 @@ return new class extends Migration
             $table->bigIncrements('activity_type_id');
 
             $table->string('type_name');
-            $table->text('description')->nullable();
-
-
         });
 
-        // DB::table('activity_types')->insert([
-        //     ['type_name' => 'PKL', 'description' => 'Praktik Kerja Lapangan'],
-        //     ['type_name' => 'Thesis', 'description' => 'Skripsi / Tugas Akhir'],
-        //     ['type_name' => 'Lomba', 'description' => 'Lomba Akademik/Non-Akademik'],
-        // ]);
     }
 
     public function down(): void
