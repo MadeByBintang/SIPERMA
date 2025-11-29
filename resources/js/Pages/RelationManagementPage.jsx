@@ -28,6 +28,9 @@ import {
     Info,
     Clock,
     ThumbsUp,
+    Briefcase,
+    GraduationCap,
+    Trophy,
 } from "lucide-react";
 import {
     Select,
@@ -74,6 +77,28 @@ export default function RelationManagementPage({
                 return <Clock className="w-4 h-4" />;
             case "completed":
                 return <ThumbsUp className="w-4 h-4" />;
+        }
+    };
+
+    const getActivityTypeColor = (type) => {
+        switch (type) {
+            case "Internship":
+                return "bg-blue-100";
+            case "Thesis":
+                return "bg-green-100";
+            case "Competition":
+                return "bg-yellow-100";
+        }
+    };
+
+    const getActivityIcon = (type) => {
+        switch (type) {
+            case "Internship":
+                return <Briefcase className="w-4 h-4" />;
+            case "Thesis":
+                return <GraduationCap className="w-4 h-4" />;
+            case "Competition":
+                return <Trophy className="w-4 h-4" />;
         }
     };
 
@@ -263,7 +288,15 @@ export default function RelationManagementPage({
                                                 "student-student" ? (
                                                     <>
                                                         <TableCell>
-                                                            <Badge variant="outline">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={`gap-1 ${getActivityTypeColor(
+                                                                    relation.activityType
+                                                                )}`}
+                                                            >
+                                                                {getActivityIcon(
+                                                                    relation.activityType
+                                                                )}
                                                                 {
                                                                     relation.activityType
                                                                 }

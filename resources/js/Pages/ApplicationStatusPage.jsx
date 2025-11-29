@@ -45,6 +45,9 @@ import {
     Mail,
     UserPlus,
     ThumbsUp,
+    Briefcase,
+    GraduationCap,
+    Trophy,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../Components/ui/alert";
 import { Separator } from "../Components/ui/separator";
@@ -77,15 +80,12 @@ export default function ApplicationStatusPage({ applications }) {
 
     const getActivityIcon = (type) => {
         switch (type) {
-            case "PKL":
             case "Internship":
-                return <BookOpen className="w-4 h-4" />;
+                return <Briefcase className="w-4 h-4" />;
             case "Thesis":
-            case "Tugas Akhir":
-                return <FileText className="w-4 h-4" />;
+                return <GraduationCap className="w-4 h-4" />;
             case "Competition":
-            case "Lomba":
-                return <Award className="w-4 h-4" />;
+                return <Trophy className="w-4 h-4" />;
         }
     };
 
@@ -104,14 +104,11 @@ export default function ApplicationStatusPage({ applications }) {
 
     const getActivityTypeColor = (type) => {
         switch (type) {
-            case "PKL":
             case "Internship":
                 return "bg-blue-100";
             case "Thesis":
-            case "Tugas Akhir":
                 return "bg-green-100";
             case "Competition":
-            case "Lomba":
                 return "bg-yellow-100";
         }
     };

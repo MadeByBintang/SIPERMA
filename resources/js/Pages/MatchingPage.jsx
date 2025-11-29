@@ -310,7 +310,7 @@ export default function MatchingPage({ user, matches = [] }) {
 
                 {/* Details Dialog */}
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-w-20xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Detailed Info</DialogTitle>
                             <DialogDescription>
@@ -333,7 +333,7 @@ export default function MatchingPage({ user, matches = [] }) {
                                 </h4>
 
                                 {/* Info Grid */}
-                                <div className="grid grid-cols-2 gap-x-16 gap-y-6">
+                                <div className="grid grid-cols-2 gap-x-35 gap-y-6">
                                     {/* Baris 1 Kiri - Name */}
                                     <div className="space-y-1">
                                         <p className="text-sm text-muted-foreground">

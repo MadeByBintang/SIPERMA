@@ -24,6 +24,9 @@ import {
     ChevronRight,
     Plus,
     ThumbsUp,
+    Briefcase,
+    GraduationCap,
+    Trophy,
 } from "lucide-react";
 import {
     Dialog,
@@ -121,12 +124,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
 
     const getActivityIcon = (type) => {
         switch (type) {
-            case "PKL":
-                return <BookOpen className="w-5 h-5" />;
-            case "Tugas Akhir":
-                return <FileText className="w-5 h-5" />;
-            case "Lomba":
-                return <Award className="w-5 h-5" />;
+            case "Internship":
+                return <Briefcase className="w-5 h-5" />;
+            case "Thesis":
+                return <GraduationCap className="w-5 h-5" />;
+            case "Competition":
+                return <Trophy className="w-5 h-5" />;
         }
     };
 
@@ -292,14 +295,14 @@ export default function TimelineProgressPage({ user, supervisions }) {
 
     // Render student view
     const renderStudentView = () => {
-        const pklActivities = studentActivities.filter(
-            (a) => a.activityType === "PKL"
+        const InternshipActivities = studentActivities.filter(
+            (a) => a.activityType === "Internship"
         );
         const thesisActivities = studentActivities.filter(
-            (a) => a.activityType === "Tugas Akhir"
+            (a) => a.activityType === "Thesis"
         );
         const competitionActivities = studentActivities.filter(
-            (a) => a.activityType === "Lomba"
+            (a) => a.activityType === "Competition"
         );
 
         const renderActivityCard = (activities, type, emptyMessage) => {
@@ -310,9 +313,9 @@ export default function TimelineProgressPage({ user, supervisions }) {
                             <div className="flex items-center gap-3">
                                 <div
                                     className={`p-2 rounded-lg ${
-                                        type === "PKL"
+                                        type === "Internship"
                                             ? "bg-blue-100"
-                                            : type === "Tugas Akhir"
+                                            : type === "Thesis"
                                             ? "bg-green-100"
                                             : "bg-orange-100"
                                     }`}
@@ -506,18 +509,18 @@ export default function TimelineProgressPage({ user, supervisions }) {
                 {/* Activity Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {renderActivityCard(
-                        pklActivities,
-                        "PKL",
-                        "No PKL activities yet"
+                        InternshipActivities,
+                        "Internship",
+                        "No Internship activities yet"
                     )}
                     {renderActivityCard(
                         thesisActivities,
-                        "Tugas Akhir",
+                        "Thesis",
                         "No thesis activities yet"
                     )}
                     {renderActivityCard(
                         competitionActivities,
-                        "Lomba",
+                        "Competition",
                         "No competition activities yet"
                     )}
                 </div>
@@ -527,14 +530,14 @@ export default function TimelineProgressPage({ user, supervisions }) {
 
     // Render lecturer view
     const renderLecturerView = () => {
-        const pklStudents = supervisedStudents.filter(
-            (s) => s.activityType === "PKL"
+        const InternshipStudents = supervisedStudents.filter(
+            (s) => s.activityType === "Internship"
         );
         const thesisStudents = supervisedStudents.filter(
-            (s) => s.activityType === "Tugas Akhir"
+            (s) => s.activityType === "Thesis"
         );
         const competitionStudents = supervisedStudents.filter(
-            (s) => s.activityType === "Lomba"
+            (s) => s.activityType === "Competition"
         );
 
         return (
@@ -571,7 +574,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm">
-                                PKL Students
+                                Internship Students
                             </CardTitle>
                             <BookOpen className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
@@ -579,7 +582,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {pklStudents.length}
+                                        {InternshipStudents.length}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -651,10 +654,10 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                     <div className="flex items-start gap-3">
                                         <div
                                             className={`p-2 rounded-lg mt-1 ${
-                                                student.activityType === "PKL"
+                                                student.activityType === "Internship"
                                                     ? "bg-blue-100"
                                                     : student.activityType ===
-                                                      "Tugas Akhir"
+                                                      "Thesis"
                                                     ? "bg-green-100"
                                                     : "bg-orange-100"
                                             }`}

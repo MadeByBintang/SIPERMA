@@ -23,7 +23,7 @@ class RegistrationController extends Controller
         $currentStudent = $user->student;
 
         if (!$currentStudent) {
-            return redirect()->route('dashboard')->with('error', 'Halaman khusus mahasiswa.');
+            return redirect()->route('dashboard')->with('error', 'Special page for students.');
         }
 
         $userFocus = $currentStudent->focus;
@@ -206,7 +206,7 @@ class RegistrationController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Registration submitted successfully!');
+            return redirect()->route('application.status')->with('success', 'Registration submitted successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Failed to submit registration: ' . $e->getMessage());
@@ -304,7 +304,7 @@ class RegistrationController extends Controller
 
             if ($request->activityType === 'pkl') {
                 if (count($request->teamMembers) > 3) {
-                    return redirect()->back()->with('error', 'Maksimal 4 anggota termasuk ketua.');
+                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.');
                 }
 
                 foreach ($request->teamMembers as $memberId) {
@@ -315,7 +315,7 @@ class RegistrationController extends Controller
                 }
             } else if ($typeId === 3) {
                 if (count($request->competitionTeam) > 3) {
-                    return redirect()->back()->with('error', 'Maksimal 5 anggota termasuk ketua.');
+                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.');
                 }
 
                 foreach ($request->competitionTeam as $memberId) {
