@@ -25,20 +25,20 @@ export default function LoginPage({ status, canResetPassword }) {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validasi username (NIM/NIP)
+        // Username validation (NIM/NIP)
         if (!data.username) {
-            newErrors.username = "NIM/NIP wajib diisi";
+            newErrors.username = "Username is required";
         } else if (data.username.length < 3) {
-            newErrors.username = "NIM/NIP minimal 3 karakter";
+            newErrors.username = "Username must be at least 3 characters";
         }
 
-        // Validasi password
+        // Password validation
         if (!data.password) {
-            newErrors.password = "Password wajib diisi";
+            newErrors.password = "Password is required";
         } else if (data.password.length < 8) {
-            newErrors.password = "Password minimal 8 karakter";
+            newErrors.password = "Password must be at least 8 characters";
         } else if (data.password.length > 15) {
-            newErrors.password = "Password maksimal 15 karakter";
+            newErrors.password = "Password must not exceed 15 characters";
         }
 
         setLocalErrors(newErrors);
@@ -48,7 +48,7 @@ export default function LoginPage({ status, canResetPassword }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Validasi dulu sebelum submit
+        // Validate before submit
         if (!validateForm()) {
             return;
         }
@@ -88,10 +88,10 @@ export default function LoginPage({ status, canResetPassword }) {
                                     id="username"
                                     type="text"
                                     value={data.username}
-                                    placeholder="Masukkan NIM atau NIP"
+                                    placeholder="Enter your NIM or NIP"
                                     onChange={(e) => {
                                         setData("username", e.target.value);
-                                        // Clear local error saat user mengetik
+                                        // Clear local error when user types
                                         if (localErrors.username) {
                                             setLocalErrors((prev) => ({
                                                 ...prev,
@@ -128,10 +128,10 @@ export default function LoginPage({ status, canResetPassword }) {
                                             showPassword ? "text" : "password"
                                         }
                                         value={data.password}
-                                        placeholder="Masukkan password"
+                                        placeholder="Enter your password"
                                         onChange={(e) => {
                                             setData("password", e.target.value);
-                                            // Clear local error saat user mengetik
+                                            // Clear local error when user types
                                             if (localErrors.password) {
                                                 setLocalErrors((prev) => ({
                                                     ...prev,
@@ -175,7 +175,7 @@ export default function LoginPage({ status, canResetPassword }) {
                                 )}
 
                                 <p className="text-xs text-muted-foreground">
-                                    Password harus 8-15 karakter
+                                    Password must be 8-15 characters
                                 </p>
                             </div>
 

@@ -27,12 +27,12 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'username.required' => 'NIM/NIP wajib diisi.',
-            'username.min' => 'NIM/NIP minimal 3 karakter.',
-            'username.max' => 'NIM/NIP maksimal 255 karakter.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.max' => 'Password maksimal 15 karakter.',
+            'username.required' => 'Username is required.',
+            'username.min' => 'Username must be at least 3 characters.',
+            'username.max' => 'Username must not exceed 255 characters.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.max' => 'Password must not exceed 15 characters.',
         ];
     }
 
@@ -45,7 +45,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'username' => 'NIM/NIP atau password salah.',
+                'username' => 'The provided credentials are incorrect.',
             ]);
         }
 
