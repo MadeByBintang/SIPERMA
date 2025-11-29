@@ -32,4 +32,8 @@ class Team extends Model
     {
         return $this->belongsTo(Activity::class, 'activity_id', 'activity_id');
     }
+
+    public function supervision(){
+        return $this -> belongsTo(Supervision::class, 'team_id', 'team_id');
+    }
 }

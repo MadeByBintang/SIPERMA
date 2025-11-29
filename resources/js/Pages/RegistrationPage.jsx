@@ -233,8 +233,25 @@ export default function RegistrationPage({
     allMembers,
     institutions = [],
 }) {
+    const block_internship =
+        studentInfo?.internship_status == "approved" ||
+        studentInfo?.internship_status == "completed" ||
+        studentInfo?.internship_status == "pending";
+
+    const block_thesis =
+        studentInfo?.thesis_status == "approved" ||
+        studentInfo?.ithesis_status == "completed" ||
+        studentInfo?.thesis_status == "pending";
+
+    const default_activity_type =
+        block_internship && block_thesis
+            ? "competition"
+            : block_internship
+            ? "skripsi"
+            : "pkl";
+
     const { data, setData, post, processing, errors, reset } = useForm({
-        activityType: "pkl",
+        activityType: default_activity_type,
         start_date: "",
         end_date: "",
 
@@ -423,13 +440,19 @@ export default function RegistrationPage({
                                         <SelectValue placeholder="Select an activity type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="pkl">
+                                        <SelectItem
+                                            value="pkl"
+                                            disabled={block_internship}
+                                        >
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>PKL (Internship)</span>
+                                                <span>PKL (Internship) </span>
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="skripsi">
+                                        <SelectItem
+                                            value="skripsi"
+                                            disabled={block_thesis}
+                                        >
                                             <div className="flex items-center gap-2">
                                                 <GraduationCap className="w-4 h-4" />
                                                 <span>Thesis</span>
@@ -447,11 +470,19 @@ export default function RegistrationPage({
 
                             {/* Desktop: Tabs */}
                             <TabsList className="hidden md:grid w-full grid-cols-3">
-                                <TabsTrigger value="pkl" className="gap-2">
+                                <TabsTrigger
+                                    value="pkl"
+                                    className="gap-2"
+                                    disabled={block_internship}
+                                >
                                     <Briefcase className="w-4 h-4" />
                                     PKL (Internship)
                                 </TabsTrigger>
-                                <TabsTrigger value="skripsi" className="gap-2">
+                                <TabsTrigger
+                                    value="skripsi"
+                                    className="gap-2"
+                                    disabled={block_thesis}
+                                >
                                     <GraduationCap className="w-4 h-4" />
                                     Thesis
                                 </TabsTrigger>
@@ -1241,6 +1272,73 @@ export default function RegistrationPage({
                                         </div>
                                     </div>
                                 )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="comp-start">
+                                            Start Date
+                                        </Label>
+                                        <Input
+                                            id="comp-start"
+                                            type="date"
+                                            value={data.start_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "start_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            min={
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            max={
+                                                new Date(
+                                                    Date.now() +
+                                                        10 * 24 * 60 * 60 * 1000
+                                                )
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            required
+                                        />
+                                        {errors.start_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.start_date}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="comp-end">
+                                            End Date
+                                        </Label>
+                                        <Input
+                                            id="comp-end"
+                                            type="date"
+                                            value={data.end_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "end_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            min={
+                                                data.start_date ||
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            max={getMaxEndDate()}
+                                            required
+                                        />
+                                        {errors.end_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.end_date}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 

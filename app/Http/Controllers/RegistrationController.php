@@ -44,14 +44,26 @@ class RegistrationController extends Controller
         $allLecturers = Lecturer::with(['user', 'masterLecturer'])
             ->get()
             ->map(function ($lecturer) {
+                $current = $lecturer->supervisions()
+                    ->where('supervision_status', 'approved')
+                    ->count();
+
+                $max = $lecturer->supervision_quota ?? 0;
+
+
                 return [
                     'id' => $lecturer->lecturer_id,
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
                     'expertise' => $lecturer->focus,
-                    'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
-                    'maxStudents' => $lecturer->supervisions_quota ?? 0,
+                    'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'approved')->count(),
+                    'maxStudents' => $lecturer->supervision_quota ?? 0,
                 ];
-            });
+            })
+            ->filter(function ($lec) {
+                return $lec['currentStudents'] < $lec['maxStudents'];
+            })
+
+            ->values();
 
         $filteredLecturers = Lecturer::with(['user', 'masterLecturer'])
             ->where('focus', $userFocus)
@@ -61,13 +73,27 @@ class RegistrationController extends Controller
                     'id' => $lecturer->lecturer_id,
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
                     'expertise' => $lecturer->focus,
-                    'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'active')->count(),
-                    'maxStudents' => $lecturer->supervisions_quota ?? 0,
+                    'currentStudents' => $lecturer->supervisions()->where('supervision_status', 'approved')->count(),
+                    'maxStudents' => $lecturer->supervision_quota ?? 0,
                 ];
             });
 
         $allStudents = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
+            ->whereDoesntHave('supervisions', function ($q) {
+                $q->whereHas('activity', function ($a) {
+                    $a->where('activity_type_id', 2); // PKL
+                })
+                ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
+            })
+
+            ->whereDoesntHave('teamMembers.team.supervision', function ($q) {
+                $q->whereHas('activity', function ($a) {
+                    $a->where('activity_type_id', 2); // PKL
+                })
+                ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
+            })
+
             ->get()
             ->map(function ($student) {
                 return [
@@ -96,6 +122,8 @@ class RegistrationController extends Controller
                 'name' => $currentStudent->name ?? $user->name,
                 'nim' => $currentStudent->nim,
                 'interests' => $currentStudent->focus,
+                'thesis_status' => $this -> getStudentActivityStatus($currentStudent -> student_id, 1),
+                'internship_status' => $this -> getStudentActivityStatus($currentStudent -> student_id, 2)
             ],
             'allSupervisors' => $allLecturers,
             'filteredSupervisors' => $filteredLecturers,
@@ -104,6 +132,30 @@ class RegistrationController extends Controller
             'institutions' => $institutions,
             'userFocus' => $userFocus,
         ]);
+    }
+
+    protected function getStudentActivityStatus(string $id, string $type)
+    {
+        $leader = Supervision::whereHas('activity', function ($q) use ($type) {
+                $q->where('activity_type_id', $type);
+            })
+            ->where('student_id', $id)
+            ->latest('assigned_date')
+            ->first();
+
+
+        $member = Supervision::whereHas('activity', function ($q) use ($type) {
+                $q->where('activity_type_id', $type);
+            })
+            ->whereHas('team.members', function ($q) use ($id) {
+                $q->where('student_id', $id);
+            })
+            ->latest('assigned_date')
+            ->first();
+
+        $activity = $leader ?? $member;
+
+        return $activity ? $activity -> supervision_status : ' ';
     }
 
     public function store(Request $request)
@@ -122,24 +174,7 @@ class RegistrationController extends Controller
         $maxEndDate = Carbon::parse($request->start_date)->addMonths($maxMonths);
 
         $request->validate([
-            'activityType' => 'required|in:pkl,skripsi,competition',
-            'start_date' => [
-                'required',
-                'date',
-                'after_or_equal:today',
-                'before_or_equal:' . now()->addDays(10)->format('Y-m-d')
-            ],
-            'end_date' => [
-                'required',
-                'date',
-                'after:start_date',
-                'before_or_equal:' . $maxEndDate->format('Y-m-d')
-            ],
-        ], [
-            'start_date.after_or_equal' => 'Start date cannot be in the past.',
-            'start_date.before_or_equal' => 'Start date must be within 10 days from today.',
-            'end_date.after' => 'End date must be after start date.',
-            'end_date.before_or_equal' => "End date cannot exceed $maxMonths months from start date.",
+            'activityType' => 'required|in:pkl,skripsi,competition'
         ]);
 
         DB::beginTransaction();
@@ -148,6 +183,25 @@ class RegistrationController extends Controller
             if ($request->activityType === 'skripsi') {
                 $this->storeThesis($request, $student);
             } else {
+                $request->validate([
+                    'start_date' => [
+                        'required',
+                        'date',
+                        'after_or_equal:today',
+                        'before_or_equal:' . now()->addDays(10)->format('Y-m-d')
+                    ],
+                    'end_date' => [
+                        'required',
+                        'date',
+                        'after:start_date',
+                        'before_or_equal:' . $maxEndDate->format('Y-m-d')
+                    ],
+                ], [
+                    'start_date.after_or_equal' => 'Start date cannot be in the past.',
+                    'start_date.before_or_equal' => 'Start date must be within 10 days from today.',
+                    'end_date.after' => 'End date must be after start date.',
+                    'end_date.before_or_equal' => "End date cannot exceed $maxMonths months from start date.",
+                ]);
                 $this->storeTeamActivity($request, $student);
             }
 
