@@ -1241,6 +1241,73 @@ export default function RegistrationPage({
                                         </div>
                                     </div>
                                 )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="comp-start">
+                                            Start Date
+                                        </Label>
+                                        <Input
+                                            id="comp-start"
+                                            type="date"
+                                            value={data.start_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "start_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            min={
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            max={
+                                                new Date(
+                                                    Date.now() +
+                                                        10 * 24 * 60 * 60 * 1000
+                                                )
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            required
+                                        />
+                                        {errors.start_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.start_date}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="comp-end">
+                                            End Date
+                                        </Label>
+                                        <Input
+                                            id="comp-end"
+                                            type="date"
+                                            value={data.end_date}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "end_date",
+                                                    e.target.value
+                                                )
+                                            }
+                                            min={
+                                                data.start_date ||
+                                                new Date()
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }
+                                            max={getMaxEndDate()}
+                                            required
+                                        />
+                                        {errors.end_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.end_date}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 
