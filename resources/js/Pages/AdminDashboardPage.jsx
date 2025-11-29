@@ -6,7 +6,7 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-    CardDescription
+    CardDescription,
 } from "@/Components/ui/card"; // Pastikan path import benar
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -22,6 +22,7 @@ import {
     TrendingUp,
     FileText,
     Bell,
+    Loader2,
 } from "lucide-react";
 import { Separator } from "@/Components/ui/separator";
 import {
@@ -32,7 +33,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-
+import axios from "axios";
+import { Progress } from "@/Components/ui/progress";
 import { toast } from "sonner";
 
 // 1. TERIMA PROPS DARI CONTROLLER DISINI
@@ -40,11 +42,86 @@ export default function AdminDashboardPage({ systemStats, stats }) {
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
-    const handleGenerateReport = () => {
-        toast.success("Generating report...");
+    // STATE UNTUK DOWNLOAD DIALOG
+    const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
 
-        // Buka export PDF di tab baru
-        window.open("/admin/reports/export-pdf", "_blank");
+    const handleGenerateReport = () => {
+        setIsDownloadDialogOpen(true);
+        setDownloadProgress(0); // Reset progress
+    };
+
+    const confirmDownload = async () => {
+        setIsDownloading(true);
+        setDownloadProgress(0);
+
+        const toastId = toast.loading("Preparing your report...");
+
+        // Simulasi progress untuk UI/UX yang lebih baik
+        const progressInterval = setInterval(() => {
+            setDownloadProgress((prev) => {
+                if (prev >= 90) {
+                    clearInterval(progressInterval);
+                    return 90;
+                }
+                return prev + 10;
+            });
+        }, 300);
+
+        try {
+            const response = await axios.get("/admin/dashboard/export-pdf", {
+                responseType: "blob", // PENTING: untuk file binary
+                onDownloadProgress: (progressEvent) => {
+                    // Jika server mengirim total length, bisa pakai ini
+                    if (progressEvent.total) {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        setDownloadProgress(percentCompleted);
+                    }
+                },
+            });
+
+            // Set progress ke 100% ketika selesai
+            clearInterval(progressInterval);
+            setDownloadProgress(100);
+
+            // Buat blob URL dan trigger download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+
+            // Nama file dengan timestamp
+            const fileName = `system-reports-${
+                new Date().toISOString().split("T")[0]
+            }.pdf`;
+            link.setAttribute("download", fileName);
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Report downloaded successfully!", { id: toastId });
+
+            // Tutup dialog setelah delay singkat
+            setTimeout(() => {
+                setIsDownloadDialogOpen(false);
+            }, 1000);
+        } catch (error) {
+            clearInterval(progressInterval);
+            console.error("Download error:", error);
+
+            toast.error("Failed to generate report. Please try again.", {
+                id: toastId,
+            });
+        } finally {
+            setIsDownloading(false);
+            setDownloadProgress(0);
+        }
     };
 
     const getNotificationIcon = (type) => {
@@ -474,6 +551,85 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* DIALOG DOWNLOAD CONFIRMATION + PROGRESS */}
+                <Dialog
+                    open={isDownloadDialogOpen}
+                    onOpenChange={setIsDownloadDialogOpen}
+                >
+                    <DialogContent className="sm:max-w-sm">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <FileText className="w-5 h-5" />
+                                Download System Report
+                            </DialogTitle>
+                            {/* Gunakan DialogDescription dengan asChild untuk wrapper div */}
+                            <DialogDescription asChild>
+                                <div className="space-y-3 pt-2">
+                                    <p className="text-sm">
+                                        This will generate a comprehensive PDF
+                                        report containing:
+                                    </p>
+                                    <ul className="list-disc list-inside space-y-1 text-xs pl-1">
+                                        <li>Total projects statistics</li>
+                                        <li>Active and completed projects</li>
+                                        <li>
+                                            Supervisor distribution analysis
+                                        </li>
+                                        <li>Project type breakdown</li>
+                                        <li>Average students per supervisor</li>
+                                    </ul>
+
+                                    {/* PROGRESS BAR */}
+                                    {isDownloading && (
+                                        <div className="space-y-2 pt-3">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground">
+                                                    Generating report...
+                                                </span>
+                                                <span className="font-medium">
+                                                    {downloadProgress}%
+                                                </span>
+                                            </div>
+                                            <Progress
+                                                value={downloadProgress}
+                                                className="h-2"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <DialogFooter className="flex-row gap-2 sm:gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDownloadDialogOpen(false)}
+                                disabled={isDownloading}
+                                className="flex-1"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={confirmDownload}
+                                disabled={isDownloading}
+                                className="gap-2 flex-1"
+                            >
+                                {isDownloading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download className="w-4 h-4" />
+                                        Download PDF
+                                    </>
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </MainLayout>
     );

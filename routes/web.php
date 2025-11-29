@@ -13,14 +13,12 @@ use App\Http\Controllers\ApplicationStatusController;
 use App\Http\Controllers\MatchingController;
 use App\Http\Controllers\TimelineProgressController;
 use App\Http\Controllers\RelationManagementController;
-use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\AcademicTitleController;
 use App\Http\Controllers\ApprovalCenterController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ProjectOverviewController;
 use App\Http\Controllers\AdminRelationsController;
 use App\Http\Controllers\SystemReportsController;
-use App\Http\Controllers\SystemSettingsController;
 
 // --- HALAMAN PUBLIC ---
 Route::get('/', function () {
@@ -136,19 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::put('/approval/update/{id}', [ApprovalCenterController::class, 'update'])
         ->name('approval.update');
-
-    Route::get('/reports/export/pdf', [\App\Http\Controllers\ReportsController::class, 'exportPdf'])
-        ->middleware('auth')
-        ->name('reports.export.pdf');
-    // Route::get('/reports/export/pdf', [\App\Http\Controllers\ReportsController::class, 'exportPdf'])
-    //     ->middleware('auth')
-    //     ->name('reports.export.pdf');
-
-    // Route::get('/reports/export-excel', [ReportsController::class, 'exportExcel'])
-    //     ->name('reports.export.excel');
 });
 
-Route::get('admin/reports/export-pdf', [SystemReportsController::class, 'exportPdf'])
+Route::get('/admin/dashboard/export-pdf', [DashboardController::class, 'exportPdf'])
     ->middleware(['auth', 'role:admin'])
     ->name('system-reports.export-pdf');
 
@@ -179,15 +167,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::delete('/relations/{id}', 'destroy')->name('relations.destroy');
     });
 
-    // 4. System Reports
-    Route::get('/reports', [SystemReportsController::class, 'index'])
-        ->name('reports');
-
-    Route::get('/admin/reports/export-pdf', [SystemReportsController::class, 'exportPdf'])
+    Route::get('/admin/dashboard/export-pdf', [DashboardController::class, 'exportPdf'])
         ->middleware(['auth', 'role:admin'])
         ->name('system-reports.export-pdf');
-
-    Route::resource('academic-titles', AcademicTitleController::class)->except(['create', 'show', 'edit']);
 });
 
 require __DIR__ . '/auth.php';

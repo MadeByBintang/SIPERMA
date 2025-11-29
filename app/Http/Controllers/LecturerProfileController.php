@@ -10,28 +10,29 @@ use Illuminate\Support\Facades\Hash;
 
 class LecturerProfileController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $lecturer = $user->lecturer()
-        ->with([
-            'supervisions' => function ($q) {
-                $q->where('supervision_status', 'approved')
-                  ->with(['student.user']);
-            }
-        ])
-        ->first();
+            ->with([
+                'supervisions' => function ($q) {
+                    $q->where('supervision_status', 'approved')
+                        ->with(['student.user']);
+                }
+            ])
+            ->first();
 
         $lecturerData = $lecturer ? [
-            'name'                  => $lecturer -> name,
-            'nip'                   => $lecturer -> nip,
-            'email'                 => $lecturer -> email,
+            'name'                  => $lecturer->name,
+            'nip'                   => $lecturer->nip,
+            'email'                 => $lecturer->email,
             'focus'                 => $lecturer->focus,
             'current_supervision'   => $lecturer->supervisions
-                                        ->where('supervision_status', 'approved')
-                                        ->count(),
-            'supervision_quota'     => $lecturer -> supervision_quota,
+                ->where('supervision_status', 'approved')
+                ->count(),
+            'supervision_quota'     => $lecturer->supervision_quota,
         ] : null;
 
         return Inertia::render('LecturerProfilePage', [
@@ -84,28 +85,29 @@ class LecturerProfileController extends Controller
 
         $rules = [
             'current_password' => ['required', 'current_password'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'max:15', 'confirmed'],
         ];
 
-        $old_username = $user -> username;
-        $new_username = $request -> input('username');
+        $old_username = $user->username;
+        $new_username = $request->input('username');
 
-        if ($old_username != $new_username){
+        if ($old_username != $new_username) {
             $rules['username'] = ['required', 'string', 'max:255', 'unique:users,username'];
-        }
-        else {
+        } else {
             $rules['username'] = 'required';
         }
 
-        $validated = $request->validate($rules);
-
+        $validated = $request->validate($rules, [
+            'password.max' => 'Password must not exceed 15 characters.',
+            'password.min' => 'Password must be at least 8 characters.',
+        ]);
 
         if ($old_username !== $new_username) {
-            $user -> username = $validated['username'];
+            $user->username = $validated['username'];
         }
 
         if (!empty($validated['password'])) {
-            $user -> password = Hash::make($validated['password']);
+            $user->password = Hash::make($validated['password']);
         }
 
         if ($user->isDirty()) {

@@ -251,7 +251,7 @@ class TimelineProgressController extends Controller
         $activity = Activity::findOrFail($activity_id);
 
         if ($activity->lecturer_id !== Auth::user()->lecturer->lecture_id) {
-            abort(403, 'Anda tidak memiliki otorisasi untuk menyelesaikan aktivitas ini.');
+            abort(403, 'You do not have authorization to complete this activity.');
         }
 
         $supervisions = Supervision::where('activity_id', $activity->activity_id)->firstOrFail();
@@ -259,6 +259,6 @@ class TimelineProgressController extends Controller
         $supervisions->supervision_status = 'completed';
         $supervisions->save();
 
-        return back()->with('success', 'Activity berhasil ditandai sebagai Selesai.');
+        return back()->with('success', 'Activity successfully marked as complete.');
     }
 }

@@ -71,8 +71,6 @@ export default function Sidebar({ setMobileMenuOpen }) {
             label: "Relations Management",
             icon: GitBranch,
         },
-        // { href: "/admin/reports", label: "System Reports", icon: FileText },
-        // { href: "/admin/settings", label: "System Settings", icon: Settings },
         { href: "/profile/admin", label: "Admin Profile", icon: User },
     ];
 

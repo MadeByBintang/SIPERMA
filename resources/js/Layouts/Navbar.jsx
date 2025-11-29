@@ -48,7 +48,6 @@ export default function Navbar({ setMobileMenuOpen }) {
         { href: "/admin/users", label: "Users" },
         { href: "/admin/projects", label: "Projects" },
         { href: "/admin/relations", label: "Relations" },
-        { href: "/admin/reports", label: "Reports" },
         { href: "/admin/settings", label: "Settings" },
         { href: "/profile/admin", label: "Profile" },
     ];
