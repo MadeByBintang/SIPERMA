@@ -71,9 +71,7 @@ class ApprovalCenterController extends Controller
                 return [
                     /* ===== SUPERVISION ===== */
                     'id' => $item->supervision_id,
-                    'status' => $item->supervision_status === 'completed'
-                        ? 'approved'
-                        : ($item->supervision_status ?? 'pending'),
+                    'status' => $item->supervision_status,
                     'submittedDate' => $item->assigned_date
                         ? Carbon::parse($item->assigned_date)->format('Y-m-d')
                         : now()->format('Y-m-d'),
