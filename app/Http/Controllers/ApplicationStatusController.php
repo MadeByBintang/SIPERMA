@@ -14,7 +14,7 @@ class ApplicationStatusController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $student = $user -> student;
+        $student = $user->student;
 
         $applications = collect();
 
@@ -36,11 +36,12 @@ class ApplicationStatusController extends Controller
             ->orderBy('supervision_id', 'desc')
             ->get();
 
-            $applications = $supervisions->map(function ($sv) use ($student) {
+        $applications = $supervisions->map(
+            function ($sv) use ($student) {
 
                 $companyName = null;
-                if ($sv-> activity -> activityType -> type_name === 'Internship') {
-                    $companyName = $sv -> activity -> internship -> name
+                if ($sv->activity->activityType->type_name === 'Internship') {
+                    $companyName = $sv->activity->internship->name
                         ?? 'Unknown Company';
                 }
 
@@ -61,17 +62,17 @@ class ApplicationStatusController extends Controller
                     'id' => $sv->supervision_id,
                     'activityType' => $sv->activity->activityType->type_name ?? '-',
                     'activityName' => $sv->activity->title ?? 'Untitled Project',
-                    'description' => $sv -> activity -> description ?? '-',
+                    'description' => $sv->activity->description ?? '-',
                     'supervisorName' => $sv->lecturer->name ?? 'Unknown',
                     'supervisorEmail' => $sv->lecturer->email ?? 'Unknown',
-                    'submittedDate' => $sv -> assigned_date,
+                    'submittedDate' => $sv->assigned_date,
                     'status' => $sv->supervision_status,
 
                     'companyName' => $companyName,
 
                     'teamName' => $teamName,
                     'teamMembers' => $teamMembers,
-                    'responseNotes' => $sv -> notes,
+                    'responseNotes' => $sv->notes,
                 ];
             }
         );
