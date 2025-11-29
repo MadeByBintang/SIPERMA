@@ -26,7 +26,7 @@ class MasterStudentsSeeder extends Seeder
             ],
             [
                 'nim' => '2310817110006',
-                'full_name' => 'ADRIAN BINTANG SAPUTERA ',
+                'full_name' => 'ADRIAN BINTANG SAPUTERA',
                 'email' => 'adrianbintang3@gmail.com'
             ],
             [

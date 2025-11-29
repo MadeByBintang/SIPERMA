@@ -102,8 +102,8 @@ class StudentProfileController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'password.max' => 'Password tidak boleh lebih dari 15 karakter.',
-            'password.min' => 'Password minimal 8 karakter.',
+            'password.max' => 'Password must not exceed 15 characters.',
+            'password.min' => 'Password must be at least 8 characters.',
         ]);
 
         if ($old_username !== $new_username) {

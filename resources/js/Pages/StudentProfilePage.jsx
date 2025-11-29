@@ -1,12 +1,7 @@
-// --- Core & Third Party Libraries ---
 import { useState } from "react";
 import { Head, usePage, useForm, router } from "@inertiajs/react";
 import { toast } from "sonner";
-
-// --- Layouts ---
 import MainLayout from "@/Layouts/MainLayout";
-
-// --- UI Components (Forms & Inputs) ---
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -19,8 +14,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
-
-// --- UI Components (Display & Layout) ---
 import {
     Card,
     CardContent,
@@ -31,8 +24,6 @@ import {
 import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import { Separator } from "@/Components/ui/separator";
 import { Badge } from "@/Components/ui/badge";
-
-// --- UI Components (Overlays & Interaction) ---
 import {
     Popover,
     PopoverContent,
@@ -46,8 +37,6 @@ import {
     CommandItem,
     CommandList,
 } from "@/Components/ui/command";
-
-// --- Icons ---
 import {
     AlertCircle,
     Check,
@@ -96,15 +85,15 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
 
     const handleCancel = () => {
         setIsEditing(false);
-        reset(); // reset data kembali
-        setLocalErrors({}); // hapus error frontend
+        reset(); // reset data
+        setLocalErrors({}); // clear frontend errors
         setDirty({ email: false }); // reset dirty flag
     };
 
     const handleSave = () => {
-        // jangan izinkan save jika email invalid
+        // don't allow save if email is invalid
         if (localErrors.email) {
-            toast.error("Email tidak valid. Perbaiki dulu sebelum menyimpan.");
+            toast.error("Invalid email. Please fix before saving.");
             return;
         }
 
@@ -164,7 +153,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                 toast.success("Account updated successfully!");
                 reset("current_password", "password", "password_confirmation");
 
-                // ambil username terbaru dari auth props
+                // get latest username from auth props
                 setAccountData({ username: page.props.auth.user.username });
             },
             onError: () => toast.error("Failed to update account."),
@@ -244,9 +233,6 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                         <Input
                                             id="name"
                                             value={initialData.name}
-                                            // onChange={(e) =>
-                                            //     setData("name", e.target.value)
-                                            // }
                                             disabled
                                             className={"bg-muted"}
                                         />
@@ -277,7 +263,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                                 const value = e.target.value;
                                                 setData("email", value);
 
-                                                // tandai field sudah diubah user
+                                                // mark field as changed by user
                                                 setDirty((prev) => ({
                                                     ...prev,
                                                     email: true,
@@ -296,7 +282,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                                 ) {
                                                     setLocalErrors((prev) => ({
                                                         ...prev,
-                                                        email: "Format email tidak valid.",
+                                                        email: "Invalid email format.",
                                                     }));
                                                 } else {
                                                     setLocalErrors((prev) => ({
@@ -332,7 +318,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label>Program Studi</Label>
+                                        <Label>Study Program</Label>
                                         <Input
                                             value={initialData.studyProgram}
                                             disabled
@@ -342,7 +328,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Fokus Peminatan</Label>
+                                    <Label>Focus Area</Label>
                                     {isEditing ? (
                                         <Select
                                             value={data.focus}
@@ -411,7 +397,8 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                         value={accountData.username}
                                         onChange={(e) =>
                                             setAccountData(
-                                                "username", e.target.value
+                                                "username",
+                                                e.target.value
                                             )
                                         }
                                     />
