@@ -101,7 +101,7 @@ class RegistrationController extends Controller
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->focus,
-                    'internship_status' => $this -> getStudentActivityStatus($student -> student_id, 2)
+                    'internship_status' => $this->getStudentActivityStatus($student->student_id, 2)
                 ];
             });
 
@@ -115,7 +115,7 @@ class RegistrationController extends Controller
                     'name' => $student->name ?? $student->user->name,
                     'nim' => $student->nim,
                     'interests' => $student->focus,
-                    'internship_status' => $this -> getStudentActivityStatus($student -> student_id, 2)
+                    'internship_status' => $this->getStudentActivityStatus($student->student_id, 2)
                 ];
             });
 
@@ -124,8 +124,8 @@ class RegistrationController extends Controller
                 'name' => $currentStudent->name ?? $user->name,
                 'nim' => $currentStudent->nim,
                 'interests' => $currentStudent->focus,
-                'thesis_status' => $this -> getStudentActivityStatus($currentStudent -> student_id, 1),
-                'internship_status' => $this -> getStudentActivityStatus($currentStudent -> student_id, 2)
+                'thesis_status' => $this->getStudentActivityStatus($currentStudent->student_id, 1),
+                'internship_status' => $this->getStudentActivityStatus($currentStudent->student_id, 2)
             ],
             'allSupervisors' => $allLecturers,
             'filteredSupervisors' => $filteredLecturers,
@@ -139,16 +139,16 @@ class RegistrationController extends Controller
     protected function getStudentActivityStatus(string $id, string $type)
     {
         $leader = Supervision::whereHas('activity', function ($q) use ($type) {
-                $q->where('activity_type_id', $type);
-            })
+            $q->where('activity_type_id', $type);
+        })
             ->where('student_id', $id)
             ->latest('assigned_date')
             ->first();
 
 
         $member = Supervision::whereHas('activity', function ($q) use ($type) {
-                $q->where('activity_type_id', $type);
-            })
+            $q->where('activity_type_id', $type);
+        })
             ->whereHas('team.members', function ($q) use ($id) {
                 $q->where('student_id', $id);
             })
@@ -157,7 +157,7 @@ class RegistrationController extends Controller
 
         $activity = $leader ?? $member;
 
-        return $activity ? $activity -> supervision_status : ' ';
+        return $activity ? $activity->supervision_status : ' ';
     }
 
     public function store(Request $request)
@@ -165,24 +165,23 @@ class RegistrationController extends Controller
         $user = Auth::user();
         $student = $user->student;
 
-
         // Validasi end_date berdasarkan activity type
         $maxMonths = match ($request->activityType) {
-            'pkl' => 3,
-            'competition' => 2,
-            'skripsi' => 6,
+            'Internship' => 3,
+            'Competition' => 2,
+            'Thesis' => 6,
         };
 
         $maxEndDate = Carbon::parse($request->start_date)->addMonths($maxMonths);
 
         $request->validate([
-            'activityType' => 'required|in:pkl,skripsi,competition'
+            'activityType' => 'required|in:Internship,Thesis,Competition'
         ]);
 
         DB::beginTransaction();
 
         try {
-            if ($request->activityType === 'skripsi') {
+            if ($request->activityType === 'Thesis') {
                 $this->storeThesis($request, $student);
             } else {
                 $request->validate([
@@ -219,9 +218,18 @@ class RegistrationController extends Controller
     private function storeThesis($request, $student)
     {
         $request->validate([
-            'title' => 'required|string',
-            'abstract' => 'required|string',
+            'title' => 'required|string|max:255',
+            'abstract' => 'required|string|min:50',
+            'researchTopics' => 'required|array|min:1',
             'mainSupervisor' => 'required|exists:lecturers,lecturer_id',
+        ], [
+            'title.required' => 'Thesis title is required.',
+            'title.max' => 'Thesis title must not exceed 255 characters.',
+            'abstract.required' => 'Abstract is required.',
+            'abstract.min' => 'Abstract must be at least 50 characters.',
+            'researchTopics.required' => 'Please select at least one research topic.',
+            'researchTopics.min' => 'Please select at least one research topic.',
+            'mainSupervisor.required' => 'Please select a thesis supervisor.',
         ]);
 
         $activity = Activity::create([
@@ -243,7 +251,7 @@ class RegistrationController extends Controller
 
     private function storeTeamActivity($request, $student)
     {
-        $typeId = $request->activityType === 'pkl' ? 2 : 3;
+        $typeId = $request->activityType === 'Internship' ? 2 : 3;
 
         $institutionId = null;
 
@@ -253,8 +261,13 @@ class RegistrationController extends Controller
                     'newInstitutionName' => 'required|string|max:255',
                     'newInstitutionSector' => 'required|string|max:50',
                     'newOwnerName' => 'required|string|max:100',
+                    'newInstitutionAddress' => 'nullable|string|max:500',
                     'newOwnerEmail' => 'nullable|email|max:100',
                     'newOwnerPhone' => 'nullable|string|max:20',
+                ], [
+                    'newInstitutionName.required' => 'Company name is required.',
+                    'newInstitutionSector.required' => 'Sector is required.',
+                    'newOwnerName.required' => 'Owner/Mentor name is required.',
                 ]);
 
                 $newInst = Internship::firstOrCreate(
@@ -272,19 +285,42 @@ class RegistrationController extends Controller
             } else {
                 $request->validate([
                     'institution_id' => 'required|exists:internships,internship_id',
+                ], [
+                    'institution_id.required' => 'Please select an institution.',
                 ]);
                 $institutionId = $request->institution_id;
             }
+
+            $request->validate([
+                'description' => 'required|string|min:20',
+            ], [
+                'description.required' => 'Internship description is required.',
+                'description.min' => 'Description must be at least 20 characters.',
+            ]);
+        }
+
+        if ($typeId === 3) {
+            $request->validate([
+                'competitionName' => 'required|string|max:255',
+                'competitionField' => 'required|string',
+            ], [
+                'competitionName.required' => 'Competition name is required.',
+                'competitionField.required' => 'Please select a competition field.',
+            ]);
         }
 
         $request->validate([
             'supervisor' => 'required|exists:lecturers,lecturer_id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ], [
+            'supervisor.required' => 'Please select a supervisor.',
         ]);
 
         $activity = Activity::create([
             'activity_type_id' => $typeId,
             'internship_id' => $institutionId,
-            'title' => $request->activityType === 'pkl' ? 'PKL At - ' .  Internship::find($institutionId)?->name : $request->competitionName,
+            'title' => $request->activityType === 'Internship' ? 'Internship At - ' .  Internship::find($institutionId)?->name : $request->competitionName,
             'description' => $request->description ?? $request->competitionField,
             'start_date' => Carbon::createFromFormat('Y-m-d', $request->start_date)->format('Y-m-d'),
             'end_date'   => Carbon::createFromFormat('Y-m-d', $request->end_date)->format('Y-m-d'),
@@ -293,7 +329,7 @@ class RegistrationController extends Controller
 
         // 2. Create Team
         $team = Team::create([
-            'team_name'      => $request->activityType === 'pkl' ? 'PKL Team - ' . $student->name : 'Competition Team -' . $request->competitionName,
+            'team_name'      => $request->activityType === 'Internship' ? 'Internship Team - ' . $student->name : 'Competition Team - ' . $request->competitionName,
             'description'    => $activity->description,
         ]);
 
@@ -302,9 +338,9 @@ class RegistrationController extends Controller
             'student_id' => $student->student_id,
         ]);
 
-        if (($request->has('teamMembers') && is_array($request->teamMembers) || ($request->has('competitionTeam') && is_array($request->competitionTeam)))) {
+        if (($request->has('teamMembers') && is_array($request->teamMembers)) || ($request->has('competitionTeam') && is_array($request->competitionTeam))) {
 
-            if ($request->activityType === 'pkl') {
+            if ($request->activityType === 'Internship') {
                 if (count($request->teamMembers) > 3) {
                     return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.');
                 }

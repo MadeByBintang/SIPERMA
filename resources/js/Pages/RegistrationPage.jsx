@@ -5,13 +5,13 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Badge } from "../Components/ui/badge";
-import { Checkbox } from "../Components/ui/checkbox";
-import { Textarea } from "../Components/ui/textarea";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { Textarea } from "@/Components/ui/textarea";
 import {
     Table,
     TableBody,
@@ -19,15 +19,15 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/table";
+} from "@/Components/ui/table";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "../Components/ui/tabs";
+} from "@/Components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import {
     Briefcase,
     GraduationCap,
@@ -40,7 +40,7 @@ import {
     UserCheck,
     X,
 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "../Components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { toast } from "sonner";
 import MainLayout from "@/Layouts/MainLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -77,16 +77,16 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                         <TableBody>
                             {members.length > 0 ? (
                                 members
-                                    .filter(
-                                        (m) => {
-                                            if (type === "internship") {
-                                                return !["approved", "completed", "pending"].includes(
-                                                    m?.internship_status
-                                                );
-                                            }
-                                            return true;
+                                    .filter((m) => {
+                                        if (type === "Internship") {
+                                            return ![
+                                                "approved",
+                                                "completed",
+                                                "pending",
+                                            ].includes(m?.internship_status);
                                         }
-                                    )
+                                        return true;
+                                    })
                                     .map((member) => (
                                         <TableRow
                                             key={member.id}
@@ -262,7 +262,7 @@ export default function RegistrationPage({
 
     const default_activity_type =
         block_internship && block_thesis
-            ? "competition"
+            ? "Competition"
             : block_internship
             ? "Thesis"
             : "Internship";
@@ -342,7 +342,7 @@ export default function RegistrationPage({
 
         if (value === "Internship") {
             setData("competitionTeam", []);
-        } else if (value === "competition") {
+        } else if (value === "Competition") {
             setData("teamMembers", []);
         }
     };
@@ -355,7 +355,7 @@ export default function RegistrationPage({
 
         if (data.activityType === "Internship") {
             maxMonths = 3;
-        } else if (data.activityType === "competition") {
+        } else if (data.activityType === "Competition") {
             maxMonths = 2;
         } else if (data.activityType === "Thesis") {
             maxMonths = 6;
@@ -369,7 +369,9 @@ export default function RegistrationPage({
 
     const handleTeamMemberToggle = (id) => {
         const field =
-            data.activityType === "Internship" ? "teamMembers" : "competitionTeam";
+            data.activityType === "Internship"
+                ? "teamMembers"
+                : "competitionTeam";
 
         const current = data[field];
         // console.log("Selected team members:", data.teamMembers);
@@ -429,8 +431,8 @@ export default function RegistrationPage({
                 <div>
                     <h1>Activity Registration</h1>
                     <p className="text-muted-foreground">
-                        Register for Internship (Internship), Thesis, or Academic
-                        Competition
+                        Register for Internship (Internship), Thesis, or
+                        Academic Competition
                     </p>
                 </div>
 
@@ -463,7 +465,9 @@ export default function RegistrationPage({
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>Internship (Internship) </span>
+                                                <span>
+                                                    Internship (Internship){" "}
+                                                </span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem
@@ -475,7 +479,7 @@ export default function RegistrationPage({
                                                 <span>Thesis</span>
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="competition">
+                                        <SelectItem value="Competition">
                                             <div className="flex items-center gap-2">
                                                 <Trophy className="w-4 h-4" />
                                                 <span>Competition</span>
@@ -504,7 +508,7 @@ export default function RegistrationPage({
                                     Thesis
                                 </TabsTrigger>
                                 <TabsTrigger
-                                    value="competition"
+                                    value="Competition"
                                     className="gap-2"
                                 >
                                     <Trophy className="w-4 h-4" />
@@ -553,7 +557,9 @@ export default function RegistrationPage({
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="Internship-nim">NIM</Label>
+                                        <Label htmlFor="Internship-nim">
+                                            NIM
+                                        </Label>
                                         <Input
                                             id="Internship-nim"
                                             value={studentInfo.nim}
@@ -901,7 +907,7 @@ export default function RegistrationPage({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="Internship-start">
-                                            Start Date
+                                            Start Date *
                                         </Label>
                                         <Input
                                             id="Internship-start"
@@ -917,7 +923,7 @@ export default function RegistrationPage({
                                                 new Date()
                                                     .toISOString()
                                                     .split("T")[0]
-                                            } // today
+                                            }
                                             max={
                                                 new Date(
                                                     Date.now() +
@@ -925,14 +931,19 @@ export default function RegistrationPage({
                                                 )
                                                     .toISOString()
                                                     .split("T")[0]
-                                            } // +10 hari
+                                            }
                                             required
                                         />
+                                        {errors.start_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.start_date}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="Internship-end">
-                                            End Date
+                                            End Date *
                                         </Label>
                                         <Input
                                             id="Internship-end"
@@ -953,6 +964,11 @@ export default function RegistrationPage({
                                             max={getMaxEndDate()}
                                             required
                                         />
+                                        {errors.end_date && (
+                                            <p className="text-red-500 text-xs">
+                                                {errors.end_date}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
@@ -962,7 +978,7 @@ export default function RegistrationPage({
                             members={allMembers}
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
-                            type="internship"
+                            type="Internship"
                         />
 
                         <SupervisorSelectionCard
@@ -1014,20 +1030,20 @@ export default function RegistrationPage({
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="thesis-name">
+                                        <Label htmlFor="Thesis-name">
                                             Full Name
                                         </Label>
                                         <Input
-                                            id="thesis-name"
+                                            id="Thesis-name"
                                             value={studentInfo.name}
                                             disabled
                                             className="bg-muted"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="thesis-nim">NIM</Label>
+                                        <Label htmlFor="Thesis-nim">NIM</Label>
                                         <Input
-                                            id="thesis-nim"
+                                            id="Thesis-nim"
                                             value={studentInfo.nim}
                                             disabled
                                             className="bg-muted"
@@ -1051,7 +1067,7 @@ export default function RegistrationPage({
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="thesis-title">
-                                        Thesis Title
+                                        Thesis Title *
                                     </Label>
                                     <Input
                                         id="thesis-title"
@@ -1061,20 +1077,31 @@ export default function RegistrationPage({
                                             setData("title", e.target.value)
                                         }
                                     />
+                                    {errors.title && (
+                                        <p className="text-red-500 text-xs">
+                                            {errors.title}
+                                        </p>
+                                    )}
                                 </div>
+
                                 <div className="space-y-2">
                                     <Label htmlFor="thesis-abstract">
-                                        Abstract
+                                        Abstract *
                                     </Label>
                                     <Textarea
                                         id="thesis-abstract"
-                                        placeholder="Write your thesis abstract here..."
+                                        placeholder="Write your thesis abstract here (min. 50 characters)..."
                                         value={data.abstract}
                                         onChange={(e) =>
                                             setData("abstract", e.target.value)
                                         }
                                         rows={6}
                                     />
+                                    {errors.abstract && (
+                                        <p className="text-red-500 text-xs">
+                                            {errors.abstract}
+                                        </p>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -1135,6 +1162,11 @@ export default function RegistrationPage({
                                         </div>
                                     </div>
                                 )}
+                                {errors.researchTopics && (
+                                    <p className="text-red-500 text-xs mt-2">
+                                        {errors.researchTopics}
+                                    </p>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -1161,7 +1193,7 @@ export default function RegistrationPage({
                 )}
 
                 {/* Competition Form */}
-                {data.activityType === "competition" && (
+                {data.activityType === "Competition" && (
                     <div className="space-y-6">
                         <Alert>
                             <Info className="h-4 w-4" />
@@ -1197,9 +1229,9 @@ export default function RegistrationPage({
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="comp-nim">NIM</Label>
+                                        <Label htmlFor="Comp-nim">NIM</Label>
                                         <Input
-                                            id="comp-nim"
+                                            id="Comp-nim"
                                             value={studentInfo.nim}
                                             disabled
                                             className="bg-muted"
@@ -1224,7 +1256,7 @@ export default function RegistrationPage({
                                 {/* Competition Name */}
                                 <div className="space-y-2">
                                     <Label htmlFor="comp-title">
-                                        Competition Name/Activity
+                                        Competition Name/Activity *
                                     </Label>
                                     <Input
                                         id="comp-title"
@@ -1237,6 +1269,11 @@ export default function RegistrationPage({
                                             )
                                         }
                                     />
+                                    {errors.competitionName && (
+                                        <p className="text-red-500 text-xs">
+                                            {errors.competitionName}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Competition Field */}
@@ -1289,6 +1326,11 @@ export default function RegistrationPage({
                                             </Badge>
                                         </div>
                                     </div>
+                                )}
+                                {errors.competitionField && (
+                                    <p className="text-red-500 text-xs mt-2">
+                                        {errors.competitionField}
+                                    </p>
                                 )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -1364,7 +1406,7 @@ export default function RegistrationPage({
                             members={filteredCompMembers}
                             selectedMembers={data.competitionTeam}
                             onToggle={handleTeamMemberToggle}
-                            type="competition"
+                            type="Competition"
                         />
 
                         <SupervisorSelectionCard
