@@ -7,22 +7,22 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "../Components/ui/tabs";
+} from "@/Components/ui/tabs";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Dialog,
     DialogContent,
@@ -30,7 +30,7 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-} from "../Components/ui/dialog";
+} from "@/Components/ui/dialog";
 import {
     CheckCircle2,
     XCircle,
@@ -49,8 +49,8 @@ import {
     GraduationCap,
     Trophy,
 } from "lucide-react";
-import { Alert, AlertDescription } from "../Components/ui/alert";
-import { Separator } from "../Components/ui/separator";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Separator } from "@/Components/ui/separator";
 
 export default function ApplicationStatusPage({ applications }) {
     const [selectedApplication, setSelectedApplication] = useState(null);

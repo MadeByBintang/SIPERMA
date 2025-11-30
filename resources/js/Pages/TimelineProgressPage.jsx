@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Head, router } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Badge } from "../Components/ui/badge";
-import { Progress } from "../Components/ui/progress";
-import { Separator } from "../Components/ui/separator";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Progress } from "@/Components/ui/progress";
+import { Separator } from "@/Components/ui/separator";
 import {
     BookOpen,
     Award,
@@ -34,16 +34,16 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-} from "../Components/ui/dialog";
-import { Textarea } from "../Components/ui/textarea";
-import { Label } from "../Components/ui/label";
+} from "@/Components/ui/dialog";
+import { Textarea } from "@/Components/ui/textarea";
+import { Label } from "@/Components/ui/label";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     AlertDialog,
     AlertDialogAction,

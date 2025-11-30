@@ -117,7 +117,7 @@ class AdminRelationsController extends Controller
 
                     'studentId'     => $item -> student -> student_id,
                     'studentName' => $item -> student -> name,
-                    'studentNIM' => $item -> student -> nim,
+                    'studentNim' => $item -> student -> nim,
 
                     'researchArea' => $item -> lecturer -> focus,
 

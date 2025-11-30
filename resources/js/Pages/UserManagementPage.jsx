@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { Head, router } from "@inertiajs/react";
-import MainLayout from "../Layouts/MainLayout";
+import MainLayout from "@/Layouts/MainLayout";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/Button";
-import { Input } from "../Components/ui/Input";
-import { Label } from "../Components/ui/Label";
-import { Badge } from "../Components/ui/Badge";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/Button";
+import { Input } from "@/Components/ui/Input";
+import { Label } from "@/Components/ui/Label";
+import { Badge } from "@/Components/ui/Badge";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "../Components/ui/Tabs";
+} from "@/Components/ui/Tabs";
 import {
     Table,
     TableBody,
@@ -25,7 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/Table";
+} from "@/Components/ui/Table";
 import {
     Dialog,
     DialogContent,
@@ -33,7 +33,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "../Components/ui/Dialog";
+} from "@/Components/ui/Dialog";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,15 +43,15 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "../Components/ui/AlertDialog";
+} from "@/Components/ui/AlertDialog";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/Select";
-import { Switch } from "../Components/ui/Switch";
+} from "@/Components/ui/Select";
+import { Switch } from "@/Components/ui/Switch";
 import {
     Plus,
     Search,

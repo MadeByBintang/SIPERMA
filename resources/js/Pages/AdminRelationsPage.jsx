@@ -7,17 +7,12 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Badge } from "../Components/ui/badge";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "../Components/ui/tabs";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -25,7 +20,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/table";
+} from "@/Components/ui/table";
 import {
     Dialog,
     DialogContent,
@@ -33,14 +28,14 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "../Components/ui/dialog";
+} from "@/Components/ui/dialog";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Search,
     Eye,
@@ -57,6 +52,7 @@ import {
     Clock,
     XCircle,
     AlertCircle,
+    Trophy,
     Link as LinkIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -69,15 +65,17 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "../Components/ui/AlertDialog";
-import { useIsMobile } from "../Components/ui/UseMobile";
+} from "@/Components/ui/AlertDialog";
+import { useIsMobile } from "@/Components/ui/UseMobile";
 
 const RelationType = "student-lecturer" | "student-student";
 const ActivityType = "Internship" | "Thesis" | "Competition" | "all";
 const RelationStatus = "approved" | "pending" | "completed" | "rejected";
 
-
-export default function AdminRelationsPage({studentStudentRelations, studentLecturerRelations}) {
+export default function AdminRelationsPage({
+    studentStudentRelations,
+    studentLecturerRelations,
+}) {
     const isMobile = useIsMobile();
     const [relationType, setRelationType] = useState("student-lecturer");
     const [searchQuery, setSearchQuery] = useState("");
@@ -89,8 +87,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [formData, setFormData] = useState({});
-
-
 
     // Filter relations based on type
     const filteredSLRelations = studentLecturerRelations.filter((relation) => {
@@ -106,9 +102,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                 .includes(searchQuery.toLowerCase()) ||
             relation.lecturerNip.includes(searchQuery) ||
             relation.activityTitle
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            relation.department
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase());
 
@@ -129,9 +122,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
             relation.student2Nim.includes(searchQuery) ||
             relation.activityTitle
                 .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            relation.department
-                .toLowerCase()
                 .includes(searchQuery.toLowerCase());
 
         return matchesTab && matchesSearch;
@@ -140,16 +130,18 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
     // Get statistics based on relation type
     const getSLStats = () => ({
         total: studentLecturerRelations.length,
-        Internship: studentLecturerRelations.filter((r) => r.activityType === "Internship")
-            .length,
+        Internship: studentLecturerRelations.filter(
+            (r) => r.activityType === "Internship"
+        ).length,
         Thesis: studentLecturerRelations.filter(
             (r) => r.activityType === "Thesis"
         ).length,
         Competition: studentLecturerRelations.filter(
             (r) => r.activityType === "Competition"
         ).length,
-        approved: studentLecturerRelations.filter((r) => r.status === "approved")
-            .length,
+        approved: studentLecturerRelations.filter(
+            (r) => r.status === "approved"
+        ).length,
         pending: studentLecturerRelations.filter((r) => r.status === "pending")
             .length,
         completed: studentLecturerRelations.filter(
@@ -165,8 +157,9 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
 
     const getSSStats = () => ({
         total: studentStudentRelations.length,
-        Internship: studentStudentRelations.filter((r) => r.activityType === "Internship")
-            .length,
+        Internship: studentStudentRelations.filter(
+            (r) => r.activityType === "Internship"
+        ).length,
         Thesis: studentStudentRelations.filter(
             (r) => r.activityType === "Thesis"
         ).length,
@@ -180,9 +173,8 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
         completed: studentStudentRelations.filter(
             (r) => r.status === "completed"
         ).length,
-        rejected: studentStudentRelations.filter(
-            (r) => r.status === "rejected"
-        ).length,
+        rejected: studentStudentRelations.filter((r) => r.status === "rejected")
+            .length,
         uniqueTeams: studentStudentRelations.length,
     });
 
@@ -198,8 +190,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
         }
         setIsDetailDialogOpen(true);
     };
-
-
 
     // Get status badge
     const getStatusBadge = (status) => {
@@ -246,18 +236,18 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
         const typeConfig = {
             Internship: {
                 label: "Internship",
-                className: "bg-purple-50 text-purple-700 border-purple-300",
+                className: "bg-blue-100",
                 icon: Briefcase,
             },
             Thesis: {
                 label: "Thesis",
-                className: "bg-indigo-50 text-indigo-700 border-indigo-300",
+                className: "bg-green-100",
                 icon: GraduationCap,
             },
             Competition: {
                 label: "Competition",
-                className: "bg-amber-50 text-amber-700 border-amber-300",
-                icon: Award,
+                className: "bg-yellow-100",
+                icon: Trophy,
             },
         };
 
@@ -380,33 +370,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select
-                        value={formData.department || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, department: value })
-                        }
-                    >
-                        <SelectTrigger id="department">
-                            <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Computer Science">
-                                Computer Science
-                            </SelectItem>
-                            <SelectItem value="Information Systems">
-                                Information Systems
-                            </SelectItem>
-                            <SelectItem value="Software Engineering">
-                                Software Engineering
-                            </SelectItem>
-                            <SelectItem value="Information Technology">
-                                Information Technology
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -425,9 +388,7 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="approved">Active</SelectItem>
                             <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="rejected">
-                                Terminated
-                            </SelectItem>
+                            <SelectItem value="rejected">Terminated</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -595,33 +556,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select
-                        value={formData.department || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, department: value })
-                        }
-                    >
-                        <SelectTrigger id="department">
-                            <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Computer Science">
-                                Computer Science
-                            </SelectItem>
-                            <SelectItem value="Information Systems">
-                                Information Systems
-                            </SelectItem>
-                            <SelectItem value="Software Engineering">
-                                Software Engineering
-                            </SelectItem>
-                            <SelectItem value="Information Technology">
-                                Information Technology
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -640,9 +574,7 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="approved">Active</SelectItem>
                             <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="rejected">
-                                Terminated
-                            </SelectItem>
+                            <SelectItem value="rejected">Terminated</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -791,7 +723,7 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl">
-                                        {stats.active}
+                                        {stats.approved}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -875,7 +807,10 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                         <SelectItem value="Internship">
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>Internship ({stats.Internship})</span>
+                                                <span>
+                                                    Internship (
+                                                    {stats.Internship})
+                                                </span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem value="Thesis">
@@ -912,7 +847,10 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                         <LinkIcon className="w-4 h-4" />
                                         All ({stats.total})
                                     </TabsTrigger>
-                                    <TabsTrigger value="Internship" className="gap-2">
+                                    <TabsTrigger
+                                        value="Internship"
+                                        className="gap-2"
+                                    >
                                         <Briefcase className="w-4 h-4" />
                                         Internship ({stats.Internship})
                                     </TabsTrigger>
@@ -953,12 +891,9 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                             Activity
                                                         </TableHead>
                                                         <TableHead>
-                                                            Department
-                                                        </TableHead>
-                                                        <TableHead>
                                                             Status
                                                         </TableHead>
-                                                        <TableHead className="text-right">
+                                                        <TableHead className="text-center">
                                                             Actions
                                                         </TableHead>
                                                     </TableRow>
@@ -1012,7 +947,27 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                                     </TableCell>
                                                                     <TableCell>
                                                                         <div className="flex items-center gap-2">
-                                                                            <UserCheck className="w-4 h-4 text-muted-foreground shrink-0" />
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                <span className="text-xs text-primary">
+                                                                                    {relation.lecturerName
+                                                                                        .split(
+                                                                                            " "
+                                                                                        )
+                                                                                        .map(
+                                                                                            (
+                                                                                                n
+                                                                                            ) =>
+                                                                                                n[0]
+                                                                                        )
+                                                                                        .join(
+                                                                                            ""
+                                                                                        )
+                                                                                        .substring(
+                                                                                            0,
+                                                                                            2
+                                                                                        )}
+                                                                                </span>
+                                                                            </div>
                                                                             <div>
                                                                                 <p className="line-clamp-1">
                                                                                     {
@@ -1040,19 +995,14 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                                         </div>
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        {
-                                                                            relation.department
-                                                                        }
-                                                                    </TableCell>
-                                                                    <TableCell>
                                                                         {getStatusBadge(
                                                                             relation.status
                                                                         )}
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        <div className="flex items-center justify-end gap-2">
+                                                                        <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
                                                                             <Button
-                                                                                variant="ghost"
+                                                                                variant="outline"
                                                                                 size="sm"
                                                                                 onClick={() =>
                                                                                     handleViewDetails(
@@ -1060,30 +1010,10 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                                                     )
                                                                                 }
                                                                             >
-                                                                                <Eye className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleEdit(
-                                                                                        relation
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <Edit className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleDelete(
-                                                                                        relation
-                                                                                    )
-                                                                                }
-                                                                                className="text-destructive hover:text-destructive"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
+                                                                                <Eye className="w-3 h-3 md:mr-1" />
+                                                                                <span className="hidden md:inline">
+                                                                                    View
+                                                                                </span>
                                                                             </Button>
                                                                         </div>
                                                                     </TableCell>
@@ -1108,21 +1038,15 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                 <TableHeader>
                                                     <TableRow>
                                                         <TableHead>
-                                                            Student 1
-                                                        </TableHead>
-                                                        <TableHead>
-                                                            Student 2
+                                                            Team Members
                                                         </TableHead>
                                                         <TableHead className="min-w-[250px]">
                                                             Activity
                                                         </TableHead>
                                                         <TableHead>
-                                                            Department
-                                                        </TableHead>
-                                                        <TableHead>
                                                             Status
                                                         </TableHead>
-                                                        <TableHead className="text-right">
+                                                        <TableHead className="text-center">
                                                             Actions
                                                         </TableHead>
                                                     </TableRow>
@@ -1131,167 +1055,144 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                                     {filteredSSRelations.length >
                                                     0 ? (
                                                         filteredSSRelations.map(
-                                                            (relation) => (
-                                                                <TableRow
-                                                                    key={
-                                                                        relation.id
-                                                                    }
-                                                                >
-                                                                    <TableCell>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                                                <span className="text-xs text-primary">
-                                                                                    {relation.student1Name
-                                                                                        .split(
-                                                                                            " "
-                                                                                        )
-                                                                                        .map(
-                                                                                            (
-                                                                                                n
-                                                                                            ) =>
-                                                                                                n[0]
-                                                                                        )
-                                                                                        .join(
-                                                                                            ""
-                                                                                        )
-                                                                                        .substring(
-                                                                                            0,
-                                                                                            2
-                                                                                        )}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div>
-                                                                                <p className="line-clamp-1">
-                                                                                    {
-                                                                                        relation.student1Name
-                                                                                    }
-                                                                                </p>
-                                                                                <p className="text-xs text-muted-foreground">
-                                                                                    {
-                                                                                        relation.student1Nim
-                                                                                    }
-                                                                                </p>
-                                                                                {relation.role1 && (
-                                                                                    <p className="text-xs text-blue-600">
-                                                                                        {
-                                                                                            relation.role1
-                                                                                        }
-                                                                                    </p>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                                                <span className="text-xs text-primary">
-                                                                                    {relation.student2Name
-                                                                                        .split(
-                                                                                            " "
-                                                                                        )
-                                                                                        .map(
-                                                                                            (
-                                                                                                n
-                                                                                            ) =>
-                                                                                                n[0]
-                                                                                        )
-                                                                                        .join(
-                                                                                            ""
-                                                                                        )
-                                                                                        .substring(
-                                                                                            0,
-                                                                                            2
-                                                                                        )}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div>
-                                                                                <p className="line-clamp-1">
-                                                                                    {
-                                                                                        relation.student2Name
-                                                                                    }
-                                                                                </p>
-                                                                                <p className="text-xs text-muted-foreground">
-                                                                                    {
-                                                                                        relation.student2Nim
-                                                                                    }
-                                                                                </p>
-                                                                                {relation.role2 && (
-                                                                                    <p className="text-xs text-blue-600">
-                                                                                        {
-                                                                                            relation.role2
-                                                                                        }
-                                                                                    </p>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="space-y-1">
-                                                                            {getActivityBadge(
-                                                                                relation.activityType
-                                                                            )}
-                                                                            <p className="text-sm line-clamp-2">
-                                                                                {
-                                                                                    relation.activityTitle
-                                                                                }
-                                                                            </p>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell>
+                                                            (relation) => {
+                                                                // Filter hanya student yang ada datanya
+                                                                const students =
+                                                                    [
                                                                         {
-                                                                            relation.department
+                                                                            name: relation.student1Name,
+                                                                            nim: relation.student1Nim,
+                                                                            role: relation.role1,
+                                                                        },
+                                                                        {
+                                                                            name: relation.student2Name,
+                                                                            nim: relation.student2Nim,
+                                                                            role: relation.role2,
+                                                                        },
+                                                                        {
+                                                                            name: relation.student3Name,
+                                                                            nim: relation.student3Nim,
+                                                                            role: relation.role3,
+                                                                        },
+                                                                        {
+                                                                            name: relation.student4Name,
+                                                                            nim: relation.student4Nim,
+                                                                            role: relation.role4,
+                                                                        },
+                                                                    ].filter(
+                                                                        (s) =>
+                                                                            s.name &&
+                                                                            s.name.trim() !==
+                                                                                ""
+                                                                    );
+
+                                                                return (
+                                                                    <TableRow
+                                                                        key={
+                                                                            relation.id
                                                                         }
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        {getStatusBadge(
-                                                                            relation.status
-                                                                        )}
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center justify-end gap-2">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleViewDetails(
-                                                                                        relation
+                                                                    >
+                                                                        <TableCell className="py-5">
+                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+                                                                                {students.map(
+                                                                                    (
+                                                                                        student,
+                                                                                        idx
+                                                                                    ) => (
+                                                                                        <div
+                                                                                            key={
+                                                                                                idx
+                                                                                            }
+                                                                                            className="flex items-center gap-3"
+                                                                                        >
+                                                                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                                <span className="text-sm text-primary font-medium">
+                                                                                                    {student.name
+                                                                                                        .split(
+                                                                                                            " "
+                                                                                                        )
+                                                                                                        .map(
+                                                                                                            (
+                                                                                                                n
+                                                                                                            ) =>
+                                                                                                                n[0]
+                                                                                                        )
+                                                                                                        .join(
+                                                                                                            ""
+                                                                                                        )
+                                                                                                        .substring(
+                                                                                                            0,
+                                                                                                            2
+                                                                                                        )}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="text-sm font-medium line-clamp-1">
+                                                                                                    {
+                                                                                                        student.name
+                                                                                                    }
+                                                                                                </p>
+                                                                                                <p className="text-xs text-muted-foreground">
+                                                                                                    {
+                                                                                                        student.nim
+                                                                                                    }
+                                                                                                </p>
+                                                                                                {student.role && (
+                                                                                                    <p className="text-xs text-blue-600 font-medium">
+                                                                                                        {
+                                                                                                            student.role
+                                                                                                        }
+                                                                                                    </p>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
                                                                                     )
-                                                                                }
-                                                                            >
-                                                                                <Eye className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleEdit(
-                                                                                        relation
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <Edit className="w-4 h-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() =>
-                                                                                    handleDelete(
-                                                                                        relation
-                                                                                    )
-                                                                                }
-                                                                                className="text-destructive hover:text-destructive"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )
+                                                                                )}
+                                                                            </div>
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            <div className="space-y-1">
+                                                                                {getActivityBadge(
+                                                                                    relation.activityType
+                                                                                )}
+                                                                                <p className="text-sm line-clamp-2">
+                                                                                    {
+                                                                                        relation.activityTitle
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {getStatusBadge(
+                                                                                relation.status
+                                                                            )}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
+                                                                                <Button
+                                                                                    variant="outline"
+                                                                                    size="sm"
+                                                                                    onClick={() =>
+                                                                                        handleViewDetails(
+                                                                                            relation
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    <Eye className="w-3 h-3 md:mr-1" />
+                                                                                    <span className="hidden md:inline">
+                                                                                        View
+                                                                                    </span>
+                                                                                </Button>
+                                                                            </div>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                );
+                                                            }
                                                         )
                                                     ) : (
                                                         <TableRow>
                                                             <TableCell
-                                                                colSpan={6}
+                                                                colSpan={4}
                                                                 className="text-center py-8 text-muted-foreground"
                                                             >
                                                                 No relations
@@ -1397,17 +1298,6 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                         <div className="space-y-4">
                                             <div>
                                                 <Label className="text-muted-foreground">
-                                                    Department
-                                                </Label>
-                                                <p className="mt-1">
-                                                    {
-                                                        selectedSLRelation.department
-                                                    }
-                                                </p>
-                                            </div>
-
-                                            <div>
-                                                <Label className="text-muted-foreground">
                                                     Duration
                                                 </Label>
                                                 <p className="text-sm mt-1">
@@ -1463,116 +1353,88 @@ export default function AdminRelationsPage({studentStudentRelations, studentLect
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div>
-                                                <Label className="text-muted-foreground">
-                                                    Student 1
-                                                </Label>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <span className="text-sm text-primary">
-                                                            {selectedSSRelation.student1Name
-                                                                .split(" ")
-                                                                .map(
-                                                                    (n) => n[0]
-                                                                )
-                                                                .join("")
-                                                                .substring(
-                                                                    0,
-                                                                    2
-                                                                )}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <p>
-                                                            {
-                                                                selectedSSRelation.student1Name
-                                                            }
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {
-                                                                selectedSSRelation.student1Nim
-                                                            }
-                                                        </p>
-                                                        {selectedSSRelation.role1 && (
-                                                            <p className="text-sm text-blue-600">
-                                                                {
-                                                                    selectedSSRelation.role1
-                                                                }
+                                    <div>
+                                        <Label className="text-muted-foreground mb-3 block">
+                                            Team Members
+                                        </Label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {[
+                                                {
+                                                    name: selectedSSRelation.student1Name,
+                                                    nim: selectedSSRelation.student1Nim,
+                                                    role: selectedSSRelation.role1,
+                                                },
+                                                {
+                                                    name: selectedSSRelation.student2Name,
+                                                    nim: selectedSSRelation.student2Nim,
+                                                    role: selectedSSRelation.role2,
+                                                },
+                                                {
+                                                    name: selectedSSRelation.student3Name,
+                                                    nim: selectedSSRelation.student3Nim,
+                                                    role: selectedSSRelation.role3,
+                                                },
+                                                {
+                                                    name: selectedSSRelation.student4Name,
+                                                    nim: selectedSSRelation.student4Nim,
+                                                    role: selectedSSRelation.role4,
+                                                },
+                                            ]
+                                                .filter(
+                                                    (s) =>
+                                                        s.name &&
+                                                        s.name.trim() !== ""
+                                                )
+                                                .map((student, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex items-center gap-2 p-3 border rounded-lg"
+                                                    >
+                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                            <span className="text-sm text-primary">
+                                                                {student.name
+                                                                    .split(" ")
+                                                                    .map(
+                                                                        (n) =>
+                                                                            n[0]
+                                                                    )
+                                                                    .join("")
+                                                                    .substring(
+                                                                        0,
+                                                                        2
+                                                                    )}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                {student.name}
                                                             </p>
-                                                        )}
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {student.nim}
+                                                            </p>
+                                                            {student.role && (
+                                                                <p className="text-sm text-blue-600">
+                                                                    {
+                                                                        student.role
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <Label className="text-muted-foreground">
-                                                    Department
-                                                </Label>
-                                                <p className="mt-1">
-                                                    {
-                                                        selectedSSRelation.department
-                                                    }
-                                                </p>
-                                            </div>
+                                                ))}
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-4">
-                                            <div>
-                                                <Label className="text-muted-foreground">
-                                                    Student 2
-                                                </Label>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <span className="text-sm text-primary">
-                                                            {selectedSSRelation.student2Name
-                                                                .split(" ")
-                                                                .map(
-                                                                    (n) => n[0]
-                                                                )
-                                                                .join("")
-                                                                .substring(
-                                                                    0,
-                                                                    2
-                                                                )}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <p>
-                                                            {
-                                                                selectedSSRelation.student2Name
-                                                            }
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {
-                                                                selectedSSRelation.student2Nim
-                                                            }
-                                                        </p>
-                                                        {selectedSSRelation.role2 && (
-                                                            <p className="text-sm text-blue-600">
-                                                                {
-                                                                    selectedSSRelation.role2
-                                                                }
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <Label className="text-muted-foreground">
-                                                    Duration
-                                                </Label>
-                                                <p className="text-sm mt-1">
-                                                    {
-                                                        selectedSSRelation.startDate
-                                                    }{" "}
-                                                    -{" "}
-                                                    {selectedSSRelation.endDate ||
-                                                        "Ongoing"}
-                                                </p>
-                                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label className="text-muted-foreground">
+                                                Duration
+                                            </Label>
+                                            <p className="text-sm mt-1">
+                                                {selectedSSRelation.startDate} -{" "}
+                                                {selectedSSRelation.endDate ||
+                                                    "Ongoing"}
+                                            </p>
                                         </div>
                                     </div>
 

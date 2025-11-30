@@ -217,7 +217,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             {/* <TableHead>Type</TableHead> */}
                             <TableHead>Submitted</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">
+                            <TableHead className="text-center">
                                 Actions
                             </TableHead>
                         </TableRow>
@@ -275,8 +275,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             request.status.slice(1)}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-1 md:gap-2 flex-wrap">
+                                <TableCell className="text-center">
+                                    <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -284,7 +284,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                                 handleViewDetails(request)
                                             }
                                         >
-                                            <Eye className="w-3 h-3 md:mr-1" />
+                                            <Eye className="w-3 h-3" />
                                             <span className="hidden md:inline">
                                                 View
                                             </span>
@@ -699,12 +699,15 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                     <>
                                         <Separator />
                                         <div className="flex flex-col sm:flex-row gap-3">
-                                            {selectedRequest?.current_supervision < selectedRequest?.supervision_quota && (
+                                            {selectedRequest?.current_supervision <
+                                                selectedRequest?.supervision_quota && (
                                                 <Button
                                                     className="flex-1 gap-2"
                                                     onClick={() => {
                                                         setIsDialogOpen(false);
-                                                        handleApproveClick(selectedRequest);
+                                                        handleApproveClick(
+                                                            selectedRequest
+                                                        );
                                                     }}
                                                 >
                                                     <CheckCircle2 className="w-4 h-4" />

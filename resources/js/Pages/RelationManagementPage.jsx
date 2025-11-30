@@ -7,8 +7,8 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import {
     Table,
     TableBody,
@@ -16,8 +16,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/table";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/table";
+import { Badge } from "@/Components/ui/badge";
 import {
     Download,
     Users,
@@ -38,16 +38,16 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
+} from "@/Components/ui/select";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogDescription,
-} from "../Components/ui/dialog";
-import { Separator } from "../Components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "../Components/ui/alert";
+} from "@/Components/ui/dialog";
+import { Separator } from "@/Components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 
 const RelationType = "student-student" | "student-lecturer";
 

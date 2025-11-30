@@ -7,17 +7,17 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
-} from "../Components/ui/card";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
-import { Label } from "../Components/ui/label";
-import { Badge } from "../Components/ui/badge";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Badge } from "@/Components/ui/badge";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "../Components/ui/tabs";
+} from "@/Components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -25,7 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../Components/ui/table";
+} from "@/Components/ui/table";
 import {
     Dialog,
     DialogContent,
@@ -33,16 +33,16 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "../Components/ui/dialog";
+} from "@/Components/ui/dialog";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../Components/ui/select";
-import { Textarea } from "../Components/ui/textarea";
-import { Progress } from "../Components/ui/progress";
+} from "@/Components/ui/select";
+import { Textarea } from "@/Components/ui/textarea";
+import { Progress } from "@/Components/ui/progress";
 import {
     Search,
     Edit,
@@ -476,7 +476,7 @@ export default function ProjectOverviewPage({all_projects}) {
                                                     <TableHead>
                                                         Status
                                                     </TableHead>
-                                                    <TableHead className="text-right">
+                                                    <TableHead className="text-center">
                                                         Actions
                                                     </TableHead>
                                                 </TableRow>
