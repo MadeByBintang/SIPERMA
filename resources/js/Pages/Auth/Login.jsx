@@ -83,12 +83,12 @@ export default function LoginPage({ status, canResetPassword }) {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="username">NIM / NIP</Label>
+                                <Label htmlFor="username">Username</Label>
                                 <Input
                                     id="username"
                                     type="text"
                                     value={data.username}
-                                    placeholder="Enter your NIM or NIP"
+                                    placeholder="Enter your Username or NIM or NIP"
                                     onChange={(e) => {
                                         setData("username", e.target.value);
                                         // Clear local error when user types
