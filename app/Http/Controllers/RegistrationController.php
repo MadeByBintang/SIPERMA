@@ -42,15 +42,11 @@ class RegistrationController extends Controller
             ->get();
 
         $allLecturers = Lecturer::with(['user', 'masterLecturer'])
+            ->whereHas('masterLecturer', function ($q) {
+                $q->where('is_active', true);
+            })
             ->get()
             ->map(function ($lecturer) {
-                $current = $lecturer->supervisions()
-                    ->where('supervision_status', 'approved')
-                    ->count();
-
-                $max = $lecturer->supervision_quota ?? 0;
-
-
                 return [
                     'id' => $lecturer->lecturer_id,
                     'name' => $lecturer->user->name ?? $lecturer->masterLecturer->full_name ?? 'Unknown',
@@ -66,6 +62,9 @@ class RegistrationController extends Controller
             ->values();
 
         $filteredLecturers = Lecturer::with(['user', 'masterLecturer'])
+            ->whereHas('masterLecturer', function ($q) {
+                $q->where('is_active', true);
+            })
             ->where('focus', $userFocus)
             ->get()
             ->map(function ($lecturer) {
@@ -80,20 +79,9 @@ class RegistrationController extends Controller
 
         $allStudents = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
-            // ->whereDoesntHave('supervisions', function ($q) {
-            //     $q->whereHas('activity', function ($a) {
-            //         $a->where('activity_type_id', 2); // PKL
-            //     })
-            //     ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
-            // })
-
-            // ->whereDoesntHave('teamMembers.team.supervision', function ($q) {
-            //     $q->whereHas('activity', function ($a) {
-            //         $a->where('activity_type_id', 2); // PKL
-            //     })
-            //     ->whereIn('supervision_status', ['pending', 'approved', 'completed']);
-            // })
-
+            ->whereHas('masterStudent', function ($q) {
+                $q->where('is_active', true);
+            })
             ->get()
             ->map(function ($student) {
                 return [
@@ -107,6 +95,9 @@ class RegistrationController extends Controller
 
         $filteredStudents = Student::with(['user'])
             ->where('student_id', '!=', $currentStudent->student_id)
+            ->whereHas('masterStudent', function ($q) {
+                $q->where('is_active', true);
+            })
             ->where('focus', $userFocus)
             ->get()
             ->map(function ($student) {
@@ -208,9 +199,10 @@ class RegistrationController extends Controller
 
             DB::commit();
             return redirect()->route('application.status')->with('success', 'Registration submitted successfully!');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to submit registration: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to submit registration: ')->withInput();
         }
     }
 
@@ -342,7 +334,7 @@ class RegistrationController extends Controller
 
             if ($request->activityType === 'Internship') {
                 if (count($request->teamMembers) > 3) {
-                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.');
+                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.')->withInput();
                 }
 
                 foreach ($request->teamMembers as $memberId) {
@@ -353,7 +345,7 @@ class RegistrationController extends Controller
                 }
             } else if ($typeId === 3) {
                 if (count($request->competitionTeam) > 3) {
-                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.');
+                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.')->withInput();
                 }
 
                 foreach ($request->competitionTeam as $memberId) {

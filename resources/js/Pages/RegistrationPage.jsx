@@ -394,16 +394,19 @@ export default function RegistrationPage({
         e.preventDefault();
 
         post(route("registration.store"), {
+            preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
                 toast.success("Registration submitted successfully!");
-                reset();
+                // reset();
             },
             onError: (err) => {
-                toast.error(
-                    "Failed to submit. Please check the form for errors."
-                );
-                console.error(err);
+                Object.values(page.props.errors)
+                    .flat()
+                    .forEach((msg) => {
+                        toast.error(msg);
+                    });
+
             },
         });
     };
@@ -431,7 +434,7 @@ export default function RegistrationPage({
                 <div>
                     <h1>Activity Registration</h1>
                     <p className="text-muted-foreground">
-                        Register for Internship (Internship), Thesis, or
+                        Register for Internship, Thesis, or
                         Academic Competition
                     </p>
                 </div>
@@ -466,7 +469,7 @@ export default function RegistrationPage({
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
                                                 <span>
-                                                    Internship (Internship){" "}
+                                                    Internship{" "}
                                                 </span>
                                             </div>
                                         </SelectItem>
@@ -497,7 +500,7 @@ export default function RegistrationPage({
                                     disabled={block_internship}
                                 >
                                     <Briefcase className="w-4 h-4" />
-                                    Internship (Internship)
+                                    Internship
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="Thesis"
