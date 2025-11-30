@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 export default function Toast({
-    message = "This is a clean & simple error message.",
+    message = "This is a clean & simple message.",
     type = "error",
     duration = 4000,
     onClose,
@@ -16,11 +16,7 @@ export default function Toast({
             setProgress((prev) => {
                 if (prev <= 0) {
                     clearInterval(interval);
-
-                    queueMicrotask(() => {
-                        onClose && onClose();
-                    });
-
+                    queueMicrotask(() => onClose && onClose());
                     return 0;
                 }
                 return prev - step;
@@ -36,18 +32,21 @@ export default function Toast({
             border: "border-red-400",
             text: "text-red-600",
             bar: "bg-red-500",
+            icon: <XCircle size={18} className="text-red-600" />,
         },
         success: {
             bg: "bg-green-100",
             border: "border-green-400",
             text: "text-green-600",
             bar: "bg-green-500",
+            icon: <CheckCircle size={18} className="text-green-600" />,
         },
         warning: {
             bg: "bg-yellow-100",
             border: "border-yellow-400",
             text: "text-yellow-600",
             bar: "bg-yellow-500",
+            icon: <AlertTriangle size={18} className="text-yellow-600" />,
         },
     };
 
@@ -59,7 +58,7 @@ export default function Toast({
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                    <AlertTriangle size={18} className={style.text} />
+                    {style.icon}
                     <p className={`font-medium text-sm ${style.text}`}>
                         {message}
                     </p>
@@ -70,7 +69,6 @@ export default function Toast({
                 </button>
             </div>
 
-            {/* Progress bar */}
             <div className="w-full h-1 bg-white rounded mt-2 overflow-hidden">
                 <div
                     className={`${style.bar} h-full transition-all`}

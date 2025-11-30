@@ -85,7 +85,6 @@ const FOCUS_LABELS = {
 
 export default function LecturerProfilePage({
     lecturer,
-    supervisedStudents = [],
 }) {
     const { auth } = usePage().props;
     const user = auth?.user || {};

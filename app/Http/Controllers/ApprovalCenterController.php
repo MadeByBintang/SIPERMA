@@ -17,12 +17,6 @@ class ApprovalCenterController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Jika bukan dosen → kosongkan saja
-        if ($user->role_name !== 'dosen' || !$user->lecturer) {
-            return Inertia::render('ApprovalPage', [
-                'approvalRequests' => collect()
-            ]);
-        }
 
         $lecturerId = $user->lecturer->lecturer_id;
 
