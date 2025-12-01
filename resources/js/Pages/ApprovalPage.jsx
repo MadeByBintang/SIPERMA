@@ -227,7 +227,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                             <TableRow key={request.id}>
                                 <TableCell>
                                     <div>
-                                        <p className="font-medium">
+                                        <p className="text-sm">
                                             {request.individualStudentName}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
@@ -249,7 +249,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                                 )}
                                                 {request.activityType}
                                             </Badge>
-                                            <p className="font-medium warp-break-words whitespace-normal">
+                                            <p className="text-sm break-words whitespace-normal">
                                                 {" "}
                                                 {/* Hapus line-clamp, tambah whitespace-normal */}
                                                 {request.activityName}

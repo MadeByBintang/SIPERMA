@@ -987,7 +987,7 @@ export default function AdminRelationsPage({
                                                                             {getActivityBadge(
                                                                                 relation.activityType
                                                                             )}
-                                                                            <p className="text-sm line-clamp-2">
+                                                                            <p className="text-sm break-words whitespace-normal">
                                                                                 {
                                                                                     relation.activityTitle
                                                                                 }
@@ -1127,7 +1127,7 @@ export default function AdminRelationsPage({
                                                                                                 </span>
                                                                                             </div>
                                                                                             <div className="min-w-0 flex-1">
-                                                                                                <p className="text-sm font-medium line-clamp-1">
+                                                                                                <p className="text-sm break-words whitespace-normal">
                                                                                                     {
                                                                                                         student.name
                                                                                                     }
@@ -1155,7 +1155,7 @@ export default function AdminRelationsPage({
                                                                                 {getActivityBadge(
                                                                                     relation.activityType
                                                                                 )}
-                                                                                <p className="text-sm line-clamp-2">
+                                                                                <p className="text-sm break-words whitespace-normal">
                                                                                     {
                                                                                         relation.activityTitle
                                                                                     }

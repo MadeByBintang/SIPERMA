@@ -356,7 +356,7 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                                     <div className="flex-1 min-w-0 max-w-md">
                                                         {" "}
                                                         {/* Tambahkan min-w-0 dan max-w */}
-                                                        <p className="font-medium warp-break-words whitespace-normal">
+                                                        <p className="font-medium break-words whitespace-normal">
                                                             {" "}
                                                             {/* Tambah break-words & whitespace-normal */}
                                                             {

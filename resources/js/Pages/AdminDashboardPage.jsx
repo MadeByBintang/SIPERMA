@@ -464,7 +464,7 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             <Button
                                 variant="outline"
                                 className="gap-2 justify-start"
@@ -488,14 +488,6 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                             >
                                 <CheckCircle2 className="w-4 h-4" />
                                 Review Relations
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="gap-2 justify-start"
-                                onClick={() => handleQuickAction("reports")}
-                            >
-                                <TrendingUp className="w-4 h-4" />
-                                System Reports
                             </Button>
                         </div>
                     </CardContent>

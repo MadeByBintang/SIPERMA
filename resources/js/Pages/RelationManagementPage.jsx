@@ -604,7 +604,7 @@ export default function RelationManagementPage({
                                                     <p className="text-sm text-muted-foreground">
                                                         Activity Name
                                                     </p>
-                                                    <p className="warp-break-words whitespace-normal">
+                                                    <p className="break-words whitespace-normal">
                                                         {
                                                             selectedDetail.activityName
                                                         }
@@ -723,7 +723,7 @@ export default function RelationManagementPage({
                                                                 <User className="w-5 h-5 text-primary" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="warp-break-words whitespace-normal">
+                                                                <p className="text-sm break-words whitespace-normal">
                                                                     {
                                                                         member.name
                                                                     }
