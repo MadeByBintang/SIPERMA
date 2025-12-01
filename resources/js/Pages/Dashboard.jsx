@@ -181,7 +181,7 @@ export default function Dashboard({ auth, stats, activities }) {
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     Submitted:{" "}
                                                     {formatDate(
-                                                        activity.assigned_date
+                                                        activity.assigned_at
                                                     )}
                                                 </p>
                                             </div>

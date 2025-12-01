@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -43,7 +44,7 @@ class DashboardController extends Controller
                     'leader_name' => $studentName,
                     'activity_title' => $item->activity->title ?? 'Untitled Project',
                     'status' => $item->supervision_status,
-                    'assigned_date' => $item -> assigned_date,
+                    'assigned_at' => $item -> assigned_at,
                 ];
             });
             $activities = $supervisions;
@@ -73,7 +74,7 @@ class DashboardController extends Controller
                     return [
                         'activity_title' => $sv->activity->title ?? 'Untitled Project',
                         'lecturer_name' => $lecturerName,
-                        'assigned_date' => $sv -> assigned_date,
+                        'assigned_at' => $sv -> assigned_at,
                         'status' => $sv->supervision_status,
                     ];
                 }
@@ -153,7 +154,7 @@ class DashboardController extends Controller
         $supervisions = Supervision::with(['student.user', 'lecturer.user', 'activity'])->get();
         $teams = Team::with(['supervision.student', 'supervision.lecturer'])->get();
 
-        $totalProjects = $supervisions->count() + $teams->count();
+        $totalProjects = $supervisions->count();
         $activeSupervisions = $supervisions->filter(fn($s) => in_array(strtolower($s->supervision_status), ['active', 'ongoing', 'approved']))->count();
         $activeTeams = $teams->filter(fn($t) => in_array(strtolower($t->supervision?->supervision_status), ['active', 'ongoing']))->count();
         $totalActive = $activeSupervisions;
@@ -163,18 +164,59 @@ class DashboardController extends Controller
         $totalCompleted = $completedSupervisions ;
 
         $totalSupervisors = Lecturer::count();
-        $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 1) : 0;
+        $avgStudents = $totalSupervisors > 0 ? round($totalProjects / $totalSupervisors, 2) : 0;
 
         $distribution = [
-            'pkl' => $supervisions->where('activity.activity_type_id', 2)->count(),
+            'internship' => $supervisions->where('activity.activity_type_id', 2)->count(),
             'thesis' => $supervisions->where('activity.activity_type_id', 1)->count(),
             'competition' => $supervisions->where('activity.activity_type_id', 3)->count()
         ];
 
         $stats = compact('totalProjects', 'totalActive', 'totalCompleted', 'totalSupervisors', 'avgStudents', 'distribution');
 
-        $pdf = Pdf::loadView('pdf.reports.admin', ['stats' => $stats]);
+        $supervisionDetails = $supervisions->map(function ($s) {
 
+            // Dapatkan Nama Ketua/Pengaju
+            $assigned = $s->assigned_at ? Carbon::parse($s->assigned_at) : null;
+            $responded = $s->responded_at ? Carbon::parse($s->responded_at) : null;
+            $finished = $s->finished_at ? Carbon::parse($s->finished_at) : null;
+
+            $latestActivity = collect([$assigned, $responded, $finished])->filter()->max();
+
+            $applicantName = $s->student->name ?? ($s->student->user->name ?? 'N/A');
+
+
+            // Dapatkan Nama Anggota Tim
+            $teamMembers = $s->team
+                ? $s->team->members->pluck('student.name')->filter()->implode(',<br>')
+                : 'N/A';
+
+            // Jika ini proyek individu, nama tim/anggota adalah pengaju itu sendiri
+            if (!$s->team) {
+                $teamMembers = '-';
+            }
+
+            return [
+                'applicant_name' => $applicantName,
+                'team_members' => $teamMembers,
+                'supervisor_name' => $s->lecturer->name ?? ($s->lecturer->user->name ?? 'N/A'),
+                'activity_type' => $s->activity->activityType->type_name ?? 'N/A',
+                'project_title' => $s->activity->title ?? 'Untitled Project',
+
+                'start_date' => $s -> activity->start_date ? Carbon::parse($s -> activity->start_date)->format('Y-m-d') : 'N/A',
+                'end_date' => $s -> activity->end_date ? Carbon::parse($s -> activity->end_date)->format('Y-m-d') : 'N/A',
+
+                'assigned_at' => $s->assigned_at ? Carbon::parse($s->assigned_at)->format('Y-m-d:i') : 'N/A',
+                'responded_at' => $s->responded_at ? Carbon::parse($s->responded_at)->format('Y-m-d H:i') : 'N/A', // Asumsi ada kolom responded_at
+                'finished_at' => $s->finished_at ? Carbon::parse($s->finished_at)->format('Y-m-d H:i') : 'N/A',   // Asumsi ada kolom finished_at
+                'status' => $s->supervision_status,
+            ];
+        });
+
+        $pdf = Pdf::loadView('pdf.reports.admin', [
+            'stats' => $stats,
+            'supervisions' => $supervisionDetails -> sortByDesc('latest_activity_at') ->values()
+        ]);
         return $pdf->download('system-reports.pdf');
     }
 }
