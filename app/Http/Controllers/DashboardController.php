@@ -24,22 +24,63 @@ class DashboardController extends Controller
 
 
         $activities = collect();
-        if ($user->role->role_name === 'admin') {
+        if ($user -> role_name === 'dosen'){
+            $lecturer_id = $user->lecturer->lecturer_id;
 
-            $activities = Activity::with('activityType')->latest()->take(5)->get();
-        } elseif ($user->role->role_name === 'dosen') {
-            if ($user->lecturer) {
-                $activities = $user->lecturer->supervisions->map(function ($supervision) {
-                    return $supervision->activity;
-                })->unique()->values();
-            }
-        } elseif ($user->role->role_name === 'mahasiswa') {
-            if ($user->student) {
-                $activities = $user->student->teamMembers->map(function ($teamMember) {
-                    return $teamMember->team->activity;
-                })->unique()->values();
-            }
+            $supervisions = Supervision::with([
+                'student.user', // Untuk mengambil nama ketua/pengaju
+                'activity',     // Untuk mengambil judul aktivitas (title)
+            ])
+            ->where('lecturer_id', $lecturer_id)
+            ->orderBy('supervision_id', 'desc')
+            ->limit(6)
+            ->get()
+            ->map(function ($item) {
+
+                $studentName = $item->student->name ?? ($item->student->user->name ?? 'Unknown Student');
+
+                return [
+                    'leader_name' => $studentName,
+                    'activity_title' => $item->activity->title ?? 'Untitled Project',
+                    'status' => $item->supervision_status,
+                    'assigned_date' => $item -> assigned_date,
+                ];
+            });
+            $activities = $supervisions;
         }
+        else if ($user->role_name === 'mahasiswa'){
+            $student = $user->student;
+            $student_id = $student->student_id;
+
+            $supervisions = Supervision::with([
+                'lecturer.user', // Untuk mengambil nama dosen pembimbing
+                'activity',      // Untuk mengambil judul aktivitas (title)
+            ])
+            ->where(function ($query) use ($student_id) {
+                $query->where('student_id', $student_id)
+                    ->orWhereHas('team.members', function ($q) use ($student_id) {
+                        $q->where('student_id', $student_id);
+                    });
+            })
+            ->orderBy('supervision_id', 'desc')
+            ->limit(6)
+            ->get();
+
+            $activities = $supervisions->map(
+                function ($sv) {
+                    $lecturerName = $sv->lecturer->name ?? ($sv->lecturer->user->name ?? 'Unknown Lecturer');
+
+                    return [
+                        'activity_title' => $sv->activity->title ?? 'Untitled Project',
+                        'lecturer_name' => $lecturerName,
+                        'assigned_date' => $sv -> assigned_date,
+                        'status' => $sv->supervision_status,
+                    ];
+                }
+            );
+        }
+
+
 
         if ($user->role->role_name === 'admin') {
             $totalPkl = Activity::whereHas('activityType', fn($q) => $q->where('type_name', 'Internship'))->count();
@@ -76,7 +117,7 @@ class DashboardController extends Controller
 
 
         return Inertia::render('Dashboard', [
-            // 'activities' => $activities,
+            'activities' => $activities,
             'stats' => $stats,
         ]);
     }

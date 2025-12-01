@@ -1,7 +1,7 @@
 import React from "react";
 import { Head } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, GitBranch, Clock } from "lucide-react";
+import { Users, UserCheck, GitBranch, Clock, XCircle, ThumbsUp, CheckCircle2 } from "lucide-react";
 import MainLayout from "@/Layouts/MainLayout";
 
 export default function Dashboard({ auth, stats, activities }) {
@@ -40,14 +40,76 @@ export default function Dashboard({ auth, stats, activities }) {
         },
     ];
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "approved":
+                return "bg-blue-100 text-blue-700 border-blue-200"; // Ubah ke biru
+            case "completed":
+                return "bg-green-100 text-green-700 border-green-200"; // Tambahkan ini
+            case "rejected":
+                return "bg-red-100 text-red-700 border-red-200";
+            default:
+                return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "approved":
+                return <CheckCircle2 className="w-4 h-4" />; // Tetap CheckCircle
+            case "completed":
+                return <ThumbsUp className="w-4 h-4" />; // Tambahkan ini
+            case "rejected":
+                return <XCircle className="w-4 h-4" />;
+            case "pending":
+                return <Clock className="w-4 h-4" />;
+        }
+    };
+
+    const formatStatus = (status) => {
+        switch (status) {
+            case "pending":
+                return "Awaiting Approval";
+            case "approved":
+                return "Approved";
+            case "rejected":
+                return "Rejected";
+            case "completed":
+                return "Completed";
+            default:
+                return status;
+        }
+    };
+
+    const StatusBadge = ({ status }) => {
+        const colorClasses = getStatusColor(status);
+        const Icon = getStatusIcon(status);
+        const text = formatStatus(status);
+
+        return (
+            <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${colorClasses}`}
+            >
+                {Icon}
+                {text}
+            </span>
+        );
+    };
+
+    const formatDate = (dateString) => {
+        // ... (fungsi formatDate yang sudah ada)
+        if (!dateString) return 'Date not available';
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return date.toLocaleDateString('en-US', options);
+    };
+
     return (
         <MainLayout>
             <Head title="Dashboard" />
 
             <div className="space-y-8">
-                {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* PERBAIKAN DISINI: Gunakan statCards.map, BUKAN stats.map */}
                     {statCards.map((stat) => {
                         const Icon = stat.icon;
                         return (
@@ -70,40 +132,65 @@ export default function Dashboard({ auth, stats, activities }) {
                     })}
                 </div>
 
-                {/* Recent Activities */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Recent Activities</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {/* PERBAIKAN DISINI: Gunakan activities (dari DB), BUKAN recentActivities */}
-                            {(!activities || activities.length === 0) ? (
-                                <p className="text-sm text-muted-foreground">No recent activities found.</p>
+                            {!activities || activities.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No recent activities found.
+                                </p>
                             ) : (
                                 activities.map((activity, index) => (
                                     <div
                                         key={activity.id || index}
-                                        className="flex items-start gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
+                                        className="flex items-start justify-between gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
                                     >
-                                        <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                                        <div className="flex-1">
-                                            {/* Sesuaikan nama kolom DB, biasanya activity_name atau title */}
-                                            <p className="text-sm font-medium">
-                                                {activity.title || "Activity Log"}
-                                            </p>
+                                        {/* LEFT SECTION (Activity Details) */}
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-1">
+                                                {userRole === "dosen" ? (
+                                                    <>
+                                                        Supervision request
+                                                        from:{" "}
+                                                        <span className="font-semibold">
+                                                            {
+                                                                activity.leader_name
+                                                            }
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Your supervisor:{" "}
+                                                        <span className="font-semibold">
+                                                            {
+                                                                activity.lecturer_name
+                                                            }
+                                                        </span>
+                                                    </>
+                                                )}
 
-                                            {/* Tampilkan Tipe jika ada */}
-                                            {activity.activity_type && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    {activity.activity_type.type_name}
+                                                <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">
+                                                    Project:{" "}
+                                                    {activity.activity_title}
                                                 </p>
-                                            )}
 
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {/* Format Tanggal */}
-                                                {new Date(activity.created_at).toLocaleDateString()}
-                                            </p>
+                                                {/* 3. Time/Date (assigned_date) at the bottom */}
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Submitted:{" "}
+                                                    {formatDate(
+                                                        activity.assigned_date
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-1 flex-shrink-0">
+                                            <StatusBadge
+                                                status={activity.status}
+                                            />
                                         </div>
                                     </div>
                                 ))
@@ -111,39 +198,6 @@ export default function Dashboard({ auth, stats, activities }) {
                         </div>
                     </CardContent>
                 </Card>
-
-
-                {userRole === "Mahasiswa" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>My Supervisor</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    {/* Mengakses data dosen pembimbing secara aman dengan tanda tanya (?) */}
-                                    <p className="font-medium">
-                                        {auth.user.student?.teamMembers?.[0]?.team?.activity?.supervision?.lecturer?.user?.name || "Not Assigned Yet"}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Status: {auth.user.status || "Active"}
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-
-                {userRole === "Dosen" && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>My Supervised Students</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">Check Relations menu for details.</p>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
         </MainLayout>
     );
