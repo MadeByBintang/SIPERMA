@@ -353,8 +353,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <p className="line-clamp-1">
+                                                    <div className="flex-1 min-w-0 max-w-md">
+                                                        {" "}
+                                                        {/* Tambahkan min-w-0 dan max-w */}
+                                                        <p className="font-medium warp-break-words whitespace-normal">
+                                                            {" "}
+                                                            {/* Tambah break-words & whitespace-normal */}
                                                             {
                                                                 activity.activityName
                                                             }

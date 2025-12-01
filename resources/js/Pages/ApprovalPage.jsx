@@ -237,10 +237,10 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-start gap-2">
-                                        <div className="flex-1 min-w-0">
+                                        <div className="flex-1 min-w-0 max-w-xs">
                                             <Badge
                                                 variant="outline"
-                                                className={`gap-1 ${getActivityTypeColor(
+                                                className={`gap-1 mb-1 ${getActivityTypeColor(
                                                     request.activityType
                                                 )}`}
                                             >
@@ -249,7 +249,9 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                                 )}
                                                 {request.activityType}
                                             </Badge>
-                                            <p className="line-clamp-1 font-medium">
+                                            <p className="font-medium warp-break-words whitespace-normal">
+                                                {" "}
+                                                {/* Hapus line-clamp, tambah whitespace-normal */}
                                                 {request.activityName}
                                             </p>
                                         </div>

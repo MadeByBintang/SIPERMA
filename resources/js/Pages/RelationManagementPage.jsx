@@ -560,7 +560,7 @@ export default function RelationManagementPage({
                     open={isDetailDialogOpen}
                     onOpenChange={setIsDetailDialogOpen}
                 >
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
                                 {relationType === "student-student"
@@ -574,7 +574,6 @@ export default function RelationManagementPage({
                                     : "thesis supervision"}
                             </DialogDescription>
                         </DialogHeader>
-
                         {selectedDetail && (
                             <div className="space-y-6">
                                 {relationType === "student-student" ? (
@@ -601,15 +600,43 @@ export default function RelationManagementPage({
                                                 </Badge>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1 col-span-2">
+                                                <div className="space-y-1">
                                                     <p className="text-sm text-muted-foreground">
                                                         Activity Name
                                                     </p>
-                                                    <p>
+                                                    <p className="warp-break-words whitespace-normal">
                                                         {
                                                             selectedDetail.activityName
                                                         }
                                                     </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Status
+                                                    </p>
+                                                    <Badge
+                                                        className={getStatusColor(
+                                                            selectedDetail.status
+                                                        )}
+                                                    >
+                                                        {getStatusIcon(
+                                                            selectedDetail.status
+                                                        )}
+                                                        {selectedDetail.status
+                                                            .split(" ")
+                                                            .map(
+                                                                (word) =>
+                                                                    word
+                                                                        .charAt(
+                                                                            0
+                                                                        )
+                                                                        .toUpperCase() +
+                                                                    word.slice(
+                                                                        1
+                                                                    )
+                                                            )
+                                                            .join(" ")}
+                                                    </Badge>
                                                 </div>
                                                 <div className="space-y-1 col-span-2">
                                                     <p className="text-sm text-muted-foreground">
@@ -669,34 +696,6 @@ export default function RelationManagementPage({
                                                         )}
                                                     </p>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Status
-                                                    </p>
-                                                    <Badge
-                                                        className={getStatusColor(
-                                                            selectedDetail.status
-                                                        )}
-                                                    >
-                                                        {getStatusIcon(
-                                                            selectedDetail.status
-                                                        )}
-                                                        {selectedDetail.status
-                                                            .split(" ")
-                                                            .map(
-                                                                (word) =>
-                                                                    word
-                                                                        .charAt(
-                                                                            0
-                                                                        )
-                                                                        .toUpperCase() +
-                                                                    word.slice(
-                                                                        1
-                                                                    )
-                                                            )
-                                                            .join(" ")}{" "}
-                                                    </Badge>
-                                                </div>
                                             </div>
                                         </div>
 
@@ -713,30 +712,26 @@ export default function RelationManagementPage({
                                                 }
                                                 )
                                             </h4>
-                                            <div className="space-y-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 {selectedDetail.teamMembers.map(
                                                     (member, index) => (
                                                         <div
                                                             key={index}
-                                                            className="flex items-center justify-between p-3 bg-accent rounded-lg"
+                                                            className="flex items-center gap-3 p-3 bg-accent rounded-lg"
                                                         >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                    <User className="w-5 h-5 text-primary" />
-                                                                </div>
-                                                                <div>
-                                                                    <p>
-                                                                        {
-                                                                            member.name
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        NIM:{" "}
-                                                                        {
-                                                                            member.nim
-                                                                        }
-                                                                    </p>
-                                                                </div>
+                                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                <User className="w-5 h-5 text-primary" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="warp-break-words whitespace-normal">
+                                                                    {
+                                                                        member.name
+                                                                    }
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    NIM:{" "}
+                                                                    {member.nim}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     )
