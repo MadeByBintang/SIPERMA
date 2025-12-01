@@ -406,7 +406,6 @@ export default function RegistrationPage({
                     .forEach((msg) => {
                         toast.error(msg);
                     });
-
             },
         });
     };
@@ -434,8 +433,7 @@ export default function RegistrationPage({
                 <div>
                     <h1>Activity Registration</h1>
                     <p className="text-muted-foreground">
-                        Register for Internship, Thesis, or
-                        Academic Competition
+                        Register for Internship, Thesis, or Academic Competition
                     </p>
                 </div>
 
@@ -468,9 +466,7 @@ export default function RegistrationPage({
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>
-                                                    Internship{" "}
-                                                </span>
+                                                <span>Internship</span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem

@@ -430,7 +430,7 @@ export default function RelationManagementPage({
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <p className="max-w-md line-clamp-2">
+                                                            <p className="break-words whitespace-normal">
                                                                 {
                                                                     relation.thesisTitle
                                                                 }
@@ -784,7 +784,7 @@ export default function RelationManagementPage({
                                                     <p className="text-sm text-muted-foreground">
                                                         Thesis Title
                                                     </p>
-                                                    <p>
+                                                    <p className="break-words whitespace-normal">
                                                         {
                                                             selectedDetail.thesisTitle
                                                         }
