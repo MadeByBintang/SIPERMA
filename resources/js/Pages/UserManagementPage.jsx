@@ -12,12 +12,7 @@ import { Button } from "@/Components/ui/Button";
 import { Input } from "@/Components/ui/Input";
 import { Label } from "@/Components/ui/Label";
 import { Badge } from "@/Components/ui/Badge";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/Tabs";
 import {
     Table,
     TableBody,
@@ -71,6 +66,22 @@ import { toast } from "sonner";
 const UserType = "student" | "lecturer";
 
 export default function UserManagementPage({ all_student, all_lecturer }) {
+    const isQuotaValid = (quota) => Number(quota) >= 0;
+    // Validation constants
+    const maxNameLength = 50;
+    const maxNimLength = 15;
+    const maxNipLength = 18;
+
+    // Validation helpers
+    const isNameValid = (name) =>
+        /^[A-Za-z\s]+$/.test(name) && name.length <= maxNameLength;
+    const isNimValid = (nim) =>
+        /^[0-9]+$/.test(nim) && nim.length <= maxNimLength;
+    const isNipValid = (nip) =>
+        /^[0-9]+$/.test(nip) && nip.length <= maxNipLength;
+
+    // Error state
+    const [formErrors, setFormErrors] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -111,10 +122,33 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
             status: "active",
             supervision_quota: currentTab === "lecturer" ? 8 : 0,
         });
+        setFormErrors({});
         setIsAddDialogOpen(true);
     };
 
     const saveNewUser = () => {
+        // Frontend validation
+        let errors = {};
+        if (selectedUserType === "student") {
+            if (!isNameValid(formData.name || ""))
+                errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
+            if (!isNimValid(formData.nim || ""))
+                errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
+        } else {
+            if (!isNameValid(formData.name || ""))
+                errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
+            if (!isNipValid(formData.nip || ""))
+                errors.nip = `NIP must be numbers only and max ${maxNipLength} chars.`;
+            if (!isQuotaValid(formData.supervision_quota))
+                errors.supervision_quota =
+                    "Supervision quota cannot be negative.";
+        }
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            toast.error(Object.values(errors).join("\n"));
+            return;
+        }
+        setFormErrors({});
         router.post(route("admin.users.store"), formData, {
             onSuccess: () => {
                 toast.success(`${selectedUserType} added successfully`);
@@ -122,7 +156,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 setFormData({});
             },
             onError: (errors) => {
-                console.error(errors);
+                setFormErrors(errors);
                 if (errors.email) toast.error(errors.email);
                 else if (errors.nim) toast.error(errors.nim);
                 else if (errors.nip) toast.error(errors.nip);
@@ -141,10 +175,42 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
             ...user,
             supervision_quota: user.supervision_quota || 0,
         });
+        setFormErrors({});
         setIsEditDialogOpen(true);
+        // Clear errors when dialog closed
+        const handleCloseAddDialog = () => {
+            setIsAddDialogOpen(false);
+            setFormErrors({});
+        };
+        const handleCloseEditDialog = () => {
+            setIsEditDialogOpen(false);
+            setFormErrors({});
+        };
     };
 
     const saveEditUser = () => {
+        // Frontend validation
+        let errors = {};
+        if (selectedUserType === "student") {
+            if (!isNameValid(formData.name || ""))
+                errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
+            if (!isNimValid(formData.nim || ""))
+                errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
+        } else {
+            if (!isNameValid(formData.name || ""))
+                errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
+            if (!isNipValid(formData.nip || ""))
+                errors.nip = `NIP must be numbers only and max ${maxNipLength} chars.`;
+            if (!isQuotaValid(formData.supervision_quota))
+                errors.supervision_quota =
+                    "Supervision quota cannot be negative.";
+        }
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            toast.error(Object.values(errors).join("\n"));
+            return;
+        }
+        setFormErrors({});
         router.put(route("admin.users.update", selectedUser.id), formData, {
             onSuccess: () => {
                 toast.success("User updated successfully");
@@ -153,6 +219,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 setFormData({});
             },
             onError: (errors) => {
+                setFormErrors(errors);
                 if (errors.email) toast.error(errors.email);
                 else if (errors.nim) toast.error(errors.nim);
                 else if (errors.nip) toast.error(errors.nip);
@@ -208,11 +275,19 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         id="nim"
                         placeholder="e.g., 2021001234"
                         value={formData.nim || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, nim: e.target.value })
-                        }
+                        onChange={(e) => {
+                            const value = e.target.value
+                                .replace(/[^0-9]/g, "")
+                                .slice(0, maxNimLength);
+                            setFormData({ ...formData, nim: value });
+                        }}
                         required
                     />
+                    {formErrors.nim && (
+                        <span className="text-red-500 text-xs">
+                            {formErrors.nim}
+                        </span>
+                    )}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -220,11 +295,19 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         id="name"
                         placeholder="Enter full name"
                         value={formData.name || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => {
+                            const value = e.target.value
+                                .replace(/[^A-Za-z\s]/g, "")
+                                .slice(0, maxNameLength);
+                            setFormData({ ...formData, name: value });
+                        }}
                         required
                     />
+                    {formErrors.name && (
+                        <span className="text-red-500 text-xs">
+                            {formErrors.name}
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -256,11 +339,19 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         id="nip"
                         placeholder="e.g., 198501012010011001"
                         value={formData.nip || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, nip: e.target.value })
-                        }
+                        onChange={(e) => {
+                            const value = e.target.value
+                                .replace(/[^0-9]/g, "")
+                                .slice(0, maxNipLength);
+                            setFormData({ ...formData, nip: value });
+                        }}
                         required
                     />
+                    {formErrors.nip && (
+                        <span className="text-red-500 text-xs">
+                            {formErrors.nip}
+                        </span>
+                    )}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -268,11 +359,19 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         id="name"
                         placeholder="Enter full name"
                         value={formData.name || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => {
+                            const value = e.target.value
+                                .replace(/[^A-Za-z\s]/g, "")
+                                .slice(0, maxNameLength);
+                            setFormData({ ...formData, name: value });
+                        }}
                         required
                     />
+                    {formErrors.name && (
+                        <span className="text-red-500 text-xs">
+                            {formErrors.name}
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -297,14 +396,22 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         type="number"
                         placeholder="0"
                         value={formData.supervision_quota || ""}
-                        onChange={(e) =>
+                        min={0}
+                        onChange={(e) => {
+                            let value = e.target.value;
+                            if (Number(value) < 0) value = 0;
                             setFormData({
                                 ...formData,
-                                supervision_quota: Number(e.target.value),
-                            })
-                        }
+                                supervision_quota: Number(value),
+                            });
+                        }}
                         required
                     />
+                    {formErrors.supervision_quota && (
+                        <span className="text-red-500 text-xs">
+                            {formErrors.supervision_quota}
+                        </span>
+                    )}
                 </div>
             </div>
         </>

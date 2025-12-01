@@ -18,24 +18,24 @@ class UserManagementController extends Controller
 {
     public function index()
     {
-        $students = Student::all()->map(function($student){
+        $students = Student::all()->map(function ($student) {
             return [
                 'id' => $student->user->user_id,
                 'name' => $student->name,
                 'email' => $student->email,
                 'nim' => $student->nim,
-                'status' => $student -> status ? 'active' : 'inactive',
+                'status' => $student->status ? 'active' : 'inactive',
             ];
         });
 
-        $lecturers = Lecturer::all() -> map(function($lecturer){
+        $lecturers = Lecturer::all()->map(function ($lecturer) {
             return [
-                'id' => $lecturer -> user->user_id,
-                'name' => $lecturer -> name,
-                'email' => $lecturer -> email,
-                'nip'   => $lecturer -> nip,
-                'status' => $lecturer -> status ? 'active' : 'inactive',
-                'supervision_quota' => $lecturer -> supervision_quota,
+                'id' => $lecturer->user->user_id,
+                'name' => $lecturer->name,
+                'email' => $lecturer->email,
+                'nip'   => $lecturer->nip,
+                'status' => $lecturer->status ? 'active' : 'inactive',
+                'supervision_quota' => $lecturer->supervision_quota,
             ];
         });
 
@@ -47,24 +47,45 @@ class UserManagementController extends Controller
 
     public function store(Request $request)
     {
+
         $isStudent = $request->userType === 'student' || (!$request->has('department') && $request->userType !== 'lecturer');
 
+        $maxNameLength = 50;
+        $maxNimLength = 15;
+        $maxNipLength = 18;
+
         $rules = [
-            'email' => ['required', 'email',
+            'email' => [
+                'required',
+                'email',
                 'unique:master_students,email',
-                'unique:master_lecturers,email'],
+                'unique:master_lecturers,email'
+            ],
+            'name' => [
+                'required',
+                "regex:/^[A-Za-z\s]+$/",
+                "max:$maxNameLength",
+                'unique:master_students,full_name',
+                'unique:master_lecturers,full_name'
+            ],
         ];
 
         if ($isStudent) {
             $rules['nim'] = [
-                'required', 'string', 'regex:/^[0-9]+$/',
+                'required',
+                'string',
+                "regex:/^[0-9]+$/",
+                "max:$maxNimLength",
                 'unique:master_students,nim',
                 'unique:master_lecturers,nip',
                 'unique:users,username'
             ];
         } else {
             $rules['nip'] = [
-                'required', 'string', 'regex:/^[0-9]+$/',
+                'required',
+                'string',
+                "regex:/^[0-9]+$/",
+                "max:$maxNipLength",
                 'unique:master_lecturers,nip',
                 'unique:master_students,nim',
                 'unique:users,username'
@@ -74,8 +95,13 @@ class UserManagementController extends Controller
 
         $messages = [
             'email.unique' => 'This email is already registered (Check both Student and Lecturer lists).',
+            'name.regex' => 'Full Name must contain only letters and spaces.',
+            'name.max' => "Full Name cannot exceed $maxNameLength characters.",
+            'name.unique' => 'Full Name is already registered.',
             'nim.regex' => 'NIM must contain only numbers.',
+            'nim.max' => "NIM cannot exceed $maxNimLength characters.",
             'nip.regex' => 'NIP must contain only numbers.',
+            'nip.max' => "NIP cannot exceed $maxNipLength characters.",
             'nim.unique' => 'This NIM is already registered.',
             'nip.unique' => 'This NIP is already registered.',
             'users.unique' => 'This ID is already in use by another account.',
@@ -149,6 +175,9 @@ class UserManagementController extends Controller
     public function update(Request $request, $id)
     {
         // 1. Handle Edit Master Only
+        $maxNameLength = 50;
+        $maxNimLength = 15;
+        $maxNipLength = 18;
         if (!is_numeric($id)) {
             $parts = explode('-', $id);
             $prefix = $parts[0];
@@ -157,18 +186,36 @@ class UserManagementController extends Controller
             if ($prefix === 'mstu') {
                 $request->validate([
                     'email' => ["required", "email", "unique:master_students,email,{$masterId},master_student_id", "unique:master_lecturers,email"],
-                    'nim' => ["required", "string", "regex:/^[0-9]+$/", "unique:master_students,nim,{$masterId},master_student_id", "unique:master_lecturers,nip"]
+                    'name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength"],
+                    'nim' => ["required", "string", "regex:/^[0-9]+$/", "max:$maxNimLength", "unique:master_students,nim,{$masterId},master_student_id", "unique:master_lecturers,nip"],
+                    'full_name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength", "unique:master_students,full_name,{$masterId},master_student_id"]
+                ], [
+                    'name.regex' => 'Full Name must contain only letters and spaces.',
+                    'name.max' => "Full Name cannot exceed $maxNameLength characters.",
+                    'nim.regex' => 'NIM must contain only numbers.',
+                    'nim.max' => "NIM cannot exceed $maxNimLength characters."
                 ]);
                 MasterStudent::where('master_student_id', $masterId)->update([
-                    'full_name' => $request->name, 'email' => $request->email, 'nim' => trim($request->nim)
+                    'full_name' => $request->name,
+                    'email' => $request->email,
+                    'nim' => trim($request->nim)
                 ]);
             } else {
                 $request->validate([
                     'email' => ["required", "email", "unique:master_lecturers,email,{$masterId},master_lecturer_id", "unique:master_students,email"],
-                    'nip' => ["required", "string", "regex:/^[0-9]+$/", "unique:master_lecturers,nip,{$masterId},master_lecturer_id", "unique:master_students,nim"]
+                    'name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength"],
+                    'nip' => ["required", "string", "regex:/^[0-9]+$/", "max:$maxNipLength", "unique:master_lecturers,nip,{$masterId},master_lecturer_id", "unique:master_students,nim"],
+                    'full_name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength", "unique:master_lecturers,full_name,{$masterId},master_lecturer_id"]
+                ], [
+                    'name.regex' => 'Full Name must contain only letters and spaces.',
+                    'name.max' => "Full Name cannot exceed $maxNameLength characters.",
+                    'nip.regex' => 'NIP must contain only numbers.',
+                    'nip.max' => "NIP cannot exceed $maxNipLength characters."
                 ]);
                 MasterLecturer::where('master_lecturer_id', $masterId)->update([
-                    'full_name' => $request->name, 'email' => $request->email, 'nip' => trim($request->nip)
+                    'full_name' => $request->name,
+                    'email' => $request->email,
+                    'nip' => trim($request->nip)
                 ]);
             }
             return redirect()->route('admin.users')->with('success', 'Master data updated successfully.');
@@ -183,18 +230,36 @@ class UserManagementController extends Controller
         if ($isStudent && $user->student) $ignoreId = $user->student->master_student_id ?? 0;
         elseif (!$isStudent && $user->lecturer) $ignoreId = $user->lecturer->master_lecturer_id ?? 0;
 
-        $rules = [];
+        $rules = [
+            'name' => [
+                'required',
+                "regex:/^[A-Za-z\s]+$/",
+                "max:$maxNameLength"
+            ],
+            'full_name' => [
+                'required',
+                "regex:/^[A-Za-z\s]+$/",
+                "max:$maxNameLength",
+                $isStudent
+                    ? "unique:master_students,full_name,{$ignoreId},master_student_id"
+                    : "unique:master_lecturers,full_name,{$ignoreId},master_lecturer_id",
+            ],
+        ];
 
         if (!$isStudent) {
             // Rules Dosen
             $rules['nip'] = [
-                'required', 'string', 'regex:/^[0-9]+$/',
+                'required',
+                'string',
+                'regex:/^[0-9]+$/',
+                "max:$maxNipLength",
                 "unique:master_lecturers,nip,{$ignoreId},master_lecturer_id",
                 "unique:users,username,{$user->user_id},user_id",
                 "unique:master_students,nim" // Cek silang ID
             ];
             $rules['email'] = [
-                'required', 'email',
+                'required',
+                'email',
                 "unique:master_lecturers,email,{$ignoreId},master_lecturer_id",
                 "unique:master_students,email" // Cek silang Email
             ];
@@ -202,22 +267,32 @@ class UserManagementController extends Controller
         } else {
             // Rules Mahasiswa
             $rules['nim'] = [
-                'required', 'string', 'regex:/^[0-9]+$/',
+                'required',
+                'string',
+                'regex:/^[0-9]+$/',
+                "max:$maxNimLength",
                 "unique:master_students,nim,{$ignoreId},master_student_id",
                 "unique:users,username,{$user->user_id},user_id",
                 "unique:master_lecturers,nip" // Cek silang ID
             ];
             $rules['email'] = [
-                'required', 'email',
+                'required',
+                'email',
                 "unique:master_students,email,{$ignoreId},master_student_id",
                 "unique:master_lecturers,email" // Cek silang Email
             ];
         }
 
         $messages = [
+            'name.regex' => 'Full Name must contain only letters and spaces.',
+            'name.max' => "Full Name cannot exceed $maxNameLength characters.",
+            'full_name.unique' => 'Full Name is already registered.',
             'email.unique' => 'Email is already taken by another account (Student/Lecturer).',
             'nim.regex' => 'NIM must contain only numbers.',
+            'nim.max' => "NIM cannot exceed $maxNimLength characters.",
             'nip.regex' => 'NIP must contain only numbers.',
+            'nip.max' => "NIP cannot exceed $maxNipLength characters.",
+            'supervision_quota.min' => 'Supervision quota cannot be negative.',
             'nim.unique' => 'NIM is already taken.',
             'nip.unique' => 'NIP is already taken.',
             'master_lecturers.unique' => 'This ID/Email is already registered as a Lecturer.',
@@ -234,7 +309,6 @@ class UserManagementController extends Controller
                     'nim' => trim($request->nim),
                 ]);
                 if ($request->nim !== $user->username) $user->update(['username' => trim($request->nim)]);
-
             } elseif (!$isStudent && $user->lecturer && $user->lecturer->masterLecturer) {
                 $user->lecturer->masterLecturer->update([
                     'full_name' => $request->name,
@@ -297,15 +371,14 @@ class UserManagementController extends Controller
     {
         $user = User::find($id);
 
-        if ($user -> role -> role_name === 'mahasiswa'){
-            $student = $user -> student -> masterStudent;
-            $student -> is_active = !($student -> is_active);
-            $student -> save();
-        }
-        else if ($user -> role -> role_name === 'dosen'){
-            $lecturer = $user -> lecturer -> masterLecturer;
-            $lecturer -> is_active = !($lecturer -> is_active);
-            $lecturer -> save();
+        if ($user->role->role_name === 'mahasiswa') {
+            $student = $user->student->masterStudent;
+            $student->is_active = !($student->is_active);
+            $student->save();
+        } else if ($user->role->role_name === 'dosen') {
+            $lecturer = $user->lecturer->masterLecturer;
+            $lecturer->is_active = !($lecturer->is_active);
+            $lecturer->save();
         }
 
         return redirect()->route('admin.users')->with('success', 'Status updated');
