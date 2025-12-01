@@ -987,7 +987,7 @@ export default function AdminRelationsPage({
                                                                             {getActivityBadge(
                                                                                 relation.activityType
                                                                             )}
-                                                                            <p className="text-sm break-words whitespace-normal">
+                                                                            <p className="break-words whitespace-normal">
                                                                                 {
                                                                                     relation.activityTitle
                                                                                 }
@@ -1278,7 +1278,20 @@ export default function AdminRelationsPage({
                                                     Supervisor
                                                 </Label>
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <UserCheck className="w-5 h-5 text-muted-foreground" />
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <span className="text-sm text-primary">
+                                                            {selectedSLRelation.lecturerName
+                                                                .split(" ")
+                                                                .map(
+                                                                    (n) => n[0]
+                                                                )
+                                                                .join("")
+                                                                .substring(
+                                                                    0,
+                                                                    2
+                                                                )}
+                                                        </span>
+                                                    </div>
                                                     <div>
                                                         <p>
                                                             {

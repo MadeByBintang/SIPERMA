@@ -26,21 +26,26 @@ class ProjectOverviewController extends Controller
                 $teamMembers = [];
 
                 if ($item->team) {
-                    // Nama tim
-                    $teamName = $item->team->team_name ?? '-';
-
                     // Urutkan leader berdasarkan pivot id
                     $sortedMembers = $item->team->members
                         ->sortBy('pivot.id')
                         ->values();
 
-                    // Konversi ke nama student
+                    // Konversi ke array dengan name dan nim
                     $teamMembers = $sortedMembers->map(function ($m) {
-                        return $m->student->name
-                            ?? $m->full_name
-                            ?? 'Unknown';
-                    });
+                        return [
+                            'name' => $m->student->name ?? $m->full_name ?? 'Unknown',
+                            'nim' => $m->student->nim ?? '-',
+                        ];
+                    })->toArray();
+                }
 
+                // Jika tidak ada team members, gunakan student owner
+                if (empty($teamMembers)) {
+                    $teamMembers = [[
+                        'name' => $item->student->name,
+                        'nim' => $item->student->nim ?? '-',
+                    ]];
                 }
 
                 return [
@@ -57,17 +62,15 @@ class ProjectOverviewController extends Controller
 
                     /* ===== LECTURER ===== */
                     'supervisor' => $item->lecturer->name ?? 'Unknown',
+                    'supervisorNip' => $item->lecturer->nip ?? '-',
 
                     /* ===== ACTIVITY ===== */
                     'type' => $item->activity->activityType->type_name ?? '-',
                     'title' => $item->activity->title ?? 'Untitled Project',
                     'description' => $item->activity->description ?? '-',
-                    'teamMembers' => !empty($teamMembers)
-                        ? $teamMembers->values()->all()
-                        : [$item->student->name],
-                            ];
-                    });
-
+                    'teamMembers' => $teamMembers,
+                ];
+            });
 
         return Inertia::render('ProjectOverviewPage', [
             'all_projects' => $projects

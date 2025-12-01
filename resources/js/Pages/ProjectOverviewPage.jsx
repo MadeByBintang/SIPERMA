@@ -12,12 +12,7 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Badge } from "@/Components/ui/badge";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -63,9 +58,10 @@ import {
 import { toast } from "sonner";
 
 const ProjectType = "Internship" | "Thesis" | "Competition" | "all";
-const ProjectStatus = "pending" | "approved" | "completed" | "terminated" | "rejected";
+const ProjectStatus =
+    "pending" | "approved" | "completed" | "terminated" | "rejected";
 
-export default function ProjectOverviewPage({all_projects}) {
+export default function ProjectOverviewPage({ all_projects }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentTab, setCurrentTab] = useState("all");
     const [selectedProject, setSelectedProject] = useState(null);
@@ -74,21 +70,21 @@ export default function ProjectOverviewPage({all_projects}) {
     const [formData, setFormData] = useState({});
 
     // Mock project data
-    const [projects, setProjects] = useState(
-        all_projects || []
-    );
+    const [projects, setProjects] = useState(all_projects || []);
 
     // Filter projects based on tab and search
     const filteredProjects = projects.filter((project) => {
         const matchesTab = currentTab === "all" || project.type === currentTab;
         const matchesSearch =
-            (project?.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (project?.title ?? "")
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
             project.supervisor
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase()) ||
             project.teamMembers.some((member) =>
                 member.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            );
 
         return matchesTab && matchesSearch;
     });
@@ -112,7 +108,6 @@ export default function ProjectOverviewPage({all_projects}) {
     };
 
     // Handle edit project
-
 
     // Get status badge
     const getStatusBadge = (status) => {
@@ -464,10 +459,10 @@ export default function ProjectOverviewPage({all_projects}) {
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="min-w-[300px]">
+                                                    <TableHead className="min-w-[100px]">
                                                         Project
                                                     </TableHead>
-                                                    <TableHead>
+                                                    <TableHead className="min-w-[150px]">
                                                         Team Members
                                                     </TableHead>
                                                     <TableHead>
@@ -495,7 +490,7 @@ export default function ProjectOverviewPage({all_projects}) {
                                                                                 project.type
                                                                             )}
                                                                         </div>
-                                                                        <p className="line-clamp-2">
+                                                                        <p className="break-words whitespace-normal">
                                                                             {
                                                                                 project.title
                                                                             }
@@ -526,56 +521,111 @@ export default function ProjectOverviewPage({all_projects}) {
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
+                                                                <TableCell className="py-5">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+                                                                        {project.teamMembers
+                                                                            .slice(
+                                                                                0,
+                                                                                4
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    member,
+                                                                                    idx
+                                                                                ) => (
+                                                                                    <div
+                                                                                        key={
+                                                                                            idx
+                                                                                        }
+                                                                                        className="flex items-center gap-3"
+                                                                                    >
+                                                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                            <span className="text-sm text-primary font-medium">
+                                                                                                {member.name
+                                                                                                    .split(
+                                                                                                        " "
+                                                                                                    )
+                                                                                                    .map(
+                                                                                                        (
+                                                                                                            n
+                                                                                                        ) =>
+                                                                                                            n[0]
+                                                                                                    )
+                                                                                                    .join(
+                                                                                                        ""
+                                                                                                    )
+                                                                                                    .substring(
+                                                                                                        0,
+                                                                                                        2
+                                                                                                    )}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="text-sm break-words whitespace-normal">
+                                                                                                {
+                                                                                                    member.name
+                                                                                                }
+                                                                                            </p>
+                                                                                            <p className="text-xs text-muted-foreground">
+                                                                                                {
+                                                                                                    member.nim
+                                                                                                }
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+                                                                    </div>
+                                                                    {project
+                                                                        .teamMembers
+                                                                        .length >
+                                                                        4 && (
+                                                                        <div className="text-xs text-muted-foreground mt-2">
+                                                                            +
+                                                                            {project
+                                                                                .teamMembers
+                                                                                .length -
+                                                                                4}{" "}
+                                                                            more
+                                                                            members
+                                                                        </div>
+                                                                    )}
+                                                                </TableCell>
                                                                 <TableCell>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Users className="w-4 h-4 text-muted-foreground shrink-0" />
-                                                                        <div className="space-y-1">
-                                                                            {project.teamMembers
-                                                                                    .slice(
-                                                                                        0,
-                                                                                        2
+                                                                    <div className="flex items-start gap-2 max-w-[200px]">
+                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                            <span className="text-xs text-primary">
+                                                                                {project.supervisor
+                                                                                    .split(
+                                                                                        " "
                                                                                     )
                                                                                     .map(
                                                                                         (
-                                                                                            member,
-                                                                                            idx
-                                                                                        ) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    idx
-                                                                                                }
-                                                                                                className="text-sm"
-                                                                                            >
-                                                                                                {
-                                                                                                    member
-                                                                                                }
-                                                                                            </div>
-                                                                                        )
+                                                                                            n
+                                                                                        ) =>
+                                                                                            n[0]
+                                                                                    )
+                                                                                    .join(
+                                                                                        ""
+                                                                                    )
+                                                                                    .substring(
+                                                                                        0,
+                                                                                        2
                                                                                     )}
-                                                                            {project
-                                                                                .teamMembers
-                                                                                .length >
-                                                                                2 && (
-                                                                                <div className="text-xs text-muted-foreground">
-                                                                                    +
-                                                                                    {project
-                                                                                        .teamMembers
-                                                                                        .length -
-                                                                                        2}{" "}
-                                                                                    more
-                                                                                </div>
-                                                                            )}
+                                                                            </span>
                                                                         </div>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <UserCheck className="w-4 h-4 text-muted-foreground shrink-0" />
-                                                                        <span className="text-sm">
-                                                                            {
-                                                                                project.supervisor
-                                                                            }
-                                                                        </span>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-sm break-words whitespace-normal">
+                                                                                {
+                                                                                    project.supervisor
+                                                                                }
+                                                                            </p>
+                                                                            <p className="text-xs text-muted-foreground">
+                                                                                {
+                                                                                    project.supervisorNip
+                                                                                }
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell>
@@ -584,9 +634,9 @@ export default function ProjectOverviewPage({all_projects}) {
                                                                     )}
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <div className="flex items-center justify-end gap-2">
+                                                                    <div className="flex items-center justify-center gap-2">
                                                                         <Button
-                                                                            variant="ghost"
+                                                                            variant="outline"
                                                                             size="sm"
                                                                             onClick={() =>
                                                                                 handleViewDetails(
@@ -594,7 +644,10 @@ export default function ProjectOverviewPage({all_projects}) {
                                                                                 )
                                                                             }
                                                                         >
-                                                                            <Eye className="w-4 h-4" />
+                                                                            <Eye className="w-3 h-3 md:mr-1" />
+                                                                            <span className="hidden md:inline">
+                                                                                View
+                                                                            </span>
                                                                         </Button>
                                                                     </div>
                                                                 </TableCell>
@@ -654,71 +707,87 @@ export default function ProjectOverviewPage({all_projects}) {
                                 </div>
 
                                 {/* Grid Info */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Supervisor</Label>
-                                        <div className="flex items-center gap-2">
-                                            <UserCheck className="w-4 h-4 text-muted-foreground" />
-                                            <span className="text-sm">
-                                                {selectedProject.supervisor}
-                                            </span>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label className="text-muted-foreground">
+                                                Supervisor
+                                            </Label>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                    <span className="text-sm text-primary">
+                                                        {selectedProject.supervisor
+                                                            .split(" ")
+                                                            .map((n) => n[0])
+                                                            .join("")
+                                                            .substring(0, 2)}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm">
+                                                        {
+                                                            selectedProject.supervisor
+                                                        }
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {
+                                                            selectedProject.supervisorNip
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label>Start Date</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                                            <span className="text-sm">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label className="text-muted-foreground">
+                                                Duration
+                                            </Label>
+                                            <p className="text-sm mt-2">
                                                 {new Date(
                                                     selectedProject.startDate
                                                 ).toLocaleDateString("en-US", {
                                                     year: "numeric",
-                                                    month: "long",
+                                                    month: "short",
                                                     day: "numeric",
                                                 })}
-                                            </span>
+                                                {" - "}
+                                                {selectedProject.endDate
+                                                    ? new Date(
+                                                          selectedProject.endDate
+                                                      ).toLocaleDateString(
+                                                          "en-US",
+                                                          {
+                                                              year: "numeric",
+                                                              month: "short",
+                                                              day: "numeric",
+                                                          }
+                                                      )
+                                                    : "Ongoing"}
+                                            </p>
                                         </div>
                                     </div>
-
-                                    {selectedProject.endDate && (
-                                        <div className="space-y-2">
-                                            <Label>End Date</Label>
-                                            <div className="flex items-center gap-2">
-                                                <Calendar className="w-4 h-4 text-muted-foreground" />
-                                                <span className="text-sm">
-                                                    {new Date(
-                                                        selectedProject.endDate
-                                                    ).toLocaleDateString(
-                                                        "en-US",
-                                                        {
-                                                            year: "numeric",
-                                                            month: "long",
-                                                            day: "numeric",
-                                                        }
-                                                    )}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Team Members */}
                                 <div className="space-y-2">
-                                    <Label>
+                                    <Label className="text-muted-foreground">
                                         Team Members (
-                                        {selectedProject.teamMembers.length ?? 0})
+                                        {selectedProject.teamMembers.length ??
+                                            0}
+                                        )
                                     </Label>
-                                    <div className="space-y-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                                         {selectedProject.teamMembers.map(
                                             (member, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-center gap-2 p-2 bg-accent rounded-lg"
+                                                    className="flex items-center gap-3 p-3 border rounded-lg"
                                                 >
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <span className="text-xs text-primary">
-                                                            {member
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <span className="text-sm text-primary font-medium">
+                                                            {member.name
                                                                 .split(" ")
                                                                 .map(
                                                                     (n) => n[0]
@@ -730,9 +799,14 @@ export default function ProjectOverviewPage({all_projects}) {
                                                                 )}
                                                         </span>
                                                     </div>
-                                                    <span className="text-sm">
-                                                        {member}
-                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm break-words whitespace-normal">
+                                                            {member.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {member.nim}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             )
                                         )}
