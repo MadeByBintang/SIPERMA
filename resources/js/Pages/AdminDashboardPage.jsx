@@ -52,6 +52,11 @@ export default function AdminDashboardPage({ systemStats, stats }) {
         setDownloadProgress(0); // Reset progress
     };
 
+    const calculatePercentage = (count, total) => {
+        if (total === 0) return 0;
+        return (count / total) * 100;
+    };
+
     const confirmDownload = async () => {
         setIsDownloading(true);
         setDownloadProgress(0);
@@ -181,7 +186,7 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                     </Button>
                 </div>
                 {/* System Statistics - MENGGUNAKAN DATA ASLI DARI DATABASE */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
                     {/* Total Students */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -225,56 +230,6 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                             </div>
                         </CardContent>
                     </Card>
-
-                    {/* Active Projects */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Active Projects
-                            </CardTitle>
-                            <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-1">
-                                <div className="flex items-baseline gap-2">
-                                    {/* MENGHITUNG TOTAL DARI DATA DATABASE */}
-                                    <span className="text-3xl">
-                                        {(systemStats.activeProjects?.pkl ||
-                                            0) +
-                                            (systemStats.activeProjects
-                                                ?.thesis || 0) +
-                                            (systemStats.activeProjects
-                                                ?.competition || 0)}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    PKL · Thesis · Competition
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Pending Approvals */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm">
-                                Pending Approvals
-                            </CardTitle>
-                            <Clock className="w-4 h-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-1">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl">
-                                        {systemStats.pendingApprovals}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Awaiting lecturer response
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
@@ -314,7 +269,10 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    {stats.completedProjects} completed
+                                    from{" "}
+                                    {stats.completedProjects +
+                                        stats.activeProjects}{" "}
+                                    projects is completed
                                 </p>
                             </div>
                         </CardContent>
@@ -339,7 +297,7 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-blue-500" />
                                             <span className="text-sm">
-                                                PKL (Internship)
+                                                Internship
                                             </span>
                                         </div>
                                         <span className="text-sm">
@@ -352,14 +310,11 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                         <div
                                             className="bg-blue-500 h-2 rounded-full"
                                             style={{
-                                                width: `${
-                                                    (systemStats.activeProjects
-                                                        ?.pkl || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.thesis || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.competition || 0)
-                                                }%`,
+                                                width: `${calculatePercentage(
+                                                    systemStats.activeProjects
+                                                        ?.pkl || 0,
+                                                    stats.totalProjects
+                                                )}%`,
                                             }}
                                         />
                                     </div>
@@ -384,14 +339,11 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                         <div
                                             className="bg-green-500 h-2 rounded-full"
                                             style={{
-                                                width: `${
-                                                    (systemStats.activeProjects
-                                                        ?.pkl || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.thesis || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.competition || 0)
-                                                }%`,
+                                                width: `${calculatePercentage(
+                                                    systemStats.activeProjects
+                                                        ?.thesis || 0,
+                                                    stats.totalProjects
+                                                )}%`,
                                             }}
                                         />
                                     </div>
@@ -416,14 +368,11 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                         <div
                                             className="bg-orange-500 h-2 rounded-full"
                                             style={{
-                                                width: `${
-                                                    (systemStats.activeProjects
-                                                        ?.pkl || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.thesis || 0) +
-                                                    (systemStats.activeProjects
-                                                        ?.competition || 0)
-                                                }%`,
+                                                width: `${calculatePercentage(
+                                                    systemStats.activeProjects
+                                                        ?.competition || 0,
+                                                    stats.totalProjects
+                                                )}%`,
                                             }}
                                         />
                                     </div>
@@ -473,7 +422,7 @@ export default function AdminDashboardPage({ systemStats, stats }) {
                                                 Approved Guidance
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                Successfully matched
+                                                Now on progress
                                             </p>
                                         </div>
                                     </div>
