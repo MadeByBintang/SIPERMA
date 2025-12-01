@@ -19,7 +19,8 @@ import {
     TableRow,
 } from "@/Components/ui/table";
 import { Badge } from "@/Components/ui/badge";
-import { Info, Mail, BookOpen, GraduationCap, Award } from "lucide-react";
+import { Info, Mail, BookOpen, GraduationCap, Search } from "lucide-react";
+import { Input } from "@/Components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import {
     Dialog,
@@ -58,14 +59,33 @@ export default function MatchingPage({ user, matches = [] }) {
     };
 
     const currentList = matches[recommendationType] || [];
+
+    // Tambahkan state untuk search query
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Modifikasi filteredMatches untuk include search
     const filteredMatches = currentList.filter((match) => {
-        if (filterFocus === "all") return true;
+        // Filter by focus
+        const focusMatch =
+            filterFocus === "all"
+                ? true
+                : filterFocus === "none"
+                ? !match.focus || match.focus === "" || match.focus === "-"
+                : match.focus === filterFocus;
 
-        if (filterFocus === "none") {
-            return !match.focus || match.focus === "" || match.focus === "-";
-        }
+        // Filter by search query
+        const searchMatch =
+            searchQuery === ""
+                ? true
+                : match.name
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                  match.uid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  match.email
+                      ?.toLowerCase()
+                      .includes(searchQuery.toLowerCase());
 
-        return match.focus === filterFocus;
+        return focusMatch && searchMatch;
     });
 
     return (
@@ -94,6 +114,17 @@ export default function MatchingPage({ user, matches = [] }) {
                                         ? "Student Recommendations"
                                         : "Recommended Matches"}
                                 </CardTitle>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search..."
+                                        value={searchQuery}
+                                        onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                        }
+                                        className="pl-9 w-full"
+                                    />
+                                </div>
                                 {/* Only show recommendation type dropdown for students */}
                                 {userRole === "mahasiswa" && (
                                     <Select
@@ -148,6 +179,17 @@ export default function MatchingPage({ user, matches = [] }) {
                                         : "Recommended Matches"}
                                 </CardTitle>
                                 <div className="flex gap-3">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search..."
+                                            value={searchQuery}
+                                            onChange={(e) =>
+                                                setSearchQuery(e.target.value)
+                                            }
+                                            className="pl-9 w-[250px]"
+                                        />
+                                    </div>
                                     {/* Only show recommendation type dropdown for students */}
                                     {userRole === "mahasiswa" && (
                                         <Select

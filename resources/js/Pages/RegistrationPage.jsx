@@ -39,6 +39,7 @@ import {
     User,
     UserCheck,
     X,
+    Search,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { toast } from "sonner";
@@ -48,6 +49,18 @@ import { Head, useForm } from "@inertiajs/react";
 const FOCUS_LABELS = ["BIG DATA", "MTI", "JARINGAN"];
 // Recommended team members based on matching interests
 const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredMembers = members.filter((member) => {
+        if (searchQuery === "") return true;
+
+        return (
+            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.nim.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.interests?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    });
+
     return (
         <Card>
             <CardHeader>
@@ -59,6 +72,15 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                     Students with matching interests and expertise for
                     collaboration
                 </CardDescription>
+                <div className="relative mt-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="rounded-md border max-h-64 overflow-y-auto">
@@ -75,8 +97,8 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                         </TableHeader>
 
                         <TableBody>
-                            {members.length > 0 ? (
-                                members
+                            {filteredMembers.length > 0 ? (
+                                filteredMembers
                                     .filter((m) => {
                                         if (type === "Internship") {
                                             return ![
@@ -107,7 +129,7 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                                                     }
                                                     onClick={(e) =>
                                                         e.stopPropagation()
-                                                    } // cegah double trigger
+                                                    }
                                                     onCheckedChange={() =>
                                                         onToggle(member.id)
                                                     }
@@ -134,10 +156,10 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                             ) : (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={5}
+                                        colSpan={4}
                                         className="text-center py-4 text-muted-foreground"
                                     >
-                                        No recommended members found.
+                                        No members found
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -158,9 +180,20 @@ const SupervisorSelectionCard = ({
     filterId,
     error,
 }) => {
+    const [searchQuery, setSearchQuery] = useState("");
+
     const filteredList = filterId
         ? supervisors.filter((s) => s.id !== filterId)
         : supervisors;
+
+    const searchedList = filteredList.filter((sup) => {
+        if (searchQuery === "") return true;
+
+        return (
+            sup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sup.expertise?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    });
 
     return (
         <Card>
@@ -171,6 +204,15 @@ const SupervisorSelectionCard = ({
                 <CardDescription>
                     Select a lecturer based on expertise
                 </CardDescription>
+                <div className="relative mt-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search supervisors..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="rounded-md border max-h-64 overflow-y-auto">
@@ -189,8 +231,8 @@ const SupervisorSelectionCard = ({
                         </TableHeader>
 
                         <TableBody>
-                            {filteredList.length > 0 ? (
-                                filteredList.map((sup) => (
+                            {searchedList.length > 0 ? (
+                                searchedList.map((sup) => (
                                     <TableRow
                                         key={sup.id}
                                         className="cursor-pointer"
@@ -227,10 +269,10 @@ const SupervisorSelectionCard = ({
                             ) : (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={5}
+                                        colSpan={4}
                                         className="text-center py-4 text-muted-foreground"
                                     >
-                                        No supervisors found.
+                                        No supervisors found
                                     </TableCell>
                                 </TableRow>
                             )}
