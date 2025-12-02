@@ -202,7 +202,7 @@ class RegistrationController extends Controller
         }
         catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to submit registration: ')->withInput();
+            return redirect()->back()->with('error', 'Failed to submit registration: ' . $e -> getMessage())->withInput();
         }
     }
 
@@ -284,8 +284,10 @@ class RegistrationController extends Controller
             }
 
             $request->validate([
+                'supervisor' => 'required|exists:lecturers,lecturer_id',
                 'description' => 'required|string|min:20',
             ], [
+                'supervisor.required' => 'Please select a supervisor.',
                 'description.required' => 'Internship description is required.',
                 'description.min' => 'Description must be at least 20 characters.',
             ]);
@@ -295,19 +297,36 @@ class RegistrationController extends Controller
             $request->validate([
                 'competitionName' => 'required|string|max:255',
                 'competitionField' => 'required|string',
+                'competitionSupervisor' => 'required|exists:lecturers,lecturer_id',
             ], [
                 'competitionName.required' => 'Competition name is required.',
                 'competitionField.required' => 'Please select a competition field.',
+                'competitionSupervisor.required' => 'Please select a supervisor.',
             ]);
         }
 
         $request->validate([
-            'supervisor' => 'required|exists:lecturers,lecturer_id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
         ], [
-            'supervisor.required' => 'Please select a supervisor.',
         ]);
+
+        $additionalMembers = [];
+        if ($request->activityType === 'Internship' && $request->has('teamMembers')) {
+            $additionalMembers = $request->teamMembers;
+        } elseif ($typeId === 3 && $request->has('competitionTeam')) {
+            $additionalMembers = $request->competitionTeam;
+        }
+
+        if (!is_array($additionalMembers)) {
+            $additionalMembers = [];
+        }
+
+        if (count($additionalMembers) > 3) {
+            throw new \Exception('A maximum of 4 members, including the leader.');
+        }
+
+        $teamId = null;
 
         $activity = Activity::create([
             'activity_type_id' => $typeId,
@@ -319,49 +338,34 @@ class RegistrationController extends Controller
             'institution_id' => $institutionId,
         ]);
 
-        // 2. Create Team
-        $team = Team::create([
-            'team_name'      => $request->activityType === 'Internship' ? 'Internship Team - ' . $student->name : 'Competition Team - ' . $request->competitionName,
-            'description'    => $activity->description,
-        ]);
+        if (!empty($additionalMembers)) {
+            $team = Team::create([
+                'team_name'   => $request->activityType === 'Internship' ? 'Internship Team - ' . $student->name : 'Competition Team - ' . $request->competitionName,
+                'description' => $activity->description,
+            ]);
 
-        TeamMember::create([
-            'team_id' => $team->team_id,
-            'student_id' => $student->student_id,
-        ]);
+            $teamId = $team->team_id;
 
-        if (($request->has('teamMembers') && is_array($request->teamMembers)) || ($request->has('competitionTeam') && is_array($request->competitionTeam))) {
+            TeamMember::create([
+                'team_id'    => $teamId,
+                'student_id' => $student->student_id,
+            ]);
 
-            if ($request->activityType === 'Internship') {
-                if (count($request->teamMembers) > 3) {
-                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.')->withInput();
-                }
+            foreach ($additionalMembers as $memberId) {
+                if ($memberId == $student->student_id) continue;
 
-                foreach ($request->teamMembers as $memberId) {
-                    TeamMember::create([
-                        'team_id' => $team->team_id,
-                        'student_id' => $memberId
-                    ]);
-                }
-            } else if ($typeId === 3) {
-                if (count($request->competitionTeam) > 3) {
-                    return redirect()->back()->with('error', 'A maximum of 4 members, including the leader.')->withInput();
-                }
-
-                foreach ($request->competitionTeam as $memberId) {
-                    TeamMember::create([
-                        'team_id' => $team->team_id,
-                        'student_id' => $memberId
-                    ]);
-                }
+                TeamMember::create([
+                    'team_id'    => $teamId,
+                    'student_id' => $memberId,
+                ]);
             }
         }
 
         Supervision::create([
             'student_id' => $student->student_id,
-            'lecturer_id' => $request->supervisor,
+            'lecturer_id' => $request->supervisor ?? $request -> competitionSupervisor,
             'activity_id' => $activity->activity_id,
-            'team_id' => $team->team_id ?? ' ',
+            'team_id' =>    $teamId,
             'supervision_status' => 'pending',
             'assigned_at' => now(),
         ]);

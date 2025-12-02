@@ -1453,9 +1453,11 @@ export default function RegistrationPage({
                         <SupervisorSelectionCard
                             title="Recommended Competition Supervisors"
                             supervisors={filteredCompSup}
-                            selectedId={data.supervisor}
-                            onSelect={(id) => setData("supervisor", id)}
-                            error={errors.supervisor}
+                            selectedId={data.competitionSupervisor}
+                            onSelect={(id) =>
+                                setData("competitionSupervisor", id)
+                            }
+                            error={errors.competitionSupervisor}
                         />
 
                         {/* Submit Button */}
