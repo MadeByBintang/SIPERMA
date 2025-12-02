@@ -65,7 +65,7 @@ class ApplicationStatusController extends Controller
                     'description' => $sv->activity->description ?? '-',
                     'supervisorName' => $sv->lecturer->name ?? 'Unknown',
                     'supervisorEmail' => $sv->lecturer->email ?? 'Unknown',
-                    'submittedDate' => $sv->assigned_date,
+                    'submittedDate' => $sv->assigned_at,
                     'status' => $sv->supervision_status,
 
                     'companyName' => $companyName,

@@ -16,7 +16,7 @@ class RelationManagementController extends Controller
 
         return Inertia::render('RelationManagementPage', [
             'studentStudentRelations' => $this -> ssRelations(),
-            'studentLecturerRelations' => $this -> slRelations(),
+            'studentLecturerRelations' => $this -> sl(),
         ]);
     }
 
@@ -30,6 +30,7 @@ class RelationManagementController extends Controller
             ->whereHas('activity', function ($q) {
                 $q->whereIn('activity_type_id', [2, 3]);
             })
+            ->has('team')
             ->whereIn('supervision_status', ['approved', 'completed'])
             ->orderBy('supervision_id', 'desc')
             ->get()
@@ -130,6 +131,67 @@ class RelationManagementController extends Controller
                     'thesisTitle' => $item->activity->title ?? 'Untitled Project',
                     'activityDescription' => $item->activity->description ?? '-',
                 ];
+            });
+
+        return $supervisions;
+    }
+
+    private function sl(){
+        $supervisions = Supervision::with([
+            'student.user',
+            'lecturer.user',
+            'activity',
+            'team.members.student.masterStudent',
+        ])
+            ->whereIn('supervision_status', ['approved', 'completed'])
+            ->orderBy('supervision_id', 'desc')
+            ->get()
+            ->flatMap(function ($item) {
+
+                $involvedStudents = collect();
+
+                if ($item->student) {
+                    $involvedStudents->push($item->student);
+                }
+
+                if ($item->team && $item->team->members) {
+                    foreach ($item->team->members as $member) {
+                        if ($member->student) {
+                            $involvedStudents->push($member->student);
+                        }
+                    }
+                }
+
+                $uniqueStudents = $involvedStudents->unique('student_id');
+
+                return $uniqueStudents->map(function ($student) use ($item) {
+                    return [
+                        'id'            => $item->supervision_id . "SL" . $student->student_id,
+                        'status' => $item->supervision_status === 'approved'
+                            ? 'on progress'
+                            : ($item->supervision_status ?? 'pending'),
+                        'startDate'     => $item->activity->start_date
+                                            ? Carbon::parse($item->activity->start_date)->format('Y-m-d')
+                                            : "",
+                        'endDate'       => $item->activity->end_date
+                                            ? Carbon::parse($item->activity->end_date)->format('Y-m-d')
+                                            : Carbon::now()->format('Y-m-d'),
+
+                        'activityType'  => $item->activity->activityType->type_name ?? '-',
+                        'activityTitle' => $item->activity->title ?? 'Untitled Project',
+                        'activityDescription' => $item->activity->description ?? '-',
+                        'researchArea'  => $item->lecturer->focus ?? '-',
+
+                        'lecturerId'    => $item->lecturer->lecturer_id,
+                        'supervisorName'  => $item->lecturer->name ?? 'Unknown',
+                        'supervisorNIP'   => $item->lecturer->nip ?? '-',
+
+                        'studentId'     => $student->student_id,
+                        'studentName'   => $student->name,
+                        'studentNIM'    => $student->nim,
+                        'isTeamMember'  => ($item->student->student_id !== $student->student_id), // (Opsional) Penanda dia ketua atau anggota
+                    ];
+                });
             });
 
         return $supervisions;

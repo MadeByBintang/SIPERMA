@@ -17,7 +17,6 @@ class ProjectOverviewController extends Controller
             'student.user',
             'lecturer.user',
             'activity.internship',
-            'activity.logs',
             'team.members.student.masterStudent',
         ])
             ->orderBy('supervision_id', 'desc')

@@ -133,7 +133,7 @@ class RegistrationController extends Controller
             $q->where('activity_type_id', $type);
         })
             ->where('student_id', $id)
-            ->latest('assigned_date')
+            ->latest('assigned_at')
             ->first();
 
 
@@ -143,7 +143,7 @@ class RegistrationController extends Controller
             ->whereHas('team.members', function ($q) use ($id) {
                 $q->where('student_id', $id);
             })
-            ->latest('assigned_date')
+            ->latest('assigned_at')
             ->first();
 
         $activity = $leader ?? $member;
@@ -237,7 +237,7 @@ class RegistrationController extends Controller
             'lecturer_id' => $request->mainSupervisor,
             'activity_id' => $activity->activity_id,
             'supervision_status' => 'pending',
-            'assigned_date' => now(),
+            'assigned_at' => now(),
         ]);
     }
 
@@ -363,7 +363,7 @@ class RegistrationController extends Controller
             'activity_id' => $activity->activity_id,
             'team_id' => $team->team_id ?? ' ',
             'supervision_status' => 'pending',
-            'assigned_date' => now(),
+            'assigned_at' => now(),
         ]);
     }
 }

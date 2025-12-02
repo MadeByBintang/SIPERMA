@@ -30,7 +30,7 @@ class StudentProfileController extends Controller
                 'id' => $sup->supervision_id,
                 'name' => $sup->lecturer->user->name ?? $sup->lecturer->name ?? 'Unknown',
                 'expertise' => 'Lecturer',
-                'period' => $sup->assigned_date ? date('M Y', strtotime($sup->assigned_date)) . ' - Present' : '-',
+                'period' => $sup->assigned_at ? date('M Y', strtotime($sup->assigned_at)) . ' - Present' : '-',
                 'status' => ucfirst($sup->supervision_status),
             ];
         }) : [];
