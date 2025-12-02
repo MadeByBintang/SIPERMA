@@ -260,44 +260,38 @@ class UserManagementController extends Controller
 
     public function destroy($id)
     {
-        try {
-            DB::transaction(function () use ($id) {
-                if (!is_numeric($id)) {
-                    $parts = explode('-', $id);
-                    $prefix = $parts[0];
-                    $masterId = (int) $parts[1];
+        $user = User::findOrFail($id);
 
-                    if ($prefix === 'mstu') {
-                        DB::table('students')->where('master_student_id', $masterId)->delete();
-                        DB::table('master_students')->where('master_student_id', $masterId)->delete();
-                    } elseif ($prefix === 'mlec') {
-                        DB::table('lecturers')->where('master_lecturer_id', $masterId)->delete();
-                        DB::table('master_lecturers')->where('master_lecturer_id', $masterId)->delete();
+        DB::transaction(function () use ($user) {
+            $user->delete();
+
+            if ($user->role_name === 'dosen') {
+                $lecturer = $user->lecturer;
+
+                if ($lecturer) {
+                    $masterLecturer = $lecturer->masterLecturer;
+                    $lecturer->delete();
+
+                    if ($masterLecturer) {
+                        $masterLecturer->delete();
                     }
-                    return;
                 }
 
-                $user = User::with(['role', 'student', 'lecturer'])->findOrFail($id);
-                if ($user->user_id === Auth::user()->user_id) throw new \Exception('Cannot delete your own account.');
+            } elseif ($user->role_name === 'mahasiswa') {
+                $student = $user->student;
 
-                $roleName = strtolower($user->getRoleNameAttribute() ?? '');
+                if ($student) {
+                    $masterStudent = $student->masterStudent;
+                    $student->delete();
 
-                if ($roleName === 'mahasiswa') {
-                    $masterId = $user->student->master_student_id ?? null;
-                    DB::table('students')->where('user_id', $user->user_id)->delete();
-                    if ($masterId) DB::table('master_students')->where('master_student_id', $masterId)->delete();
-                } elseif ($roleName === 'dosen') {
-                    $masterId = $user->lecturer->master_lecturer_id ?? null;
-                    DB::table('lecturers')->where('user_id', $user->user_id)->delete();
-                    if ($masterId) DB::table('master_lecturers')->where('master_lecturer_id', $masterId)->delete();
+                    if ($masterStudent) {
+                        $masterStudent->delete();
+                    }
                 }
+            }
+        });
 
-                $user->forceDelete();
-            });
-            return redirect()->back()->with('success', 'Data deleted successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Delete failed: ' . $e->getMessage());
-        }
+        return redirect()->route('admin.users')->with('success', 'User dan data terkait berhasil dinonaktifkan (Soft Delete).');
     }
 
     public function toggleStatus($id)
