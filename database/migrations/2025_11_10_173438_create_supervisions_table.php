@@ -14,8 +14,12 @@ return new class extends Migration
             $table->unsignedBigInteger('lecturer_id');
             $table->unsignedBigInteger('team_id')->nullable();
             $table->unsignedBigInteger('activity_id');
-            $table->string('supervision_status', 50);
-            $table->dateTime('assigned_date');
+            $table->enum('supervision_status', ['pending', 'approved', 'rejected', 'completed']);
+
+            $table->dateTime('assigned_at');
+            $table->dateTime('responded_at')->nullable();
+            $table->dateTime('finished_at')->nullable();
+
             $table->text('notes')->nullable();
 
             $table->foreign('student_id')->references('student_id')->on('students');

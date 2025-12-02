@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder; 
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $this->call([
-           
+
             RolesSeeder::class,
             MasterLecturersSeeder::class,
             MasterStudentsSeeder::class,
@@ -17,15 +17,12 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             InternshipSeeder::class,
 
-           
             UserSeeder::class,
-            FocusSeeder::class,
+            TeamSeeder::class,
 
-           
-            ActivitySeeder::class,    
-            TeamSeeder::class,        
-            TeamMemberSeeder::class,   
-            SupervisionSeeder::class,  
+            ActivitySeeder::class,
+            SupervisionSeeder::class,
+            LogSeeder::class
         ]);
     }
 }

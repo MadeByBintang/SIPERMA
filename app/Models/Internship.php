@@ -12,6 +12,7 @@ class Internship extends Model
     protected $table = 'internships';
 
     protected $primaryKey = 'internship_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'name',
@@ -24,7 +25,7 @@ class Internship extends Model
 
     public function activities()
     {
-       
+
         return $this->hasMany(Activity::class, 'internship_id', 'internship_id');
     }
 }

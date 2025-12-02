@@ -11,7 +11,7 @@ class MasterLecturer extends Model
 
     protected $primaryKey = 'master_lecturer_id';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'nip',

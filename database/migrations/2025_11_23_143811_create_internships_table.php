@@ -17,13 +17,10 @@ return new class extends Migration
             $table->string('name');
             $table->text('address')->nullable();
 
-            // Kolom tambahan yang tadi kita buat
-            $table->string('sector', 50);
+            $table->enum('sector', ['BUMN/BUMD', 'Dinas', "Swasta"]);
             $table->string('owner_name', 100);
             $table->string('owner_email', 100)->nullable();
             $table->string('owner_phone', 20)->nullable();
-
-            $table->timestamps();
         });
     }
 }

@@ -15,6 +15,9 @@ return new class extends Migration
             $table->enum('focus', ['BIG DATA', 'MTI', 'JARINGAN'])->nullable();
             $table->integer('supervision_quota')->default(0);
 
+            $table->timestamps();
+            $table->softDeletes();
+
             $table->foreign('master_lecturer_id')->references('master_lecturer_id')->on('master_lecturers');
             $table->foreign('user_id')->references('user_id')->on('users');
         });

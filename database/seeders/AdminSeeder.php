@@ -15,17 +15,35 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::firstOrCreate([
-            'full_name' => 'Erika Maulidiya',
-            'email'     => 'admin.luar.biasa@siperma.com',
+        $admins = [
+            [
+                'name'      => 'Erika Maulidiya',
+                'email'     => 'admin.luar.biasa@siperma.com',
+                'username'  => '0012345678',
+                'password'  => 'admin_king123'
+            ],
+            [
+                'name'      => 'Siti Ratna Dwinta Sari',
+                'email'     => 'admin.biasa.aja@siperma.com',
+                'username'  => 'admin',
+                'password'  => 'admin123'
+            ]
 
-        ]);
+            ];
 
-        Admin::firstOrCreate([
-            'full_name' => 'Siti Ratna Dwinta Sari',
-            'email'     => 'admin.biasa.aja@siperma.com'
-        ]);
+        foreach ($admins as $admin){
 
-        
+            $u = User::firstOrCreate([
+                'username'              => $admin['username'],
+                'password'              => Hash::make($admin['password']),
+                'role_id'               => 1
+            ]);
+
+            Admin::firstOrCreate([
+                'user_id'               => $u -> user_id,
+                'full_name'             => $admin['name'],
+                'email'                 => $admin['email'],
+            ]);
+        }
     }
 }

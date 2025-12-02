@@ -2,9 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Models\Student;
+use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use App\Models\MasterStudent; // <-- Import Model
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\MasterStudent; // <-- Import Model
 
 class MasterStudentsSeeder extends Seeder
 {
@@ -15,297 +19,387 @@ class MasterStudentsSeeder extends Seeder
     {
         $students = [
             [
+                // id 1
                 'nim' => '9910817119999',
                 'full_name' => 'Erika Maulidiya',
-                'email' => '9910817119999@ulm.ac.id'
+                'email' => '9910817119999@ulm.ac.id',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110004',
                 'full_name' => 'ABDURRAHMAN GILANG HARJUNA',
-                'email' => 'KAIZER354313@GMAIL.COM'
+                'email' => 'KAIZER354313@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110006',
                 'full_name' => 'ADRIAN BINTANG SAPUTERA',
-                'email' => 'adrianbintang3@gmail.com'
+                'email' => 'adrianbintang3@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110007',
                 'full_name' => 'MUHAMMAD DAFFA MUSYAFA',
-                'email' => 'daffamusyafa1@gmail.com'
+                'email' => 'daffamusyafa1@gmail.com',
+                'focus' => 'JARINGAN'
             ],
             [
+                // id 5
                 'nim' => '2310817110008',
                 'full_name' => 'MUHAMMAD RAIHAN',
-                'email' => 'mr799903@gmail.com'
+                'email' => 'mr799903@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110011',
                 'full_name' => 'GHANI MUDZAKIR',
-                'email' => 'ghanimdzkr3@gmail.com'
+                'email' => 'ghanimdzkr3@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110013',
                 'full_name' => 'RANDY FEBRIAN',
-                'email' => 'RNDDFEBRIAN@GMAIL.COM'
+                'email' => 'RNDDFEBRIAN@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817110015',
                 'full_name' => 'AKHMAD CHAIDAR ANANDA',
-                'email' => 'CHAIDARMERAK1966@GMAIL.COM'
+                'email' => 'CHAIDARMERAK1966@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817120001',
                 'full_name' => 'DINA IZZATI ELFADHEYA',
-                'email' => 'WIDYADINA55@GMAIL.COM'
+                'email' => 'WIDYADINA55@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 10
                 'nim' => '2310817120002',
                 'full_name' => 'SITI RATNA DWINTA SARI',
-                'email' => 'PINCIYE189@GMAIL.COM'
+                'email' => 'PINCIYE189@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817120003',
                 'full_name' => 'NATALIE GRACE KATIANDAGHO',
-                'email' => 'NATALIEGRACEKATIANDAGHO@GMAIL.COM'
+                'email' => 'NATALIEGRACEKATIANDAGHO@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817120005',
                 'full_name' => 'NOVIANA NUR AISYAH',
-                'email' => 'noviana21na@gmail.com'
+                'email' => 'noviana21na@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817120009',
                 'full_name' => 'ALYSA ARMELIA',
-                'email' => 'ARMELIA.ALYSA@GMAIL.COM'
+                'email' => 'ARMELIA.ALYSA@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817120010',
                 'full_name' => 'NUR HIKMAH',
-                'email' => 'NURRRHIKMAH111@GMAIL.COM'
+                'email' => 'NURRRHIKMAH111@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
+                // id 15
                 'nim' => '2310817120012',
                 'full_name' => 'RIRIN CITRA LESTARI',
-                'email' => 'RIRINCCITRA@GMAIL.COM'
+                'email' => 'RIRINCCITRA@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817120014',
                 'full_name' => 'ALIYA RAFFA NAURA AYU',
-                'email' => '2310817120014@mhs.ulm.ac.id'
+                'email' => '2310817120014@mhs.ulm.ac.id',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210001',
                 'full_name' => 'ANDRA BRAPUTRA AKBAR SALEH',
-                'email' => 'AANDRAAA24@GMAIL.COM'
+                'email' => 'AANDRAAA24@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210003',
                 'full_name' => 'MUHAMMAD AZRIANZAN',
-                'email' => 'MUHAMMADAZRIANZAN@GMAIL.COM'
+                'email' => 'MUHAMMADAZRIANZAN@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
                 'nim' => '2310817210004',
                 'full_name' => 'ALLANO LINTANG ERTANTORA',
-                'email' => 'allanobro@gmail.com'
+                'email' => 'allanobro@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 20
                 'nim' => '2310817210005',
                 'full_name' => 'GALIH AJI SABDARAYA',
-                'email' => 'GALIJI57@GMAIL.COM'
+                'email' => 'GALIJI57@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210006',
                 'full_name' => 'MUHAMMAD RAIHAN ANSHARI',
-                'email' => 'raihananshari66@gmail.com'
+                'email' => 'raihananshari66@gmail.com',
+                'focus' => 'JARINGAN'
             ],
             [
                 'nim' => '2310817210007',
                 'full_name' => 'RAYMOND HARIYONO',
-                'email' => 'hariyonoraymond@gmail.com'
+                'email' => 'hariyonoraymond@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210009',
                 'full_name' => 'MUHAMMAD IBNU SINA',
-                'email' => 'IBNUMUHAMMAD837@GMAIL.COM'
+                'email' => 'IBNUMUHAMMAD837@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
                 'nim' => '2310817210010',
                 'full_name' => 'HARRY PRATAMA YUNUS',
-                'email' => 'HARRYPRATAMAYUNUS@GMAIL.COM'
+                'email' => 'HARRYPRATAMAYUNUS@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 25
                 'nim' => '2310817210012',
                 'full_name' => 'NAZMI HAKIM',
-                'email' => 'NAZMIHAKIM110382@GMAIL.COM'
+                'email' => 'NAZMIHAKIM110382@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210013',
                 'full_name' => 'MUHAMMAD AUFA FITRIANDA',
-                'email' => 'MUHAMMADAUFAFITRIANDA@GMAIL.COM'
+                'email' => 'MUHAMMADAUFAFITRIANDA@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817210014',
                 'full_name' => 'DAMARJATI SURYO LAKSONO',
-                'email' => 'DAMARJATI2A@GMAIL.COM'
+                'email' => 'DAMARJATI2A@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210015',
                 'full_name' => 'MUHAMMAD BUKHARI FITRI',
-                'email' => 'bukharihari123@gmail.com'
+                'email' => 'bukharihari123@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210019',
                 'full_name' => 'NAUFAL ELYZAR',
-                'email' => 'NAUFAL111EL@GMAIL.COM'
+                'email' => 'NAUFAL111EL@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 30
                 'nim' => '2310817210020',
                 'full_name' => 'MUHAMMAD HASBIYAN RUSYADI',
-                'email' => 'HASBIEROSYADDD@GMAIL.COM'
+                'email' => 'HASBIEROSYADDD@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210022',
                 'full_name' => 'MUHAMMAD ADH-DHIYA\'US SALIM',
-                'email' => 'M.ADHIYA.US@GMAIL.COM'
+                'email' => 'M.ADHIYA.US@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817210023',
                 'full_name' => 'RIFKY PUTRA MAHARDIKA',
-                'email' => '2310817210023@mhs.ulm.ac.id'
+                'email' => '2310817210023@mhs.ulm.ac.id',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817210026',
                 'full_name' => 'MUHAMMAD PUTRA AZKY ALFANI',
-                'email' => 'ALFANIAZKY@GMAIL.COM'
+                'email' => 'ALFANIAZKY@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817210027',
                 'full_name' => 'MUHAMMAD ERZA RAIHAN',
-                'email' => 'ERZARAIHAN7@GMAIL.COM'
+                'email' => 'ERZARAIHAN7@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
+                // id 35
                 'nim' => '2310817210029',
                 'full_name' => 'PUTRA WHYRA PRATAMA S',
-                'email' => 'PUTRAWHYRA@GMAIL.COM'
+                'email' => 'PUTRAWHYRA@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817220002',
                 'full_name' => 'RAUDATUL SHOLEHAH',
-                'email' => 'RAUDTLSHOLHH27@GMAIL.COM'
+                'email' => 'RAUDTLSHOLHH27@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817220008',
                 'full_name' => 'ATHAYA LAILY SYAFITRI',
-                'email' => 'athaya.laily.1316@gmail.com'
+                'email' => 'athaya.laily.1316@gmail.com',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817220011',
                 'full_name' => 'REGINA SILVA MAHARATINI',
-                'email' => 'RGNASISIL@GMAIL.COM'
+                'email' => 'RGNASISIL@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
                 'nim' => '2310817220016',
                 'full_name' => 'NAILA HANIFAH',
-                'email' => 'NAILAHNFA@GMAIL.COM'
+                'email' => 'NAILAHNFA@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 40
                 'nim' => '2310817220018',
                 'full_name' => 'DEVI HAFIDA ARIYANI',
-                'email' => 'HAFIDADEVI@GMAIL.COM'
+                'email' => 'HAFIDADEVI@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817220024',
                 'full_name' => 'DESSY NURULITA',
-                'email' => 'DESSYNRLITA@GMAIL.COM'
+                'email' => 'DESSYNRLITA@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817220025',
                 'full_name' => 'FIRDA KHOIRUNISA',
-                'email' => 'FIRDAKHRNS925@GMAIL.COM'
+                'email' => 'FIRDAKHRNS925@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817220028',
                 'full_name' => 'SHEILA SABINA',
-                'email' => 'SABINASHEILA325@GMAIL.COM'
+                'email' => 'SABINASHEILA325@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310001',
                 'full_name' => 'AVANTIO FIERZA PATRIA',
-                'email' => 'AVANTIO.FIERZA@GMAIL.COM'
+                'email' => 'AVANTIO.FIERZA@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
+                // id 45
                 'nim' => '2310817310002',
                 'full_name' => 'JOVAN GILBERT NATAMASINDAH',
-                'email' => 'JOVANGILBERT7160@GMAIL.COM'
+                'email' => 'JOVANGILBERT7160@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310003',
                 'full_name' => 'M.FARID SETIAWAN',
-                'email' => 'FARIDSETIAWAN47@GMAIL.COM'
+                'email' => 'FARIDSETIAWAN47@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817310004',
                 'full_name' => 'M SAMIL RENDY NOR SALEH ',
-                'email' => 'RENDY310105@GMAIL.COM'
+                'email' => 'RENDY310105@GMAIL.COM',
+                'focus' => 'JARINGAN'
             ],
             [
                 'nim' => '2310817310005',
                 'full_name' => 'MUHAMMAD NURWAHYUDI ADHITAMA',
-                'email' => 'muhammadnurwahyudi2@gmail.com'
+                'email' => 'muhammadnurwahyudi2@gmail.com',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310008',
                 'full_name' => 'MUHAMMAD RIZKI RAMADHAN',
-                'email' => 'MR.RIZKIRMDHN@GMAIL.COM'
+                'email' => 'MR.RIZKIRMDHN@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 50
                 'nim' => '2310817310009',
                 'full_name' => 'MUHAMMAD FAUZAN AHSANI',
-                'email' => 'MHDFAUZANAHSANI@GMAIL.COM'
+                'email' => 'MHDFAUZANAHSANI@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310010',
                 'full_name' => 'AKMALLULLAIL SYA\'BAN',
-                'email' => 'AKMALSYABAN123@GMAIL.COM'
+                'email' => 'AKMALSYABAN123@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310011',
                 'full_name' => 'MUHAMMAD RIZKY',
-                'email' => 'RIZKY09SULAIMAN@GMAIL.COM'
+                'email' => 'RIZKY09SULAIMAN@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310012',
                 'full_name' => 'MUHAMMAD AZWIN HAKIM',
-                'email' => 'AZWINHAKIM35@GMAIL.COM'
+                'email' => 'AZWINHAKIM35@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817310014',
                 'full_name' => 'MUHAMMAD RIZKI SAPUTRA',
-                'email' => 'MHMDRIZKISPTRAA@GMAIL.COM'
+                'email' => 'MHMDRIZKISPTRAA@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
+                // id 55
                 'nim' => '2310817320006',
                 'full_name' => 'ALYA ROSAAN',
-                'email' => 'ALYAROSAAN0510@GMAIL.COM'
+                'email' => 'ALYAROSAAN0510@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
                 'nim' => '2310817320007',
                 'full_name' => 'ZAHRA NABILA',
-                'email' => 'ZHR.NABIL4@GMAIL.COM'
+                'email' => 'ZHR.NABIL4@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ],
             [
                 'nim' => '2310817320013',
                 'full_name' => 'AIKO ANATASHA WENDIONO',
-                'email' => 'AIKOANATASHAWENDIONO@GMAIL.COM'
+                'email' => 'AIKOANATASHAWENDIONO@GMAIL.COM',
+                'focus' => 'MTI'
             ],
             [
+                // id 58
                 'nim' => '2310817320015',
                 'full_name' => 'ALFISYAH RINA FAJRIATI',
-                'email' => 'SYAHRN911@GMAIL.COM'
+                'email' => 'SYAHRN911@GMAIL.COM',
+                'focus' => 'BIG DATA'
             ]
         ];
 
-        MasterStudent::insert($students);
+        foreach($students as $student){
+            $sdt = MasterStudent::firstOrCreate([
+                'full_name'             => Str::title(strtolower($student['full_name'])),
+                'nim'                   => $student['nim'],
+                'email'                 => strtolower($student['email']),
+                'is_active'             => true,
+            ]);
+
+            $user = User::firstOrCreate([
+                'username'              => $student['nim'],
+                'password'              => Hash::make('password'),
+                'role_id'               => 3
+            ]);
+
+            Student::firstOrCreate([
+                'master_student_id'     => $sdt -> master_student_id,
+                'focus'                 => $student['focus'],
+                'user_id'               => $user -> user_id
+            ]);
+        };
     }
 }

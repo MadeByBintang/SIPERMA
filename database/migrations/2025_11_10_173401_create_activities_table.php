@@ -16,7 +16,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->timestamps();
 
             $table->foreign('activity_type_id')->references('activity_type_id')->on('activity_types');
             $table->foreign('internship_id')->references('internship_id')->on('internships');

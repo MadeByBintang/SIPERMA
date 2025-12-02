@@ -13,7 +13,7 @@ class MasterStudent extends Model
     protected $primaryKey = 'master_student_id';
 
 
-    public $timestamps = false;
+    public $timestamps = true;
 
 
     protected $fillable = [

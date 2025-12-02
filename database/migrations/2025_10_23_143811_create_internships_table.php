@@ -15,15 +15,11 @@ return new class extends Migration
         Schema::create('internships', function (Blueprint $table) {
             $table->id('internship_id');
             $table->string('name');
-            $table->text('address')->nullable();
-
-            // Kolom tambahan yang tadi kita buat
+            $table->text('address');
             $table->string('sector', 50);
             $table->string('owner_name', 100);
             $table->string('owner_email', 100)->nullable();
             $table->string('owner_phone', 20)->nullable();
-
-            $table->timestamps();
         });
     }
 }

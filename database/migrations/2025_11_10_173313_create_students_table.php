@@ -14,6 +14,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->unique();
             $table->enum('focus', ['BIG DATA', 'MTI', 'JARINGAN']) -> nullable();
 
+            $table->timestamps();
+            $table->softDeletes();
+
             $table->foreign('master_student_id')->references('master_student_id')->on('master_students');
             $table->foreign('user_id')->references('user_id')->on('users');
         });

@@ -11,9 +11,8 @@ class Supervision extends Model
 
     // Tentukan Primary Key
     protected $primaryKey = 'supervision_id';
-
-    // Tabel ini tidak punya timestamps
     public $timestamps = false;
+
 
     // Kolom yang boleh diisi
     protected $fillable = [
@@ -22,7 +21,9 @@ class Supervision extends Model
         'team_id',
         'activity_id',
         'supervision_status',
-        'assigned_date',
+        'assigned_at',
+        'responded_at',
+        'finished_at',
         'notes',
     ];
 

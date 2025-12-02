@@ -4,18 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Team extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $table = 'teams';
 
-    // 1. Primary Key sesuai database
     protected $primaryKey = 'team_id';
+    public $timestamps = false;
 
-    // 2. Mass Assignment
     protected $fillable = [
         'activity_id',
         'team_name',

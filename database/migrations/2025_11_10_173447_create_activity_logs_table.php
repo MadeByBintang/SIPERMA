@@ -13,7 +13,6 @@ return new class extends Migration
             $table->unsignedBigInteger('activity_id');
             $table->dateTime('log_date');
             $table->text('progress_note');
-            // $table->string('action_type', 50);
 
             $table->foreign('activity_id')->references('activity_id')->on('activities');
         });

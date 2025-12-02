@@ -9,8 +9,8 @@ class Lecturer extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'lecturer_id'; // Sesuaikan dengan DB
-    public $timestamps = false; // Sesuaikan dengan DB
+    protected $primaryKey = 'lecturer_id';
+    public $timestamps = true;
 
     protected $fillable = [
         'user_id',
@@ -20,7 +20,11 @@ class Lecturer extends Model
         'email',
         'focus',
         'supervision_quota',
-        'status'
+        'is_active'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function user()

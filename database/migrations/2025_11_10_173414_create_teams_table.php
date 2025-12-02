@@ -10,13 +10,8 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->bigIncrements('team_id');
-
             $table->string('team_name', 100);
-
             $table->text('description')->nullable();
-
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

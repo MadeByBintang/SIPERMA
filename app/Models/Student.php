@@ -10,14 +10,19 @@ class Student extends Model
     use HasFactory;
 
     protected $primaryKey = 'student_id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'user_id',
         'master_student_id',
         'nim',
         'name',
-        'status',
+        'focus',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function masterStudent()
