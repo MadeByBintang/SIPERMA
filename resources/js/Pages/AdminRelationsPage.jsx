@@ -112,14 +112,6 @@ export default function AdminRelationsPage({
         const matchesTab =
             currentTab === "all" || relation.activityType === currentTab;
         const matchesSearch =
-            relation.student1Name
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            relation.student1Nim.includes(searchQuery) ||
-            relation.student2Name
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            relation.student2Nim.includes(searchQuery) ||
             relation.activityTitle
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase());
@@ -262,352 +254,6 @@ export default function AdminRelationsPage({
         );
     };
 
-    // Render form fields for student-lecturer
-    const renderSLFormFields = () => (
-        <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="studentName">Student Name</Label>
-                    <Input
-                        id="studentName"
-                        placeholder="Enter student name"
-                        value={formData.studentName || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                studentName: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="studentNim">Student NIM</Label>
-                    <Input
-                        id="studentNim"
-                        placeholder="e.g., 2021001234"
-                        value={formData.studentNim || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                studentNim: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="lecturerName">Lecturer Name</Label>
-                    <Input
-                        id="lecturerName"
-                        placeholder="Enter lecturer name"
-                        value={formData.lecturerName || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                lecturerName: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="lecturerNip">Lecturer NIP</Label>
-                    <Input
-                        id="lecturerNip"
-                        placeholder="e.g., 198501012010011001"
-                        value={formData.lecturerNip || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                lecturerNip: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="activityTitle">Activity Title</Label>
-                <Input
-                    id="activityTitle"
-                    placeholder="Enter activity/project title"
-                    value={formData.activityTitle || ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            activityTitle: e.target.value,
-                        })
-                    }
-                    required
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="activityType">Activity Type</Label>
-                    <Select
-                        value={formData.activityType || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, activityType: value })
-                        }
-                    >
-                        <SelectTrigger id="activityType">
-                            <SelectValue placeholder="Select activity type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Internship">
-                                Internship (Internship)
-                            </SelectItem>
-                            <SelectItem value="Thesis">Thesis</SelectItem>
-                            <SelectItem value="Competition">
-                                Competition
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                        value={formData.status || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, status: value })
-                        }
-                    >
-                        <SelectTrigger id="status">
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="approved">Active</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="rejected">Terminated</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                        id="startDate"
-                        type="date"
-                        value={formData.startDate || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                startDate: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="endDate">End Date (Optional)</Label>
-                <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.endDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, endDate: e.target.value })
-                    }
-                />
-            </div>
-        </>
-    );
-
-    // Render form fields for student-student
-    const renderSSFormFields = () => (
-        <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="student1Name">Student 1 Name</Label>
-                    <Input
-                        id="student1Name"
-                        placeholder="Enter student name"
-                        value={formData.student1Name || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                student1Name: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="student1Nim">Student 1 NIM</Label>
-                    <Input
-                        id="student1Nim"
-                        placeholder="e.g., 2021001234"
-                        value={formData.student1Nim || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                student1Nim: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="student2Name">Student 2 Name</Label>
-                    <Input
-                        id="student2Name"
-                        placeholder="Enter student name"
-                        value={formData.student2Name || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                student2Name: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="student2Nim">Student 2 NIM</Label>
-                    <Input
-                        id="student2Nim"
-                        placeholder="e.g., 2021005678"
-                        value={formData.student2Nim || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                student2Nim: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="role1">Student 1 Role</Label>
-                    <Input
-                        id="role1"
-                        placeholder="e.g., Team Lead"
-                        value={formData.role1 || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, role1: e.target.value })
-                        }
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="role2">Student 2 Role</Label>
-                    <Input
-                        id="role2"
-                        placeholder="e.g., Developer"
-                        value={formData.role2 || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, role2: e.target.value })
-                        }
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="activityTitle">Activity Title</Label>
-                <Input
-                    id="activityTitle"
-                    placeholder="Enter activity/project title"
-                    value={formData.activityTitle || ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            activityTitle: e.target.value,
-                        })
-                    }
-                    required
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="activityType">Activity Type</Label>
-                    <Select
-                        value={formData.activityType || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, activityType: value })
-                        }
-                    >
-                        <SelectTrigger id="activityType">
-                            <SelectValue placeholder="Select activity type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Internship">
-                                Internship (Internship)
-                            </SelectItem>
-                            <SelectItem value="Thesis">Thesis</SelectItem>
-                            <SelectItem value="Competition">
-                                Competition
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                        value={formData.status || ""}
-                        onValueChange={(value) =>
-                            setFormData({ ...formData, status: value })
-                        }
-                    >
-                        <SelectTrigger id="status">
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="approved">Active</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="rejected">Terminated</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                        id="startDate"
-                        type="date"
-                        value={formData.startDate || ""}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                startDate: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="endDate">End Date (Optional)</Label>
-                <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.endDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, endDate: e.target.value })
-                    }
-                />
-            </div>
-        </>
-    );
 
     return (
         <MainLayout>
@@ -813,14 +459,17 @@ export default function AdminRelationsPage({
                                                 </span>
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="Thesis">
-                                            <div className="flex items-center gap-2">
-                                                <GraduationCap className="w-4 h-4" />
-                                                <span>
-                                                    Thesis ({stats.Thesis})
-                                                </span>
-                                            </div>
-                                        </SelectItem>
+                                        {relationType ===
+                                            "student-lecturer" && (
+                                            <SelectItem value="Thesis">
+                                                <div className="flex items-center gap-2">
+                                                    <GraduationCap className="w-4 h-4" />
+                                                    <span>
+                                                        Thesis ({stats.Thesis})
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        )}
                                         <SelectItem value="Competition">
                                             <div className="flex items-center gap-2">
                                                 <Award className="w-4 h-4" />
@@ -842,7 +491,13 @@ export default function AdminRelationsPage({
                             className="w-full"
                         >
                             {!isMobile && (
-                                <TabsList className="grid w-full grid-cols-4 mb-6">
+                                <TabsList
+                                    className={`grid w-full mb-6 ${
+                                        relationType === "student-lecturer"
+                                            ? "grid-cols-4"
+                                            : "grid-cols-3"
+                                    }`}
+                                >
                                     <TabsTrigger value="all" className="gap-2">
                                         <LinkIcon className="w-4 h-4" />
                                         All ({stats.total})
@@ -854,13 +509,15 @@ export default function AdminRelationsPage({
                                         <Briefcase className="w-4 h-4" />
                                         Internship ({stats.Internship})
                                     </TabsTrigger>
-                                    <TabsTrigger
-                                        value="Thesis"
-                                        className="gap-2"
-                                    >
-                                        <GraduationCap className="w-4 h-4" />
-                                        Thesis ({stats.Thesis})
-                                    </TabsTrigger>
+                                    {relationType === "student-lecturer" && (
+                                        <TabsTrigger
+                                            value="Thesis"
+                                            className="gap-2"
+                                        >
+                                            <GraduationCap className="w-4 h-4" />
+                                            Thesis ({stats.Thesis})
+                                        </TabsTrigger>
+                                    )}
                                     <TabsTrigger
                                         value="Competition"
                                         className="gap-2"
@@ -1040,6 +697,9 @@ export default function AdminRelationsPage({
                                                         <TableHead>
                                                             Team Members
                                                         </TableHead>
+                                                        <TableHead>
+                                                            Lecturer
+                                                        </TableHead>
                                                         <TableHead className="min-w-[250px]">
                                                             Activity
                                                         </TableHead>
@@ -1055,48 +715,24 @@ export default function AdminRelationsPage({
                                                     {filteredSSRelations.length >
                                                     0 ? (
                                                         filteredSSRelations.map(
-                                                            (relation) => {
-                                                                // Filter hanya student yang ada datanya
-                                                                const students =
-                                                                    [
-                                                                        {
-                                                                            name: relation.student1Name,
-                                                                            nim: relation.student1Nim,
-                                                                            role: relation.role1,
-                                                                        },
-                                                                        {
-                                                                            name: relation.student2Name,
-                                                                            nim: relation.student2Nim,
-                                                                            role: relation.role2,
-                                                                        },
-                                                                        {
-                                                                            name: relation.student3Name,
-                                                                            nim: relation.student3Nim,
-                                                                            role: relation.role3,
-                                                                        },
-                                                                        {
-                                                                            name: relation.student4Name,
-                                                                            nim: relation.student4Nim,
-                                                                            role: relation.role4,
-                                                                        },
-                                                                    ].filter(
-                                                                        (s) =>
-                                                                            s.name &&
-                                                                            s.name.trim() !==
-                                                                                ""
-                                                                    );
-
-                                                                return (
-                                                                    <TableRow
-                                                                        key={
-                                                                            relation.id
-                                                                        }
-                                                                    >
-                                                                        <TableCell className="py-5">
-                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-                                                                                {students.map(
+                                                            (
+                                                                relation // Ganti { dengan (
+                                                            ) => (
+                                                                <TableRow
+                                                                    key={
+                                                                        relation.id
+                                                                    }
+                                                                >
+                                                                    <TableCell className="py-5">
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+                                                                            {relation.teamMembers
+                                                                                .slice(
+                                                                                    0,
+                                                                                    4
+                                                                                )
+                                                                                .map(
                                                                                     (
-                                                                                        student,
+                                                                                        member,
                                                                                         idx
                                                                                     ) => (
                                                                                         <div
@@ -1107,7 +743,7 @@ export default function AdminRelationsPage({
                                                                                         >
                                                                                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                                                                                 <span className="text-sm text-primary font-medium">
-                                                                                                    {student.name
+                                                                                                    {member.name
                                                                                                         .split(
                                                                                                             " "
                                                                                                         )
@@ -1129,70 +765,113 @@ export default function AdminRelationsPage({
                                                                                             <div className="min-w-0 flex-1">
                                                                                                 <p className="text-sm break-words whitespace-normal">
                                                                                                     {
-                                                                                                        student.name
+                                                                                                        member.name
                                                                                                     }
                                                                                                 </p>
                                                                                                 <p className="text-xs text-muted-foreground">
                                                                                                     {
-                                                                                                        student.nim
+                                                                                                        member.nim
                                                                                                     }
                                                                                                 </p>
-                                                                                                {student.role && (
-                                                                                                    <p className="text-xs text-blue-600 font-medium">
-                                                                                                        {
-                                                                                                            student.role
-                                                                                                        }
-                                                                                                    </p>
-                                                                                                )}
                                                                                             </div>
                                                                                         </div>
                                                                                     )
                                                                                 )}
+                                                                        </div>
+                                                                        {relation
+                                                                            .teamMembers
+                                                                            .length >
+                                                                            4 && (
+                                                                            <div className="text-xs text-muted-foreground mt-2">
+                                                                                +{" "}
+                                                                                {relation
+                                                                                    .teamMembers
+                                                                                    .length -
+                                                                                    4}{" "}
+                                                                                more
+                                                                                members
                                                                             </div>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <div className="space-y-1">
-                                                                                {getActivityBadge(
-                                                                                    relation.activityType
-                                                                                )}
-                                                                                <p className="text-sm break-words whitespace-normal">
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                                <span className="text-xs text-primary">
+                                                                                    {relation.lecturerName
+                                                                                        .split(
+                                                                                            " "
+                                                                                        )
+                                                                                        .map(
+                                                                                            (
+                                                                                                n
+                                                                                            ) =>
+                                                                                                n[0]
+                                                                                        )
+                                                                                        .join(
+                                                                                            ""
+                                                                                        )
+                                                                                        .substring(
+                                                                                            0,
+                                                                                            2
+                                                                                        )}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="line-clamp-1">
                                                                                     {
-                                                                                        relation.activityTitle
+                                                                                        relation.lecturerName
+                                                                                    }
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {
+                                                                                        relation.lecturerNip
                                                                                     }
                                                                                 </p>
                                                                             </div>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            {getStatusBadge(
-                                                                                relation.status
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="space-y-1">
+                                                                            {getActivityBadge(
+                                                                                relation.activityType
                                                                             )}
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
-                                                                                <Button
-                                                                                    variant="outline"
-                                                                                    size="sm"
-                                                                                    onClick={() =>
-                                                                                        handleViewDetails(
-                                                                                            relation
-                                                                                        )
-                                                                                    }
-                                                                                >
-                                                                                    <Eye className="w-3 h-3 md:mr-1" />
-                                                                                    <span className="hidden md:inline">
-                                                                                        View
-                                                                                    </span>
-                                                                                </Button>
-                                                                            </div>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                );
-                                                            }
-                                                        )
+                                                                            <p className="text-sm break-words whitespace-normal">
+                                                                                {
+                                                                                    relation.activityTitle
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {getStatusBadge(
+                                                                            relation.status
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="sm"
+                                                                                onClick={() =>
+                                                                                    handleViewDetails(
+                                                                                        relation
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Eye className="w-3 h-3 md:mr-1" />
+                                                                                <span className="hidden md:inline">
+                                                                                    View
+                                                                                </span>
+                                                                            </Button>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            )
+                                                        ) // Ganti } dengan )
                                                     ) : (
                                                         <TableRow>
                                                             <TableCell
-                                                                colSpan={4}
+                                                                colSpan={5}
                                                                 className="text-center py-8 text-muted-foreground"
                                                             >
                                                                 No relations
@@ -1371,41 +1050,15 @@ export default function AdminRelationsPage({
                                             Team Members
                                         </Label>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {[
-                                                {
-                                                    name: selectedSSRelation.student1Name,
-                                                    nim: selectedSSRelation.student1Nim,
-                                                    role: selectedSSRelation.role1,
-                                                },
-                                                {
-                                                    name: selectedSSRelation.student2Name,
-                                                    nim: selectedSSRelation.student2Nim,
-                                                    role: selectedSSRelation.role2,
-                                                },
-                                                {
-                                                    name: selectedSSRelation.student3Name,
-                                                    nim: selectedSSRelation.student3Nim,
-                                                    role: selectedSSRelation.role3,
-                                                },
-                                                {
-                                                    name: selectedSSRelation.student4Name,
-                                                    nim: selectedSSRelation.student4Nim,
-                                                    role: selectedSSRelation.role4,
-                                                },
-                                            ]
-                                                .filter(
-                                                    (s) =>
-                                                        s.name &&
-                                                        s.name.trim() !== ""
-                                                )
-                                                .map((student, idx) => (
+                                            {selectedSSRelation.teamMembers.map(
+                                                (member, idx) => (
                                                     <div
                                                         key={idx}
-                                                        className="flex items-center gap-2 p-3 border rounded-lg"
+                                                        className="flex items-center gap-3 p-3 border rounded-lg"
                                                     >
                                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                            <span className="text-sm text-primary">
-                                                                {student.name
+                                                            <span className="text-sm text-primary font-medium">
+                                                                {member.name
                                                                     .split(" ")
                                                                     .map(
                                                                         (n) =>
@@ -1418,23 +1071,17 @@ export default function AdminRelationsPage({
                                                                     )}
                                                             </span>
                                                         </div>
-                                                        <div>
-                                                            <p className="font-medium">
-                                                                {student.name}
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-sm break-words whitespace-normal">
+                                                                {member.name}
                                                             </p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {student.nim}
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {member.nim}
                                                             </p>
-                                                            {student.role && (
-                                                                <p className="text-sm text-blue-600">
-                                                                    {
-                                                                        student.role
-                                                                    }
-                                                                </p>
-                                                            )}
                                                         </div>
                                                     </div>
-                                                ))}
+                                                )
+                                            )}
                                         </div>
                                     </div>
 
