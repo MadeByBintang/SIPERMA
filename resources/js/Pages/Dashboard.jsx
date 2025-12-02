@@ -69,7 +69,7 @@ export default function Dashboard({ auth, stats, activities }) {
     const formatStatus = (status) => {
         switch (status) {
             case "pending":
-                return "Awaiting Approval";
+                return "Pending";
             case "approved":
                 return "Approved";
             case "rejected":
@@ -88,7 +88,7 @@ export default function Dashboard({ auth, stats, activities }) {
 
         return (
             <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${colorClasses}`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border ${colorClasses}`}
             >
                 {Icon}
                 {text}
