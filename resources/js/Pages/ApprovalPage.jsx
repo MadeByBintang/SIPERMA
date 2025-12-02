@@ -285,9 +285,10 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                             onClick={() =>
                                                 handleViewDetails(request)
                                             }
+                                            className="gap-1"
                                         >
                                             <Eye className="w-3 h-3" />
-                                            <span className="hidden md:inline">
+                                            <span className="text-xs md:text-sm">
                                                 View
                                             </span>
                                         </Button>

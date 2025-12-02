@@ -86,6 +86,9 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [userToToggle, setUserToToggle] = useState(null);
+    const [isToggleStatusDialogOpen, setIsToggleStatusDialogOpen] =
+        useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedUserType, setSelectedUserType] = useState("student");
     const [currentTab, setCurrentTab] = useState("student");
@@ -251,16 +254,33 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
     };
 
     // Handle toggle status
-    const toggleUserStatus = (user) => {
-        const action = user.status === "active" ? "deactivate" : "activate";
+    const handleToggleStatusClick = (user) => {
+        setUserToToggle(user);
+        setIsToggleStatusDialogOpen(true);
+    };
+
+    const confirmToggleStatus = () => {
+        if (!userToToggle) return;
 
         router.put(
-            route("admin.users.toggle-status", user.id),
+            route("admin.users.toggle-status", userToToggle.id),
             {},
             {
                 preserveScroll: true,
-                onSuccess: () => toast.success(`Status updated`),
-                onError: () => toast.error("Failed to update status"),
+                onSuccess: () => {
+                    const action =
+                        userToToggle.status === "active"
+                            ? "deactivated"
+                            : "activated";
+                    toast.success(`User ${action} successfully`);
+                    setIsToggleStatusDialogOpen(false);
+                    setUserToToggle(null);
+                },
+                onError: () => {
+                    toast.error("Failed to update status");
+                    setIsToggleStatusDialogOpen(false);
+                    setUserToToggle(null);
+                },
             }
         );
     };
@@ -715,7 +735,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                                                                             variant="ghost"
                                                                             size="sm"
                                                                             onClick={() =>
-                                                                                toggleUserStatus(
+                                                                                handleToggleStatusClick(
                                                                                     student,
                                                                                     "student"
                                                                                 )
@@ -886,7 +906,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                                                                             variant="ghost"
                                                                             size="sm"
                                                                             onClick={() =>
-                                                                                toggleUserStatus(
+                                                                                handleToggleStatusClick(
                                                                                     lecturer,
                                                                                     "lecturer"
                                                                                 )
@@ -1048,6 +1068,54 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                                 Delete Account
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Toggle Status Confirmation Dialog */}
+                <AlertDialog
+                    open={isToggleStatusDialogOpen}
+                    onOpenChange={setIsToggleStatusDialogOpen}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                {userToToggle?.status === "active"
+                                    ? "Deactivate User"
+                                    : "Activate User"}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to{" "}
+                                {userToToggle?.status === "active"
+                                    ? "deactivate"
+                                    : "activate"}{" "}
+                                the account for{" "}
+                                <span className="font-medium text-foreground">
+                                    {userToToggle?.name}
+                                </span>
+                                ?
+                                {userToToggle?.status === "active" && (
+                                    <span className="block mt-2 text-destructive">
+                                        The user will not be able to log in
+                                        while deactivated.
+                                    </span>
+                                )}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmToggleStatus}
+                                className={
+                                    userToToggle?.status === "active"
+                                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        : ""
+                                }
+                            >
+                                {userToToggle?.status === "active"
+                                    ? "Deactivate"
+                                    : "Activate"}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
