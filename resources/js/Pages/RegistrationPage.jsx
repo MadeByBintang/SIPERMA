@@ -1174,7 +1174,7 @@ export default function RegistrationPage({
                                     Thesis Details
                                 </CardTitle>
                                 <CardDescription>
-                                    Provide your thesis title and abstract
+                                    Provide your thesis title and description
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -1199,7 +1199,7 @@ export default function RegistrationPage({
 
                                 <div className="space-y-2">
                                     <Label htmlFor="thesis-abstract">
-                                        Abstract *
+                                        Description *
                                     </Label>
                                     <Textarea
                                         id="thesis-abstract"

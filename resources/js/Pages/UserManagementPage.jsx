@@ -66,11 +66,13 @@ import { toast } from "sonner";
 const UserType = "student" | "lecturer";
 
 export default function UserManagementPage({ all_student, all_lecturer }) {
-    const isQuotaValid = (quota) => Number(quota) >= 0;
     // Validation constants
     const maxNameLength = 50;
-    const maxNimLength = 15;
+    const maxNimLength = 13;
     const maxNipLength = 18;
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const quotaRegex = /^(0|[1-9]\d*)$/;
 
     // Validation helpers
     const isNameValid = (name) =>
@@ -79,6 +81,8 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
         /^[0-9]+$/.test(nim) && nim.length <= maxNimLength;
     const isNipValid = (nip) =>
         /^[0-9]+$/.test(nip) && nip.length <= maxNipLength;
+    const isEmailValid = (email) => emailRegex.test(email);
+    const isQuotaValid = (quota) => quotaRegex.test(String(quota));
 
     // Error state
     const [formErrors, setFormErrors] = useState({});
@@ -137,11 +141,17 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNimValid(formData.nim || ""))
                 errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
+            if (!isEmailValid(formData.email || "")) {
+                errors.email = "Please enter a valid email address.";
+            }
         } else {
             if (!isNameValid(formData.name || ""))
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNipValid(formData.nip || ""))
                 errors.nip = `NIP must be numbers only and max ${maxNipLength} chars.`;
+            if (!isEmailValid(formData.email || "")) {
+                errors.email = "Please enter a valid email address.";
+            }
             if (!isQuotaValid(formData.supervision_quota))
                 errors.supervision_quota =
                     "Supervision quota cannot be negative.";
@@ -169,6 +179,8 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
             },
         });
     };
+
+
 
     // Handle edit user
     const handleEditUser = (user, type) => {
@@ -199,11 +211,17 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNimValid(formData.nim || ""))
                 errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
+            if (!isEmailValid(formData.email || "")) {
+                errors.email = "Please enter a valid email address.";
+            }
         } else {
             if (!isNameValid(formData.name || ""))
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNipValid(formData.nip || ""))
                 errors.nip = `NIP must be numbers only and max ${maxNipLength} chars.`;
+            if (!isEmailValid(formData.email || "")) {
+                errors.email = "Please enter a valid email address.";
+            }
             if (!isQuotaValid(formData.supervision_quota))
                 errors.supervision_quota =
                     "Supervision quota cannot be negative.";
@@ -228,6 +246,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 else if (errors.nip) toast.error(errors.nip);
                 else if (errors.supervision_quota)
                     toast.error(errors.supervision_quota);
+                
                 else toast.error("Failed to update user.");
             },
         });
@@ -337,11 +356,33 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                     <Input
                         id="email"
                         type="email"
-                        placeholder="student@university.ac.id"
+                        placeholder="lecturer@university.ac.id"
                         value={formData.email || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                        }
+                        // Saat mengetik
+                        onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            // Opsional: Jika mau hapus error merah saat user mulai memperbaiki tulisan
+                            if (formErrors.email) {
+                                setFormErrors({ ...formErrors, email: null });
+                            }
+                        }}
+                        onBlur={(e) => {
+                            const val = e.target.value;
+                            const emailRegex =
+                                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                            if (val && !emailRegex.test(val)) {
+                                setFormErrors({
+                                    ...formErrors,
+                                    email: "Format email tidak valid (contoh: user@domain.com)",
+                                });
+                            }
+                            else {
+                                const newErrors = { ...formErrors };
+                                delete newErrors.email;
+                                setFormErrors(newErrors);
+                            }
+                        }}
                         required
                     />
                 </div>
@@ -403,9 +444,34 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                         type="email"
                         placeholder="lecturer@university.ac.id"
                         value={formData.email || ""}
-                        onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                        }
+                        // Saat mengetik
+                        onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            // Opsional: Jika mau hapus error merah saat user mulai memperbaiki tulisan
+                            if (formErrors.email) {
+                                setFormErrors({ ...formErrors, email: null });
+                            }
+                        }}
+                        // Saat klik keluar (Blur), baru validasi Regex
+                        onBlur={(e) => {
+                            const val = e.target.value;
+                            const emailRegex =
+                                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                            // Jika ada isi TAPI format salah
+                            if (val && !emailRegex.test(val)) {
+                                setFormErrors({
+                                    ...formErrors,
+                                    email: "Format email tidak valid (contoh: user@domain.com)",
+                                });
+                            }
+                            // Jika valid atau kosong (karena required diurus browser), hapus error
+                            else {
+                                const newErrors = { ...formErrors };
+                                delete newErrors.email;
+                                setFormErrors(newErrors);
+                            }
+                        }}
                         required
                     />
                 </div>
@@ -413,17 +479,24 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                     <Label htmlFor="quota">Supervision Quota</Label>
                     <Input
                         id="quota"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
                         value={formData.supervision_quota || ""}
-                        min={0}
                         onChange={(e) => {
-                            let value = e.target.value;
-                            if (Number(value) < 0) value = 0;
+                            const value = e.target.value.replace(/\D/g, "");
                             setFormData({
                                 ...formData,
-                                supervision_quota: Number(value),
+                                supervision_quota:
+                                    value === "" ? "" : Number(value),
                             });
+
+                            if (formErrors.supervision_quota) {
+                                setFormErrors({
+                                    ...formErrors,
+                                    supervision_quota: null,
+                                });
+                            }
                         }}
                         required
                     />
