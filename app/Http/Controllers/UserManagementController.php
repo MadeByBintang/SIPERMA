@@ -51,7 +51,7 @@ class UserManagementController extends Controller
         $isStudent = $request->userType === 'student' || (!$request->has('department') && $request->userType !== 'lecturer');
 
         $maxNameLength = 50;
-        $maxNimLength = 15;
+        $maxNimLength = 13;
         $maxNipLength = 18;
 
         $rules = [
@@ -172,155 +172,88 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users')->with('success', 'User created successfully.');
     }
 
-    public function update(Request $request, $id)
-    {
-        // 1. Handle Edit Master Only
-        $maxNameLength = 50;
-        $maxNimLength = 15;
-        $maxNipLength = 18;
-        if (!is_numeric($id)) {
-            $parts = explode('-', $id);
-            $prefix = $parts[0];
-            $masterId = $parts[1];
 
-            if ($prefix === 'mstu') {
-                $request->validate([
-                    'email' => ["required", "email", "unique:master_students,email,{$masterId},master_student_id", "unique:master_lecturers,email"],
-                    'name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength"],
-                    'nim' => ["required", "string", "regex:/^[0-9]+$/", "max:$maxNimLength", "unique:master_students,nim,{$masterId},master_student_id", "unique:master_lecturers,nip"],
-                    'full_name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength", "unique:master_students,full_name,{$masterId},master_student_id"]
-                ], [
-                    'name.regex' => 'Full Name must contain only letters and spaces.',
-                    'name.max' => "Full Name cannot exceed $maxNameLength characters.",
-                    'nim.regex' => 'NIM must contain only numbers.',
-                    'nim.max' => "NIM cannot exceed $maxNimLength characters."
-                ]);
-                MasterStudent::where('master_student_id', $masterId)->update([
-                    'full_name' => $request->name,
-                    'email' => $request->email,
-                    'nim' => trim($request->nim)
-                ]);
-            } else {
-                $request->validate([
-                    'email' => ["required", "email", "unique:master_lecturers,email,{$masterId},master_lecturer_id", "unique:master_students,email"],
-                    'name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength"],
-                    'nip' => ["required", "string", "regex:/^[0-9]+$/", "max:$maxNipLength", "unique:master_lecturers,nip,{$masterId},master_lecturer_id", "unique:master_students,nim"],
-                    'full_name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$maxNameLength", "unique:master_lecturers,full_name,{$masterId},master_lecturer_id"]
-                ], [
-                    'name.regex' => 'Full Name must contain only letters and spaces.',
-                    'name.max' => "Full Name cannot exceed $maxNameLength characters.",
-                    'nip.regex' => 'NIP must contain only numbers.',
-                    'nip.max' => "NIP cannot exceed $maxNipLength characters."
-                ]);
-                MasterLecturer::where('master_lecturer_id', $masterId)->update([
-                    'full_name' => $request->name,
-                    'email' => $request->email,
-                    'nip' => trim($request->nip)
-                ]);
-            }
-            return redirect()->route('admin.users')->with('success', 'Master data updated successfully.');
-        }
-
-        // 2. Handle Edit User Biasa
+    public function update(Request $request, $id){
         $user = User::findOrFail($id);
-        $roleName = strtolower($user->getRoleNameAttribute() ?? '');
-        $isStudent = ($roleName === 'mahasiswa');
 
-        $ignoreId = 0;
-        if ($isStudent && $user->student) $ignoreId = $user->student->master_student_id ?? 0;
-        elseif (!$isStudent && $user->lecturer) $ignoreId = $user->lecturer->master_lecturer_id ?? 0;
+        $MAX_NAME_LENGTH = 50;
+        $MAX_NIM_LENGTH = 13;
+        $MAX_NIP_LENGTH = 18;
 
         $rules = [
-            'name' => [
-                'required',
-                "regex:/^[A-Za-z\s]+$/",
-                "max:$maxNameLength"
-            ],
-            'full_name' => [
-                'required',
-                "regex:/^[A-Za-z\s]+$/",
-                "max:$maxNameLength",
-                $isStudent
-                    ? "unique:master_students,full_name,{$ignoreId},master_student_id"
-                    : "unique:master_lecturers,full_name,{$ignoreId},master_lecturer_id",
-            ],
+            'name' => ["required", "regex:/^[A-Za-z\s]+$/", "max:$MAX_NAME_LENGTH"],
         ];
 
-        if (!$isStudent) {
-            // Rules Dosen
-            $rules['nip'] = [
-                'required',
-                'string',
-                'regex:/^[0-9]+$/',
-                "max:$maxNipLength",
-                "unique:master_lecturers,nip,{$ignoreId},master_lecturer_id",
-                "unique:users,username,{$user->user_id},user_id",
-                "unique:master_students,nim" // Cek silang ID
-            ];
-            $rules['email'] = [
-                'required',
-                'email',
-                "unique:master_lecturers,email,{$ignoreId},master_lecturer_id",
-                "unique:master_students,email" // Cek silang Email
-            ];
-            $rules['supervision_quota'] = 'required|integer|min:0|max:20';
-        } else {
-            // Rules Mahasiswa
-            $rules['nim'] = [
-                'required',
-                'string',
-                'regex:/^[0-9]+$/',
-                "max:$maxNimLength",
-                "unique:master_students,nim,{$ignoreId},master_student_id",
-                "unique:users,username,{$user->user_id},user_id",
-                "unique:master_lecturers,nip" // Cek silang ID
-            ];
-            $rules['email'] = [
-                'required',
-                'email',
-                "unique:master_students,email,{$ignoreId},master_student_id",
-                "unique:master_lecturers,email" // Cek silang Email
-            ];
-        }
+        if ($user -> role_name === 'dosen'){
+            $lecturer = $user -> lecturer;
+            $masterLecturer = $lecturer -> masterLecturer;
 
-        $messages = [
-            'name.regex' => 'Full Name must contain only letters and spaces.',
-            'name.max' => "Full Name cannot exceed $maxNameLength characters.",
-            'full_name.unique' => 'Full Name is already registered.',
-            'email.unique' => 'Email is already taken by another account (Student/Lecturer).',
-            'nim.regex' => 'NIM must contain only numbers.',
-            'nim.max' => "NIM cannot exceed $maxNimLength characters.",
-            'nip.regex' => 'NIP must contain only numbers.',
-            'nip.max' => "NIP cannot exceed $maxNipLength characters.",
-            'supervision_quota.min' => 'Supervision quota cannot be negative.',
-            'nim.unique' => 'NIM is already taken.',
-            'nip.unique' => 'NIP is already taken.',
-            'master_lecturers.unique' => 'This ID/Email is already registered as a Lecturer.',
-            'master_students.unique' => 'This ID/Email is already registered as a Student.',
-        ];
+            $old_email = $masterLecturer -> email;
+            $new_email = $request -> input('email');
 
-        $request->validate($rules, $messages);
-
-        DB::transaction(function () use ($request, $user, $isStudent) {
-            if ($isStudent && $user->student && $user->student->masterStudent) {
-                $user->student->masterStudent->update([
-                    'full_name' => $request->name,
-                    'email' => $request->email,
-                    'nim' => trim($request->nim),
-                ]);
-                if ($request->nim !== $user->username) $user->update(['username' => trim($request->nim)]);
-            } elseif (!$isStudent && $user->lecturer && $user->lecturer->masterLecturer) {
-                $user->lecturer->masterLecturer->update([
-                    'full_name' => $request->name,
-                    'email' => $request->email,
-                    'nip' => trim($request->nip),
-                ]);
-                $user->lecturer->update([
-                    'supervision_quota' => $request->supervision_quota
-                ]);
-                if ($request->nip !== $user->username) $user->update(['username' => trim($request->nip)]);
+            if ($old_email != $new_email) {
+                $rules['email'] = 'required|string|max:255|unique:master_lecturers,email';
+            } else {
+                $rules['email'] = 'required|string|max:255';
             }
-        });
+
+            $old_NIP = $masterLecturer -> nip;
+            $new_NIP = $request -> input('nip');
+
+            if ($old_NIP != $new_NIP) {
+                $rules['nip'] = ["required", "string", "regex:/^[0-9]+$/", "max:$MAX_NIP_LENGTH", "unique:master_lecturers,nip,{$masterLecturer -> master_lecturer_id},master_lecturer_id", "unique:master_students,nim"];
+            } else {
+                $rules['nip'] = 'required|string|max:255';
+            }
+
+            $validated = $request -> validate($rules);
+
+            $lecturer -> supervision_quota = $request -> input('supervision_quota');
+
+            $masterLecturer -> full_name    = $validated['name'];
+            $masterLecturer -> nip          = $validated['nip'];
+            $masterLecturer -> email        = $validated['email'];
+
+            if ($lecturer->isDirty()) {
+                $lecturer->save();
+            }
+
+            if ($masterLecturer->isDirty()) {
+                $masterLecturer->save();
+            }
+        }
+        else if ($user -> role_name === 'mahasiswa'){
+            $student = $user -> student;
+            $masterStudent = $student -> masterStudent;
+
+            $old_email = $masterStudent -> email;
+            $new_email = $request -> input('email');
+
+            if ($old_email != $new_email) {
+                $rules['email'] = 'required|string|max:255|unique:master_students,email';
+            } else {
+                $rules['email'] = 'required|string|max:255';
+            }
+
+            $old_NIM = $masterStudent -> nim;
+            $new_NIM = $request -> input('nim');
+
+            if ($old_NIM != $new_NIM) {
+                $rules['nim'] = ["required", "string", "regex:/^[0-9]+$/", "max:$MAX_NIM_LENGTH", "unique:master_lecturers,nip,{$masterStudent -> master_student_id},master_lecturer_id", "unique:master_students,nim"];
+            } else {
+                $rules['nim'] = 'required|string|max:255';
+            }
+
+            $validated = $request -> validate($rules);
+
+            $masterStudent -> full_name    = $validated['name'];
+            $masterStudent -> nim          = $validated['nim'];
+            $masterStudent -> email        = $validated['email'];
+
+            if ($masterStudent->isDirty()) {
+                $masterStudent->save();
+            }
+        }
 
         return redirect()->route('admin.users')->with('success', 'User updated successfully');
     }
