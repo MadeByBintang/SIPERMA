@@ -48,7 +48,17 @@ import { Head, useForm } from "@inertiajs/react";
 
 const FOCUS_LABELS = ["BIG DATA", "MTI", "JARINGAN"];
 // Recommended team members based on matching interests
-const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
+const TeamSelectionCard = ({
+    members,
+    selectedMembers,
+    onToggle,
+    type,
+    teamName,
+    teamDescription,
+    onTeamNameChange,
+    onTeamDescriptionChange,
+    errors,
+}) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredMembers = members.filter((member) => {
@@ -82,7 +92,8 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                     />
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+                {/* Table */}
                 <div className="rounded-md border max-h-64 overflow-y-auto">
                     <Table className="table-auto w-full">
                         <TableHeader>
@@ -166,6 +177,55 @@ const TeamSelectionCard = ({ members, selectedMembers, onToggle, type }) => {
                         </TableBody>
                     </Table>
                 </div>
+
+                {/* Team Information - Sekarang di bawah tabel */}
+                {selectedMembers.length > 0 && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-muted/30 animate-in fade-in slide-in-from-top-2 mt-4">
+                        <div className="flex items-center gap-2 text-sm font-semibold">
+                            <Users className="w-4 h-4" />
+                            Team Information
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="team-name">Team Name *</Label>
+                                <Input
+                                    id="team-name"
+                                    placeholder="Enter your team name..."
+                                    value={teamName}
+                                    onChange={(e) =>
+                                        onTeamNameChange(e.target.value)
+                                    }
+                                />
+                                {errors?.teamName && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.teamName}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="team-description">
+                                    Team Description *
+                                </Label>
+                                <Textarea
+                                    id="team-description"
+                                    placeholder="Describe your team and goals..."
+                                    value={teamDescription}
+                                    onChange={(e) =>
+                                        onTeamDescriptionChange(e.target.value)
+                                    }
+                                    rows={3}
+                                />
+                                {errors?.teamDescription && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.teamDescription}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
@@ -319,6 +379,8 @@ export default function RegistrationPage({
         preferredCompany: "",
         teamMembers: [],
         supervisor: null,
+        teamName: "",
+        teamDescription: "",
 
         // Institution
         institution_id: "",
@@ -339,9 +401,12 @@ export default function RegistrationPage({
 
         // Competition
         competitionName: "",
+        competitionDescription: "",
         competitionField: "",
         competitionTeam: [],
         competitionSupervisor: null,
+        competitionTeamName: "",
+        competitionTeamDescription: "",
     });
 
     // State untuk menyimpan detail institusi yang dipilih
@@ -1020,6 +1085,13 @@ export default function RegistrationPage({
                             selectedMembers={data.teamMembers}
                             onToggle={handleTeamMemberToggle}
                             type="Internship"
+                            teamName={data.teamName}
+                            teamDescription={data.teamDescription}
+                            onTeamNameChange={(val) => setData("teamName", val)}
+                            onTeamDescriptionChange={(val) =>
+                                setData("teamDescription", val)
+                            }
+                            errors={errors}
                         />
 
                         <SupervisorSelectionCard
@@ -1317,6 +1389,29 @@ export default function RegistrationPage({
                                     )}
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label htmlFor="comp-description">
+                                        Competition Description *
+                                    </Label>
+                                    <Textarea
+                                        id="comp-description"
+                                        placeholder="Describe the competition, objectives, and what you hope to achieve..."
+                                        value={data.competitionDescription}
+                                        onChange={(e) =>
+                                            setData(
+                                                "competitionDescription",
+                                                e.target.value
+                                            )
+                                        }
+                                        rows={4}
+                                    />
+                                    {errors.competitionDescription && (
+                                        <p className="text-red-500 text-xs">
+                                            {errors.competitionDescription}
+                                        </p>
+                                    )}
+                                </div>
+
                                 {/* Competition Field */}
                                 {!data.competitionField ? (
                                     // Dropdown muncul jika belum ada pilihan
@@ -1326,9 +1421,13 @@ export default function RegistrationPage({
                                         </Label>
                                         <Select
                                             value=""
-                                            onValueChange={(val) =>
-                                                setData("competitionField", val)
-                                            }
+                                            onValueChange={(val) => {
+                                                setData(
+                                                    "competitionField",
+                                                    val
+                                                );
+                                                setData("competitionTeam", []);
+                                            }}
                                         >
                                             <SelectTrigger id="comp-field">
                                                 <SelectValue placeholder="Select competition field..." />
@@ -1355,12 +1454,16 @@ export default function RegistrationPage({
                                             <Badge
                                                 variant="secondary"
                                                 className="gap-1 cursor-pointer"
-                                                onClick={() =>
+                                                onClick={() => {
                                                     setData(
                                                         "competitionField",
                                                         ""
-                                                    )
-                                                }
+                                                    );
+                                                    setData(
+                                                        "competitionTeam",
+                                                        []
+                                                    );
+                                                }}
                                             >
                                                 {data.competitionField}
                                                 <X className="w-3 h-3 ml-1" />
@@ -1448,6 +1551,15 @@ export default function RegistrationPage({
                             selectedMembers={data.competitionTeam}
                             onToggle={handleTeamMemberToggle}
                             type="Competition"
+                            teamName={data.competitionTeamName}
+                            teamDescription={data.competitionTeamDescription}
+                            onTeamNameChange={(val) =>
+                                setData("competitionTeamName", val)
+                            }
+                            onTeamDescriptionChange={(val) =>
+                                setData("competitionTeamDescription", val)
+                            }
+                            errors={errors}
                         />
 
                         <SupervisorSelectionCard

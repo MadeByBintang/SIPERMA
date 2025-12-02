@@ -199,10 +199,9 @@ class RegistrationController extends Controller
 
             DB::commit();
             return redirect()->route('application.status')->with('success', 'Registration submitted successfully!');
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to submit registration: ' . $e -> getMessage())->withInput();
+            return redirect()->back()->with('error', 'Failed to submit registration: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -298,18 +297,20 @@ class RegistrationController extends Controller
                 'competitionName' => 'required|string|max:255',
                 'competitionField' => 'required|string',
                 'competitionSupervisor' => 'required|exists:lecturers,lecturer_id',
+                'competitionDescription' => 'required|string|min:20', // ← TAMBAHKAN
             ], [
                 'competitionName.required' => 'Competition name is required.',
                 'competitionField.required' => 'Please select a competition field.',
                 'competitionSupervisor.required' => 'Please select a supervisor.',
+                'competitionDescription.required' => 'Competition description is required.', // ← TAMBAHKAN
+                'competitionDescription.min' => 'Description must be at least 20 characters.', // ← TAMBAHKAN
             ]);
         }
 
         $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-        ], [
-        ]);
+        ], []);
 
         $additionalMembers = [];
         if ($request->activityType === 'Internship' && $request->has('teamMembers')) {
@@ -331,17 +332,35 @@ class RegistrationController extends Controller
         $activity = Activity::create([
             'activity_type_id' => $typeId,
             'internship_id' => $institutionId,
-            'title' => $request->activityType === 'Internship' ? 'Internship At - ' .  Internship::find($institutionId)?->name : $request->competitionName,
-            'description' => $request->description ?? $request->competitionField,
+            'title' => $request->activityType === 'Internship' ? 'Internship at - ' .  Internship::find($institutionId)?->name : $request->competitionName,
+            'description' => $request->description ?? $request->competitionDescription,
             'start_date' => Carbon::createFromFormat('Y-m-d', $request->start_date)->format('Y-m-d'),
             'end_date'   => Carbon::createFromFormat('Y-m-d', $request->end_date)->format('Y-m-d'),
             'institution_id' => $institutionId,
         ]);
 
         if (!empty($additionalMembers)) {
+            $teamNameField = $typeId === 2 ? 'teamName' : 'competitionTeamName';
+            $teamDescField = $typeId === 2 ? 'teamDescription' : 'competitionTeamDescription';
+
+            $request->validate([
+                $teamNameField => 'required|string|max:100',
+                $teamDescField => 'required|string|min:10',
+            ], [
+                "$teamNameField.required" => 'Team name is required when forming a team.',
+                "$teamDescField.required" => 'Team description is required when forming a team.',
+                "$teamDescField.min" => 'Team description must be at least 10 characters.',
+            ]);
+        }
+
+        if (!empty($additionalMembers)) {
+            $teamName = $typeId === 2 ? $request->teamName : $request->competitionTeamName;
+            $teamDesc = $typeId === 2 ? $request->teamDescription : $request->competitionTeamDescription;
+
+
             $team = Team::create([
-                'team_name'   => $request->activityType === 'Internship' ? 'Internship Team - ' . $student->name : 'Competition Team - ' . $request->competitionName,
-                'description' => $activity->description,
+                'team_name'   => $teamName,
+                'description' => $teamDesc,
             ]);
 
             $teamId = $team->team_id;
@@ -363,7 +382,7 @@ class RegistrationController extends Controller
 
         Supervision::create([
             'student_id' => $student->student_id,
-            'lecturer_id' => $request->supervisor ?? $request -> competitionSupervisor,
+            'lecturer_id' => $request->supervisor ?? $request->competitionSupervisor,
             'activity_id' => $activity->activity_id,
             'team_id' =>    $teamId,
             'supervision_status' => 'pending',
