@@ -234,8 +234,8 @@ class TimelineProgressController extends Controller
                 'log_date' => $validated['log_date'] ?? Carbon::now()->toDateString(),
             ]);
 
-            $activity->updated_at = Carbon::now();
-            $activity->save();
+            // $activity->updated_at = Carbon::now();
+            // $activity->save();
 
             return back()->with('success', 'Progress log has been added successfully!');
         } catch (\Exception $e) {
