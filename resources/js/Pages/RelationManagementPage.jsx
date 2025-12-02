@@ -432,7 +432,7 @@ export default function RelationManagementPage({
                                                         <TableCell>
                                                             <p className="break-words whitespace-normal">
                                                                 {
-                                                                    relation.thesisTitle
+                                                                    relation.activityTitle
                                                                 }
                                                             </p>
                                                         </TableCell>
@@ -459,9 +459,17 @@ export default function RelationManagementPage({
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant="secondary">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={`gap-1 ${getActivityTypeColor(
+                                                                    relation.activityType
+                                                                )}`}
+                                                            >
+                                                                {getActivityIcon(
+                                                                    relation.activityType
+                                                                )}
                                                                 {
-                                                                    relation.researchArea
+                                                                    relation.activityType
                                                                 }
                                                             </Badge>
                                                         </TableCell>
@@ -786,17 +794,25 @@ export default function RelationManagementPage({
                                                     </p>
                                                     <p className="break-words whitespace-normal">
                                                         {
-                                                            selectedDetail.thesisTitle
+                                                            selectedDetail.activityTitle
                                                         }
                                                     </p>
                                                 </div>
                                                 <div className="space-y-1 col-span-2">
                                                     <p className="text-sm text-muted-foreground">
-                                                        Research Area
+                                                        Activity Type
                                                     </p>
-                                                    <Badge variant="secondary">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`gap-1 ${getActivityTypeColor(
+                                                            selectedDetail.activityType
+                                                        )}`}
+                                                    >
+                                                        {getActivityIcon(
+                                                            selectedDetail.activityType
+                                                        )}
                                                         {
-                                                            selectedDetail.researchArea
+                                                            selectedDetail.activityType
                                                         }
                                                     </Badge>
                                                 </div>
