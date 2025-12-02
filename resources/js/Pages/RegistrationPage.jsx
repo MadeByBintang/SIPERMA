@@ -299,7 +299,7 @@ export default function RegistrationPage({
 
     const block_thesis =
         studentInfo?.thesis_status == "approved" ||
-        studentInfo?.ithesis_status == "completed" ||
+        studentInfo?.thesis_status == "completed" ||
         studentInfo?.thesis_status == "pending";
 
     const default_activity_type =
