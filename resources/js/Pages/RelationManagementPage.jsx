@@ -153,7 +153,7 @@ export default function RelationManagementPage({
                     <CardHeader>
                         <CardTitle>Relation Management</CardTitle>
                         <CardDescription>
-                            View and track student relationships including PKL,
+                            View and track student relationships including internship,
                             competitions, and thesis supervisions
                         </CardDescription>
                     </CardHeader>
@@ -227,8 +227,8 @@ export default function RelationManagementPage({
                     <CardHeader>
                         <CardTitle>
                             {relationType === "student-student"
-                                ? "Student-Student Relations (PKL & Competitions)"
-                                : "Student-Lecturer Relations (Thesis)"}
+                                ? "Student-Student Relations"
+                                : "Student-Lecturer Relations"}
                         </CardTitle>
                         <CardDescription>
                             {filteredRelations.length}{" "}
@@ -265,13 +265,13 @@ export default function RelationManagementPage({
                                             <>
                                                 <TableHead>Student</TableHead>
                                                 <TableHead>
-                                                    Thesis Title
+                                                    Project Title
                                                 </TableHead>
                                                 <TableHead>
                                                     Supervisor
                                                 </TableHead>
                                                 <TableHead>
-                                                    Research Area
+                                                    Activity Type
                                                 </TableHead>
                                                 <TableHead>Period</TableHead>
                                                 <TableHead>Status</TableHead>
