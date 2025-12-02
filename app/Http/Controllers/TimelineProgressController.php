@@ -130,8 +130,12 @@ class TimelineProgressController extends Controller
                     'activityLogs' => $activityLogs,
 
                     'lastUpdate' => $latestLog
-                        ? $latestLog->log_date->format('Y-m-d H:i')
-                        : null,
+    ? $latestLog->log_date->format('Y-m-d H:i')
+    : collect([
+        $item->assigned_at,
+        $item->responded_at,
+        $item->completed_at
+    ])->filter()->map(fn($date) => \Carbon\Carbon::parse($date))->max()?->format('Y-m-d H:i') ?? '-',
 
                     /* request type untuk frontend */
                     'requestType' => 'supervision',
