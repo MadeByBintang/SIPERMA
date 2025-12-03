@@ -124,6 +124,8 @@ export default function ApprovalPage({ approvalRequests = [] }) {
 
     // --- HANDLERS ---
 
+    const [noteError, setNoteError] = useState("");
+
     const handleViewDetails = (request) => {
         setSelectedRequest(request);
         setIsDialogOpen(true);
@@ -133,6 +135,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
         setSelectedRequest(request);
         setActionType("approve");
         setResponseNote("");
+        setNoteError(""); // Reset error
         setIsActionDialogOpen(true);
     };
 
@@ -140,6 +143,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
         setSelectedRequest(request);
         setActionType("reject");
         setResponseNote("");
+        setNoteError(""); // Reset error
         setIsActionDialogOpen(true);
     };
 
@@ -147,11 +151,27 @@ export default function ApprovalPage({ approvalRequests = [] }) {
     const handleSubmitAction = () => {
         if (!selectedRequest) return;
 
+        // Validasi untuk reject: notes wajib diisi
+        if (actionType === "reject" && !responseNote.trim()) {
+            toast.error("Please provide a reason for rejection");
+            return;
+        }
+
+        // Validasi word count jika menggunakan limit
+        const wordCount = responseNote
+            .trim()
+            .split(/\s+/)
+            .filter((w) => w.length > 0).length;
+        if (wordCount > 100) {
+            toast.error("Notes exceed word limit (max 100 words)");
+            return;
+        }
+
         router.put(
             route("approval.update", selectedRequest.id),
             {
                 action: actionType, // 'approve' atau 'reject'
-                notes: responseNote,
+                notes: responseNote.trim(), // Trim whitespace
             },
             {
                 onSuccess: () => {
@@ -160,6 +180,7 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                     setIsDialogOpen(false);
                     setSelectedRequest(null);
                     setResponseNote("");
+                    setNoteError(""); // Reset error jika menggunakan validasi
                 },
                 onError: () => toast.error("Failed to process request"),
             }
@@ -772,21 +793,74 @@ export default function ApprovalPage({ approvalRequests = [] }) {
                                     id="notes"
                                     placeholder={
                                         actionType === "approve"
-                                            ? "Notes..."
-                                            : "Reason for rejection..."
+                                            ? "Notes (A-Z, 0-9, spaces only, max 100 words)..."
+                                            : "Reason for rejection (A-Z, 0-9, spaces only, max 100 words)..."
                                     }
                                     value={responseNote}
-                                    onChange={(e) =>
-                                        setResponseNote(e.target.value)
+                                    onChange={(e) => {
+                                        let value = e.target.value;
+
+                                        // Hapus semua karakter selain A-Z, 0-9, dan spasi
+                                        value = value.replace(
+                                            /[^A-Za-z0-9\s]/g,
+                                            ""
+                                        );
+
+                                        // Hitung jumlah kata
+                                        const wordCount = value
+                                            .trim()
+                                            .split(/\s+/)
+                                            .filter((w) => w.length > 0).length;
+
+                                        // Validasi word limit
+                                        if (wordCount > 100) {
+                                            setNoteError(
+                                                `Word limit exceeded (${wordCount}/100 words)`
+                                            );
+                                        } else {
+                                            setNoteError("");
+                                        }
+
+                                        setResponseNote(value);
+                                    }}
+                                    rows={4}
+                                    className={
+                                        noteError ? "border-red-500" : ""
                                     }
                                 />
+                                {noteError && (
+                                    <p className="text-red-500 text-xs">
+                                        {noteError}
+                                    </p>
+                                )}
+                                {!noteError && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Only letters (A-Z), numbers (0-9), and
+                                        spaces are allowed (max 100 words)
+                                    </p>
+                                )}
+                                {responseNote && !noteError && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {
+                                            responseNote
+                                                .trim()
+                                                .split(/\s+/)
+                                                .filter((w) => w.length > 0)
+                                                .length
+                                        }
+                                        /100 words
+                                    </p>
+                                )}
                             </div>
                         </div>
 
                         <DialogFooter>
                             <Button
                                 variant="outline"
-                                onClick={() => setIsActionDialogOpen(false)}
+                                onClick={() => {
+                                    setIsActionDialogOpen(false);
+                                    setResponseNote(""); // Reset notes saat cancel
+                                }}
                             >
                                 Cancel
                             </Button>

@@ -195,12 +195,16 @@ const TeamSelectionCard = ({
                                     value={teamName}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        onTeamNameChange(value);
-                                        const error = validateTextField(
-                                            value,
-                                            "Team Name"
+                                        // Block karakter yang tidak diizinkan (hanya A-Z, 0-9, dan spasi)
+                                        const sanitizedValue = value.replace(
+                                            /[^A-Za-z0-9\s]/g,
+                                            ""
                                         );
+                                        onTeamNameChange(sanitizedValue);
                                     }}
+                                    className={
+                                        errors?.teamName ? "border-red-500" : ""
+                                    }
                                 />
                                 {errors?.teamName && (
                                     <p className="text-red-500 text-xs">
@@ -219,20 +223,34 @@ const TeamSelectionCard = ({
                                     value={teamDescription}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        onTeamDescriptionChange(value);
-                                        const error = validateTextField(
-                                            value,
-                                            "Team Description",
-                                            50
+                                        // Block karakter yang tidak diizinkan (hanya A-Z, 0-9, dan spasi)
+                                        const sanitizedValue = value.replace(
+                                            /[^A-Za-z0-9\s]/g,
+                                            ""
                                         );
+                                        onTeamDescriptionChange(sanitizedValue);
                                     }}
                                     rows={3}
+                                    className={
+                                        errors?.teamDescription
+                                            ? "border-red-500"
+                                            : ""
+                                    }
                                 />
                                 {errors?.teamDescription && (
                                     <p className="text-red-500 text-xs">
                                         {errors.teamDescription}
                                     </p>
                                 )}
+                                <p className="text-xs text-muted-foreground">
+                                    {
+                                        teamDescription
+                                            .trim()
+                                            .split(/\s+/)
+                                            .filter((w) => w.length > 0).length
+                                    }
+                                    /50 words
+                                </p>
                             </div>
                         </div>
                     </div>
