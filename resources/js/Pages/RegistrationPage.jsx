@@ -1067,13 +1067,21 @@ export default function RegistrationPage({
                                                         value={
                                                             data.newInstitutionName
                                                         }
-                                                        onChange={(e) =>
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                e.target.value;
+                                                            // Block karakter yang tidak diizinkan
+                                                            const sanitizedValue =
+                                                                value.replace(
+                                                                    /[^A-Za-z0-9\s]/g,
+                                                                    ""
+                                                                );
                                                             setData(
                                                                 "newInstitutionName",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        placeholder="PT. Maju Mundur"
+                                                                sanitizedValue
+                                                            );
+                                                        }}
+                                                        placeholder="PT Maju Mundur"
                                                     />
                                                     {errors.newInstitutionName && (
                                                         <p className="text-red-500 text-xs">
@@ -1136,12 +1144,20 @@ export default function RegistrationPage({
                                                     value={
                                                         data.newInstitutionAddress
                                                     }
-                                                    onChange={(e) =>
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value;
+                                                        // Block karakter yang tidak diizinkan
+                                                        const sanitizedValue =
+                                                            value.replace(
+                                                                /[^A-Za-z0-9\s]/g,
+                                                                ""
+                                                            );
                                                         setData(
                                                             "newInstitutionAddress",
-                                                            e.target.value
-                                                        )
-                                                    }
+                                                            sanitizedValue
+                                                        );
+                                                    }}
                                                     placeholder="Full office address"
                                                     rows={2}
                                                 />
@@ -1156,13 +1172,21 @@ export default function RegistrationPage({
                                                         value={
                                                             data.newOwnerName
                                                         }
-                                                        onChange={(e) =>
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                e.target.value;
+                                                            // Block karakter yang tidak diizinkan (hanya A-Z dan spasi untuk nama)
+                                                            const sanitizedValue =
+                                                                value.replace(
+                                                                    /[^A-Za-z\s]/g,
+                                                                    ""
+                                                                );
                                                             setData(
                                                                 "newOwnerName",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        placeholder="Mr. John Doe"
+                                                                sanitizedValue
+                                                            );
+                                                        }}
+                                                        placeholder="Mr John Doe"
                                                     />
                                                     {errors.newOwnerName && (
                                                         <p className="text-red-500 text-xs">
@@ -1181,41 +1205,14 @@ export default function RegistrationPage({
                                                         value={
                                                             data.newOwnerEmail
                                                         }
-                                                        onChange={(e) => {
-                                                            const value =
-                                                                e.target.value;
+                                                        onChange={(e) =>
                                                             setData(
                                                                 "newOwnerEmail",
-                                                                value
-                                                            );
-
-                                                            // Validasi real-time
-                                                            const error =
-                                                                validateEmailField(
-                                                                    value
-                                                                );
-                                                            setValidationErrors(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    newOwnerEmail:
-                                                                        error,
-                                                                })
-                                                            );
-                                                        }}
-                                                        placeholder="contact@company.com"
-                                                        className={
-                                                            validationErrors.newOwnerEmail
-                                                                ? "border-red-500"
-                                                                : ""
+                                                                e.target.value
+                                                            )
                                                         }
+                                                        placeholder="contact@company.com"
                                                     />
-                                                    {validationErrors.newOwnerEmail && (
-                                                        <p className="text-red-500 text-xs mt-1">
-                                                            {
-                                                                validationErrors.newOwnerEmail
-                                                            }
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
