@@ -270,7 +270,7 @@ export default function StudentProfilePage({ student }) {
                                                 }));
 
                                                 const emailRegex =
-                                                    /^[a-zA-Z0-9._%+-]+@mhs\.ulm\.ac\.id$/;
+                                                    /^[a-zA-Z0-9]+@mhs\.ulm\.ac\.id$/;
 
                                                 if (!isDirty) {
                                                     setLocalErrors((prev) => ({
@@ -401,7 +401,7 @@ export default function StudentProfilePage({ student }) {
 
                                             // Hapus karakter yang tidak diizinkan (hanya A-Z, 0-9, _)
                                             value = value.replace(
-                                                /[^A-Za-z0-9_]/g,
+                                                /[^A-Za-z0-9]/g,
                                                 ""
                                             );
 
