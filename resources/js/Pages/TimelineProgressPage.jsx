@@ -153,6 +153,36 @@ export default function TimelineProgressPage({ user, supervisions }) {
         }
     };
 
+    // Tambahkan di bagian state
+    const [noteError, setNoteError] = useState("");
+
+    // Fungsi validasi
+    const validateNote = (text) => {
+        // Regex: hanya huruf (A-Z, a-z), angka (0-9), spasi, titik, koma
+        const allowedCharsRegex = /^[A-Za-z0-9\s]*$/; // Hanya huruf, angka, dan spasi
+
+        // Hitung jumlah kata
+        const wordCount = text
+            .trim()
+            .split(/\s+/)
+            .filter((word) => word.length > 0).length;
+
+        if (!allowedCharsRegex.test(text)) {
+            setNoteError(
+                "Only letters (A-Z), numbers (0-9), spaces, and basic punctuation allowed"
+            );
+            return false;
+        }
+
+        if (wordCount > 50) {
+            setNoteError(`Word limit exceeded (${wordCount}/50 words)`);
+            return false;
+        }
+
+        setNoteError("");
+        return true;
+    };
+
     const handleViewDetails = (activity) => {
         setSelectedActivity(activity);
         setSelectedStudent(null);
@@ -176,6 +206,12 @@ export default function TimelineProgressPage({ user, supervisions }) {
     };
 
     const handleSaveUpdate = () => {
+        // Validasi sebelum submit
+        if (!validateNote(updateNote) || updateNote.trim() === "") {
+            toast.error("Please provide valid progress notes");
+            return;
+        }
+
         const activityId = selectedActivity?.timeline?.[0]?.activity_id;
 
         const data = {
@@ -190,7 +226,6 @@ export default function TimelineProgressPage({ user, supervisions }) {
                 router.reload({
                     only: ["supervisions"],
                     onFinish: () => {
-                        // Update state dialog agar pakai data baru
                         const updated = supervisions.find(
                             (sv) => sv.id === selectedActivity.id
                         );
@@ -201,6 +236,8 @@ export default function TimelineProgressPage({ user, supervisions }) {
 
                         setIsUpdateDialogOpen(false);
                         setIsDialogOpen(false);
+                        setUpdateNote(""); // Reset
+                        setNoteError(""); // Reset error
 
                         toast("Log progres berhasil ditambahkan!");
                     },
@@ -1136,13 +1173,35 @@ export default function TimelineProgressPage({ user, supervisions }) {
                                 <Label htmlFor="notes">Progress Notes</Label>
                                 <Textarea
                                     id="notes"
-                                    placeholder="Add notes about your progress..."
+                                    placeholder="Add notes about your progress (max 50 words)..."
                                     value={updateNote}
-                                    onChange={(e) =>
-                                        setUpdateNote(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        setUpdateNote(newValue);
+                                        validateNote(newValue);
+                                    }}
                                     rows={4}
+                                    className={
+                                        noteError ? "border-red-500" : ""
+                                    }
                                 />
+                                {/* Tampilkan error message */}
+                                {noteError && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {noteError}
+                                    </p>
+                                )}
+
+                                {/* Tampilkan word counter */}
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {
+                                        updateNote
+                                            .trim()
+                                            .split(/\s+/)
+                                            .filter((w) => w.length > 0).length
+                                    }
+                                    /50 words
+                                </p>
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button

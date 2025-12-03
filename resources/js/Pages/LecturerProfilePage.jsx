@@ -83,9 +83,7 @@ const FOCUS_LABELS = {
     JARINGAN: "Jaringan",
 };
 
-export default function LecturerProfilePage({
-    lecturer,
-}) {
+export default function LecturerProfilePage({ lecturer }) {
     const { auth } = usePage().props;
     const user = auth?.user || {};
 
@@ -404,7 +402,9 @@ export default function LecturerProfilePage({
                                             </div>
                                             <p className="text-xs text-muted-foreground">
                                                 Currently supervising:{" "}
-                                                {initialData.current_supervision}{" "}
+                                                {
+                                                    initialData.current_supervision
+                                                }{" "}
                                                 of{" "}
                                                 {initialData.supervision_quota}{" "}
                                                 students
@@ -437,12 +437,24 @@ export default function LecturerProfilePage({
                                     <Input
                                         id="username"
                                         value={accountData.username}
-                                        onChange={(e) =>
-                                            setAccountData(
-                                                "username",
-                                                e.target.value
-                                            )
-                                        }
+                                        maxLength={50}
+                                        onChange={(e) => {
+                                            let value = e.target.value;
+
+                                            // Hapus karakter yang tidak diizinkan (hanya A-Z, 0-9, _)
+                                            value = value.replace(
+                                                /[^A-Za-z0-9_]/g,
+                                                ""
+                                            );
+
+                                            // Batasi maksimal 50 karakter
+                                            if (value.length <= 50) {
+                                                setAccountData(
+                                                    "username",
+                                                    value
+                                                );
+                                            }
+                                        }}
                                     />
                                     {accountErrors.username && (
                                         <div className="text-red-500 text-xs">
@@ -450,8 +462,12 @@ export default function LecturerProfilePage({
                                         </div>
                                     )}
                                     <p className="text-xs text-muted-foreground">
-                                        Your username for logging into the
-                                        system
+                                        Username untuk login (maksimal 50
+                                        karakter, A-Z, 0-9, underscore saja)
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {accountData.username.length}/50
+                                        characters
                                     </p>
                                 </div>
                             </div>

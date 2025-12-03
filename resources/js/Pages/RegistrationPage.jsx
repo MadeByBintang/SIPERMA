@@ -193,9 +193,14 @@ const TeamSelectionCard = ({
                                     id="team-name"
                                     placeholder="Enter your team name..."
                                     value={teamName}
-                                    onChange={(e) =>
-                                        onTeamNameChange(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        onTeamNameChange(value);
+                                        const error = validateTextField(
+                                            value,
+                                            "Team Name"
+                                        );
+                                    }}
                                 />
                                 {errors?.teamName && (
                                     <p className="text-red-500 text-xs">
@@ -212,9 +217,15 @@ const TeamSelectionCard = ({
                                     id="team-description"
                                     placeholder="Describe your team and goals..."
                                     value={teamDescription}
-                                    onChange={(e) =>
-                                        onTeamDescriptionChange(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        onTeamDescriptionChange(value);
+                                        const error = validateTextField(
+                                            value,
+                                            "Team Description",
+                                            50
+                                        );
+                                    }}
                                     rows={3}
                                 />
                                 {errors?.teamDescription && (
@@ -444,6 +455,50 @@ export default function RegistrationPage({
         (m) => m.interests === data.competitionField
     );
 
+    const [validationErrors, setValidationErrors] = useState({
+        description: "",
+        teamName: "",
+        teamDescription: "",
+        competitionName: "",
+        competitionDescription: "",
+        competitionTeamName: "",
+        competitionTeamDescription: "",
+        title: "",
+        abstract: "",
+    });
+
+    // Fungsi validasi untuk text dengan A-Z, 0-9, spasi, dan punctuation dasar
+    const validateTextField = (value, fieldName, maxWords = null) => {
+        const allowedCharsRegex = /^[A-Za-z0-9\s]*$/;
+
+        if (!allowedCharsRegex.test(value)) {
+            return `${fieldName} can only contain letters (A-Z), numbers (0-9) and spaces`;
+        }
+
+        if (maxWords) {
+            const wordCount = value
+                .trim()
+                .split(/\s+/)
+                .filter((word) => word.length > 0).length;
+            if (wordCount > maxWords) {
+                return `${fieldName} exceeds word limit (${wordCount}/${maxWords} words)`;
+            }
+        }
+
+        return "";
+    };
+
+    // Fungsi validasi untuk nama (lebih ketat, hanya huruf dan spasi)
+    const validateNameField = (value, fieldName) => {
+        const allowedCharsRegex = /^[A-Za-z\s]*$/;
+
+        if (!allowedCharsRegex.test(value)) {
+            return `${fieldName} can only contain letters (A-Z) and spaces`;
+        }
+
+        return "";
+    };
+
     const handleTabChange = (value) => {
         setData("activityType", value);
 
@@ -455,7 +510,12 @@ export default function RegistrationPage({
     };
 
     const getMaxEndDate = () => {
-        if (!data.start_date) return "";
+        if (!data.start_date) {
+            // Jika start_date belum diisi, berikan default max date (misal 6 bulan dari hari ini)
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 6);
+            return maxDate.toISOString().split("T")[0];
+        }
 
         const startDate = new Date(data.start_date);
         let maxMonths;
@@ -500,15 +560,118 @@ export default function RegistrationPage({
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // Validasi semua field sebelum submit
+        let hasError = false;
+        const newErrors = {};
+
+        if (data.activityType === "Internship") {
+            const descError = validateTextField(
+                data.description,
+                "Description",
+                100
+            );
+            if (descError) {
+                newErrors.description = descError;
+                hasError = true;
+            }
+
+            if (data.teamMembers.length > 0) {
+                const teamNameError = validateTextField(
+                    data.teamName,
+                    "Team Name"
+                );
+                const teamDescError = validateTextField(
+                    data.teamDescription,
+                    "Team Description",
+                    50
+                );
+
+                if (teamNameError) {
+                    newErrors.teamName = teamNameError;
+                    hasError = true;
+                }
+                if (teamDescError) {
+                    newErrors.teamDescription = teamDescError;
+                    hasError = true;
+                }
+            }
+        }
+
+        if (data.activityType === "Thesis") {
+            const titleError = validateTextField(data.title, "Title");
+            const abstractError = validateTextField(
+                data.abstract,
+                "Abstract",
+                200
+            );
+
+            if (titleError) {
+                newErrors.title = titleError;
+                hasError = true;
+            }
+            if (abstractError) {
+                newErrors.abstract = abstractError;
+                hasError = true;
+            }
+        }
+
+        if (data.activityType === "Competition") {
+            const compNameError = validateTextField(
+                data.competitionName,
+                "Competition Name"
+            );
+            const compDescError = validateTextField(
+                data.competitionDescription,
+                "Competition Description",
+                100
+            );
+
+            if (compNameError) {
+                newErrors.competitionName = compNameError;
+                hasError = true;
+            }
+            if (compDescError) {
+                newErrors.competitionDescription = compDescError;
+                hasError = true;
+            }
+
+            if (data.competitionTeam.length > 0) {
+                const teamNameError = validateTextField(
+                    data.competitionTeamName,
+                    "Team Name"
+                );
+                const teamDescError = validateTextField(
+                    data.competitionTeamDescription,
+                    "Team Description",
+                    50
+                );
+
+                if (teamNameError) {
+                    newErrors.competitionTeamName = teamNameError;
+                    hasError = true;
+                }
+                if (teamDescError) {
+                    newErrors.competitionTeamDescription = teamDescError;
+                    hasError = true;
+                }
+            }
+        }
+
+        setValidationErrors(newErrors);
+
+        if (hasError) {
+            toast.error("Please fix validation errors before submitting");
+            return;
+        }
+
         post(route("registration.store"), {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
                 toast.success("Registration submitted successfully!");
-                // reset();
             },
             onError: (err) => {
-                Object.values(page.props.errors)
+                Object.values(errors)
                     .flat()
                     .forEach((msg) => {
                         toast.error(msg);
@@ -999,14 +1162,41 @@ export default function RegistrationPage({
                                         id="Internship-description"
                                         placeholder="Describe your Internship goals, objectives, and what you hope to achieve..."
                                         value={data.description}
-                                        onChange={(e) =>
-                                            setData(
-                                                "description",
-                                                e.target.value
-                                            )
-                                        }
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setData("description", value);
+                                            const error = validateTextField(
+                                                value,
+                                                "Description",
+                                                100
+                                            );
+                                            setValidationErrors((prev) => ({
+                                                ...prev,
+                                                description: error,
+                                            }));
+                                        }}
                                         rows={4}
+                                        className={
+                                            validationErrors.description
+                                                ? "border-red-500"
+                                                : ""
+                                        }
                                     />
+                                    {validationErrors.description && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {validationErrors.description}
+                                        </p>
+                                    )}
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {
+                                            data.description
+                                                .trim()
+                                                .split(/\s+/)
+                                                .filter((w) => w.length > 0)
+                                                .length
+                                        }
+                                        /100 words
+                                    </p>
                                 </div>
 
                                 {/* Start & End Date side by side */}
@@ -1186,13 +1376,27 @@ export default function RegistrationPage({
                                         id="thesis-title"
                                         placeholder="Enter your thesis title..."
                                         value={data.title}
-                                        onChange={(e) =>
-                                            setData("title", e.target.value)
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setData("title", value);
+                                            const error = validateTextField(
+                                                value,
+                                                "Title"
+                                            );
+                                            setValidationErrors((prev) => ({
+                                                ...prev,
+                                                title: error,
+                                            }));
+                                        }}
+                                        className={
+                                            validationErrors.title
+                                                ? "border-red-500"
+                                                : ""
                                         }
                                     />
-                                    {errors.title && (
-                                        <p className="text-red-500 text-xs">
-                                            {errors.title}
+                                    {validationErrors.title && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {validationErrors.title}
                                         </p>
                                     )}
                                 </div>
@@ -1205,16 +1409,41 @@ export default function RegistrationPage({
                                         id="thesis-abstract"
                                         placeholder="Write your thesis abstract here (min. 50 characters)..."
                                         value={data.abstract}
-                                        onChange={(e) =>
-                                            setData("abstract", e.target.value)
-                                        }
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setData("abstract", value);
+                                            const error = validateTextField(
+                                                value,
+                                                "Abstract",
+                                                200
+                                            );
+                                            setValidationErrors((prev) => ({
+                                                ...prev,
+                                                abstract: error,
+                                            }));
+                                        }}
                                         rows={6}
+                                        className={
+                                            validationErrors.abstract
+                                                ? "border-red-500"
+                                                : ""
+                                        }
                                     />
-                                    {errors.abstract && (
-                                        <p className="text-red-500 text-xs">
-                                            {errors.abstract}
+                                    {validationErrors.abstract && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {validationErrors.abstract}
                                         </p>
                                     )}
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {
+                                            data.abstract
+                                                .trim()
+                                                .split(/\s+/)
+                                                .filter((w) => w.length > 0)
+                                                .length
+                                        }
+                                        /200 words
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -1375,16 +1604,27 @@ export default function RegistrationPage({
                                         id="comp-title"
                                         placeholder="e.g., National Data Science Competition 2025"
                                         value={data.competitionName}
-                                        onChange={(e) =>
-                                            setData(
-                                                "competitionName",
-                                                e.target.value
-                                            )
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setData("competitionName", value);
+                                            const error = validateTextField(
+                                                value,
+                                                "Competition Name"
+                                            );
+                                            setValidationErrors((prev) => ({
+                                                ...prev,
+                                                competitionName: error,
+                                            }));
+                                        }}
+                                        className={
+                                            validationErrors.competitionName
+                                                ? "border-red-500"
+                                                : ""
                                         }
                                     />
-                                    {errors.competitionName && (
-                                        <p className="text-red-500 text-xs">
-                                            {errors.competitionName}
+                                    {validationErrors.competitionName && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {validationErrors.competitionName}
                                         </p>
                                     )}
                                 </div>
@@ -1397,19 +1637,46 @@ export default function RegistrationPage({
                                         id="comp-description"
                                         placeholder="Describe the competition, objectives, and what you hope to achieve..."
                                         value={data.competitionDescription}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const value = e.target.value;
                                             setData(
                                                 "competitionDescription",
-                                                e.target.value
-                                            )
-                                        }
+                                                value
+                                            );
+                                            const error = validateTextField(
+                                                value,
+                                                "Competition Description",
+                                                100
+                                            );
+                                            setValidationErrors((prev) => ({
+                                                ...prev,
+                                                competitionDescription: error,
+                                            }));
+                                        }}
                                         rows={4}
+                                        className={
+                                            validationErrors.competitionDescription
+                                                ? "border-red-500"
+                                                : ""
+                                        }
                                     />
-                                    {errors.competitionDescription && (
-                                        <p className="text-red-500 text-xs">
-                                            {errors.competitionDescription}
+                                    {validationErrors.competitionDescription && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {
+                                                validationErrors.competitionDescription
+                                            }
                                         </p>
                                     )}
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {
+                                            data.competitionDescription
+                                                .trim()
+                                                .split(/\s+/)
+                                                .filter((w) => w.length > 0)
+                                                .length
+                                        }
+                                        /100 words
+                                    </p>
                                 </div>
 
                                 {/* Competition Field */}

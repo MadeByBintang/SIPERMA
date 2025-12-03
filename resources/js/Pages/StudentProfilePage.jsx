@@ -395,12 +395,24 @@ export default function StudentProfilePage({ student }) {
                                     <Input
                                         id="username"
                                         value={accountData.username}
-                                        onChange={(e) =>
-                                            setAccountData(
-                                                "username",
-                                                e.target.value
-                                            )
-                                        }
+                                        maxLength={50}
+                                        onChange={(e) => {
+                                            let value = e.target.value;
+
+                                            // Hapus karakter yang tidak diizinkan (hanya A-Z, 0-9, _)
+                                            value = value.replace(
+                                                /[^A-Za-z0-9_]/g,
+                                                ""
+                                            );
+
+                                            // Batasi maksimal 50 karakter
+                                            if (value.length <= 50) {
+                                                setAccountData(
+                                                    "username",
+                                                    value
+                                                );
+                                            }
+                                        }}
                                     />
                                     {accountErrors.username && (
                                         <div className="text-red-500 text-xs">
@@ -408,8 +420,12 @@ export default function StudentProfilePage({ student }) {
                                         </div>
                                     )}
                                     <p className="text-xs text-muted-foreground">
-                                        Your username for logging into the
-                                        system
+                                        Username for logging in (max 50
+                                        characters, A-Z, 0-9, underscore only)
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {accountData.username.length}/50
+                                        characters
                                     </p>
                                 </div>
                             </div>
