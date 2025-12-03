@@ -71,8 +71,9 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
     const maxNimLength = 13;
     const maxNipLength = 18;
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@ulm\.ac\.id$/;
     const quotaRegex = /^(0|[1-9]\d*)$/;
+    const studentEmailRegex = /^[a-zA-Z0-9._%+-]+@mhs\.ulm\.ac\.id$/;
 
     // Validation helpers
     const isNameValid = (name) =>
@@ -82,6 +83,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
     const isNipValid = (nip) =>
         /^[0-9]+$/.test(nip) && nip.length <= maxNipLength;
     const isEmailValid = (email) => emailRegex.test(email);
+    const isStudentEmailValid = (email) => studentEmailRegex.test(email);
     const isQuotaValid = (quota) => quotaRegex.test(String(quota));
 
     // Error state
@@ -141,7 +143,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNimValid(formData.nim || ""))
                 errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
-            if (!isEmailValid(formData.email || "")) {
+            if (!isStudentEmailValid(formData.email || "")) {
                 errors.email = "Please enter a valid email address.";
             }
         } else {
@@ -211,7 +213,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 errors.name = `Full Name must be letters only and max ${maxNameLength} chars.`;
             if (!isNimValid(formData.nim || ""))
                 errors.nim = `NIM must be numbers only and max ${maxNimLength} chars.`;
-            if (!isEmailValid(formData.email || "")) {
+            if (!isStudentEmailValid(formData.email || "")) {
                 errors.email = "Please enter a valid email address.";
             }
         } else {
@@ -246,7 +248,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                 else if (errors.nip) toast.error(errors.nip);
                 else if (errors.supervision_quota)
                     toast.error(errors.supervision_quota);
-                
+
                 else toast.error("Failed to update user.");
             },
         });
@@ -356,7 +358,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                     <Input
                         id="email"
                         type="email"
-                        placeholder="lecturer@university.ac.id"
+                        placeholder="nim@mhs.ulm.ac.id"
                         value={formData.email || ""}
                         // Saat mengetik
                         onChange={(e) => {
@@ -374,7 +376,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                             if (val && !emailRegex.test(val)) {
                                 setFormErrors({
                                     ...formErrors,
-                                    email: "Format email tidak valid (contoh: user@domain.com)",
+                                    email: "Format email tidak valid (contoh: user@ulm.ac.id)",
                                 });
                             }
                             else {
@@ -442,7 +444,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                     <Input
                         id="email"
                         type="email"
-                        placeholder="lecturer@university.ac.id"
+                        placeholder="nama@ulm.ac.id"
                         value={formData.email || ""}
                         // Saat mengetik
                         onChange={(e) => {
@@ -462,7 +464,7 @@ export default function UserManagementPage({ all_student, all_lecturer }) {
                             if (val && !emailRegex.test(val)) {
                                 setFormErrors({
                                     ...formErrors,
-                                    email: "Format email tidak valid (contoh: user@domain.com)",
+                                    email: "Format email tidak valid (contoh: user@ulm.ac.id)",
                                 });
                             }
                             // Jika valid atau kosong (karena required diurus browser), hapus error

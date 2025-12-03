@@ -57,7 +57,7 @@ const FOCUS_LABELS = {
     JARINGAN: "Jaringan",
 };
 
-export default function StudentProfilePage({ student, supervisors = [] }) {
+export default function StudentProfilePage({ student }) {
     const { auth } = usePage().props;
     const user = auth?.user || {};
 
@@ -270,7 +270,7 @@ export default function StudentProfilePage({ student, supervisors = [] }) {
                                                 }));
 
                                                 const emailRegex =
-                                                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                                    /^[a-zA-Z0-9._%+-]+@mhs\.ulm\.ac\.id$/;
 
                                                 if (!isDirty) {
                                                     setLocalErrors((prev) => ({

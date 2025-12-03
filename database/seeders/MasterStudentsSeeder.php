@@ -385,7 +385,7 @@ class MasterStudentsSeeder extends Seeder
             $sdt = MasterStudent::firstOrCreate([
                 'full_name'             => Str::title(strtolower($student['full_name'])),
                 'nim'                   => $student['nim'],
-                'email'                 => strtolower($student['email']),
+                'email'                 => ($student['nim'] + '@mhs.ulm.ac.id'),
                 'is_active'             => true,
             ]);
 

@@ -293,7 +293,7 @@ export default function LecturerProfilePage({
                                                 }));
 
                                                 const emailRegex =
-                                                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                                    /^[a-zA-Z0-9._%+-]+@ulm\.ac\.id$/;
 
                                                 if (!isDirty) {
                                                     setLocalErrors((prev) => ({
