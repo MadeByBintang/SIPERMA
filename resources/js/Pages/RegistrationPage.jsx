@@ -483,6 +483,7 @@ export default function RegistrationPage({
         competitionTeamDescription: "",
         title: "",
         abstract: "",
+        newOwnerEmail: "",
     });
 
     // Fungsi validasi untuk text dengan A-Z, 0-9, spasi, dan punctuation dasar
@@ -512,6 +513,19 @@ export default function RegistrationPage({
 
         if (!allowedCharsRegex.test(value)) {
             return `${fieldName} can only contain letters (A-Z) and spaces`;
+        }
+
+        return "";
+    };
+
+    const validateEmailField = (value) => {
+        if (!value) return ""; // Email optional, jadi kosong boleh
+
+        // Regex untuk email valid (hanya karakter yang diizinkan dalam email standar)
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if (!emailRegex.test(value)) {
+            return "Invalid email format. Only letters, numbers, dots, hyphens, and underscores are allowed";
         }
 
         return "";
@@ -670,6 +684,14 @@ export default function RegistrationPage({
                 }
                 if (teamDescError) {
                     newErrors.competitionTeamDescription = teamDescError;
+                    hasError = true;
+                }
+            }
+
+            if (data.isNewInstitution && data.newOwnerEmail) {
+                const emailError = validateEmailField(data.newOwnerEmail);
+                if (emailError) {
+                    newErrors.newOwnerEmail = emailError;
                     hasError = true;
                 }
             }
@@ -1159,14 +1181,41 @@ export default function RegistrationPage({
                                                         value={
                                                             data.newOwnerEmail
                                                         }
-                                                        onChange={(e) =>
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                e.target.value;
                                                             setData(
                                                                 "newOwnerEmail",
-                                                                e.target.value
-                                                            )
-                                                        }
+                                                                value
+                                                            );
+
+                                                            // Validasi real-time
+                                                            const error =
+                                                                validateEmailField(
+                                                                    value
+                                                                );
+                                                            setValidationErrors(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    newOwnerEmail:
+                                                                        error,
+                                                                })
+                                                            );
+                                                        }}
                                                         placeholder="contact@company.com"
+                                                        className={
+                                                            validationErrors.newOwnerEmail
+                                                                ? "border-red-500"
+                                                                : ""
+                                                        }
                                                     />
+                                                    {validationErrors.newOwnerEmail && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {
+                                                                validationErrors.newOwnerEmail
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

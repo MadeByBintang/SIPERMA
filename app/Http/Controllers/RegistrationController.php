@@ -253,12 +253,19 @@ class RegistrationController extends Controller
                     'newInstitutionSector' => 'required|string|max:50',
                     'newOwnerName' => 'required|string|max:100',
                     'newInstitutionAddress' => 'nullable|string|max:500',
-                    'newOwnerEmail' => 'nullable|email|max:100',
+                    'newOwnerEmail' => [
+                        'nullable',
+                        'email:rfc,dns',
+                        'max:100',
+                        'regex:/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'
+                    ],
                     'newOwnerPhone' => 'nullable|string|max:20',
                 ], [
                     'newInstitutionName.required' => 'Company name is required.',
                     'newInstitutionSector.required' => 'Sector is required.',
                     'newOwnerName.required' => 'Owner/Mentor name is required.',
+                    'newOwnerEmail.email' => 'Please enter a valid email address.',
+                    'newOwnerEmail.regex' => 'Email contains invalid characters. Only letters, numbers, dots, hyphens, and underscores are allowed.',
                 ]);
 
                 $newInst = Internship::firstOrCreate(
