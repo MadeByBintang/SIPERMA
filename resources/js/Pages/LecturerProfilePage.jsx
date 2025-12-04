@@ -294,7 +294,7 @@ export default function LecturerProfilePage({ lecturer }) {
                                                 // 2. Definisi Regex
                                                 // Catatan: Regex kamu hanya mengizinkan huruf & angka (tanpa titik/underscore)
                                                 const emailRegex =
-                                                    /^[a-zA-Z0-9]+@ulm\.ac\.id$/;
+                                                    /^[a-zA-Z0-9.]+@ulm\.ac\.id$/;
 
                                                 // 3. Logika Validasi Langsung (Hapus pengecekan isDirty di sini)
                                                 // Kita langsung cek value-nya terhadap regex
