@@ -285,25 +285,23 @@ export default function LecturerProfilePage({ lecturer }) {
                                                 const value = e.target.value;
                                                 setData("email", value);
 
+                                                // 1. Set dirty flag
                                                 setDirty((prev) => ({
                                                     ...prev,
                                                     email: true,
                                                 }));
 
+                                                // 2. Definisi Regex
+                                                // Catatan: Regex kamu hanya mengizinkan huruf & angka (tanpa titik/underscore)
                                                 const emailRegex =
                                                     /^[a-zA-Z0-9]+@ulm\.ac\.id$/;
 
-                                                if (!isDirty) {
+                                                // 3. Logika Validasi Langsung (Hapus pengecekan isDirty di sini)
+                                                // Kita langsung cek value-nya terhadap regex
+                                                if (!emailRegex.test(value)) {
                                                     setLocalErrors((prev) => ({
                                                         ...prev,
-                                                        email: null,
-                                                    }));
-                                                } else if (
-                                                    !emailRegex.test(value)
-                                                ) {
-                                                    setLocalErrors((prev) => ({
-                                                        ...prev,
-                                                        email: "Format email tidak valid.",
+                                                        email: "Format email tidak valid (contoh: user@ulm.ac.id)",
                                                     }));
                                                 } else {
                                                     setLocalErrors((prev) => ({
