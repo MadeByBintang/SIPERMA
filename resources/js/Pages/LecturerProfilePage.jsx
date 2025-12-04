@@ -441,7 +441,7 @@ export default function LecturerProfilePage({ lecturer }) {
 
                                             // Hapus karakter yang tidak diizinkan (hanya A-Z, 0-9, _)
                                             value = value.replace(
-                                                /[^A-Za-z0-9]/g,
+                                                /[^A-Za-z0-9_]/g,
                                                 ""
                                             );
 
